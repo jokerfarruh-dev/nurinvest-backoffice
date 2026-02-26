@@ -1,0 +1,2711 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NurInvest — Back Office v12</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+/* ━━━━━━━━━━━━━━━━━ VARIABLES ━━━━━━━━━━━━━━━━━ */
+:root {
+  --bg:#070f1a;--surface:#0c1422;--surface2:#101c2e;--surface3:#152238;
+  --border:#1a2d45;--border2:#1e3655;
+  --blue:#2563eb;--blue2:#3b82f6;--blue3:#60a5fa;--blue4:#93c5fd;
+  --green:#059669;--green2:#10b981;--green3:#34d399;
+  --yellow:#b45309;--yellow2:#f59e0b;--yellow3:#fbbf24;
+  --red:#dc2626;--red2:#ef4444;--red3:#f87171;
+  --purple:#7c3aed;--purple2:#8b5cf6;
+  --teal:#0891b2;--teal2:#06b6d4;
+  --orange:#ea580c;--orange2:#f97316;
+  --text:#dde6f0;--text2:#8fa3bb;--text3:#4e6a85;
+  --mono:'JetBrains Mono',monospace;--sans:'Syne',sans-serif;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--bg);color:var(--text);font-family:var(--sans);height:100vh;display:flex;overflow:hidden;}
+
+/* ━━━━━━━━━━━━━━━━━ LOGIN ━━━━━━━━━━━━━━━━━ */
+#login-screen{position:fixed;inset:0;background:var(--bg);z-index:9999;display:flex;align-items:center;justify-content:center;}
+.login-box{width:380px;background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:36px;text-align:center;}
+.login-logo{font-size:22px;font-weight:800;color:#fff;margin-bottom:4px;}
+.login-logo span{color:var(--green2);}
+.login-sub{font-size:11px;color:var(--text3);font-family:var(--mono);letter-spacing:2px;text-transform:uppercase;margin-bottom:28px;}
+.login-field{text-align:left;margin-bottom:14px;}
+.login-field label{font-size:10px;color:var(--text3);font-family:var(--mono);text-transform:uppercase;letter-spacing:1px;display:block;margin-bottom:6px;}
+.login-field input{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 13px;color:var(--text);font-size:13px;font-family:var(--sans);outline:none;transition:.15s;}
+.login-field input:focus{border-color:var(--blue2);}
+.login-btn{width:100%;padding:11px;background:var(--blue);border:none;border-radius:8px;color:#fff;font-size:14px;font-weight:700;font-family:var(--sans);cursor:pointer;transition:.13s;margin-top:6px;}
+.login-btn:hover{background:var(--blue2);}
+.login-btn:disabled{opacity:.5;cursor:not-allowed;}
+.login-err{font-size:11px;color:var(--red3);font-family:var(--mono);margin-top:10px;min-height:16px;}
+.login-version{font-size:9px;color:var(--text3);font-family:var(--mono);margin-top:20px;}
+
+/* ━━━━━━━━━━━━━━━━━ SIDEBAR ━━━━━━━━━━━━━━━━━ */
+.sidebar{width:214px;min-width:214px;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;height:100vh;}
+.logo{padding:18px 16px 14px;border-bottom:1px solid var(--border);}
+.logo-name{font-size:17px;font-weight:800;color:#fff;letter-spacing:.5px;}
+.logo-dot{display:inline-block;width:7px;height:7px;background:var(--green2);border-radius:50%;margin-right:6px;box-shadow:0 0 8px var(--green2);}
+.logo-sub{font-size:9px;color:var(--blue3);letter-spacing:2px;text-transform:uppercase;margin-top:2px;font-family:var(--mono);}
+nav{padding:10px 0;flex:1;overflow-y:auto;}
+.nav-section{padding:8px 16px 4px;font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:2px;font-family:var(--mono);}
+.nav-item{display:flex;align-items:center;gap:9px;padding:9px 16px;cursor:pointer;font-size:12.5px;font-weight:600;color:var(--text2);transition:all .13s;border-left:2px solid transparent;}
+.nav-item:hover{color:var(--text);background:var(--surface2);}
+.nav-item.active{color:#fff;background:var(--surface3);border-left-color:var(--blue2);}
+.nav-icon{font-size:14px;width:17px;text-align:center;flex-shrink:0;}
+.nav-badge{margin-left:auto;color:#fff;font-size:9px;padding:2px 6px;border-radius:8px;font-family:var(--mono);font-weight:700;}
+.nb-blue{background:var(--blue);}.nb-red{background:var(--red);}.nb-orange{background:var(--orange);}.nb-green{background:var(--green2);}
+.sidebar-foot{padding:12px 16px;border-top:1px solid var(--border);}
+.user-row{display:flex;align-items:center;gap:8px;cursor:pointer;}
+.avatar{width:28px;height:28px;background:var(--blue);border-radius:7px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:10px;color:#fff;flex-shrink:0;}
+.user-name{font-size:11.5px;font-weight:600;color:var(--text);}
+.user-role{font-size:9px;color:var(--text3);font-family:var(--mono);}
+.logout-btn{margin-left:auto;background:none;border:none;cursor:pointer;color:var(--text3);font-size:13px;padding:3px;transition:.13s;}
+.logout-btn:hover{color:var(--red3);}
+
+/* ━━━━━━━━━━━━━━━━━ MAIN ━━━━━━━━━━━━━━━━━ */
+.main{flex:1;display:flex;flex-direction:column;height:100vh;overflow:hidden;min-width:0;}
+.topbar{background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;padding:0 18px;height:50px;flex-shrink:0;}
+.search{flex:1;max-width:300px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:6px 11px;display:flex;align-items:center;gap:7px;}
+.search input{background:none;border:none;outline:none;color:var(--text);font-size:12px;width:100%;font-family:var(--sans);}
+.search input::placeholder{color:var(--text3);}
+.mkt{display:flex;align-items:center;gap:5px;background:rgba(16,185,129,.1);border:1px solid rgba(16,185,129,.25);padding:4px 10px;border-radius:16px;font-size:10px;color:var(--green3);font-weight:700;font-family:var(--mono);}
+.mkt-dot{width:5px;height:5px;background:var(--green2);border-radius:50%;box-shadow:0 0 5px var(--green2);animation:blink 2s infinite;}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.4}}
+.content{flex:1;overflow-y:auto;padding:18px;scrollbar-width:thin;scrollbar-color:var(--border) transparent;}
+.page{display:none;}.page.active{display:block;}
+
+/* ━━━━━━━━━━━━━━━━━ KPI ━━━━━━━━━━━━━━━━━ */
+.kpi-row{display:grid;grid-template-columns:repeat(4,1fr);gap:11px;margin-bottom:16px;}
+.kpi{background:var(--surface);border:1px solid var(--border);border-radius:11px;padding:15px;position:relative;overflow:visible;}
+.kpi::after{content:'';position:absolute;top:0;left:0;right:0;height:2px;border-radius:11px 11px 0 0;}
+.kpi.c1::after{background:linear-gradient(90deg,var(--blue),var(--teal2));}
+.kpi.c2::after{background:linear-gradient(90deg,var(--green2),var(--teal2));}
+.kpi.c3::after{background:linear-gradient(90deg,var(--purple2),var(--blue2));}
+.kpi.c4::after{background:linear-gradient(90deg,var(--orange2),var(--yellow2));}
+.kpi-lbl{font-size:9.5px;color:var(--text3);text-transform:uppercase;letter-spacing:1.5px;font-family:var(--mono);}
+.kpi-val{font-size:26px;font-weight:800;color:#fff;margin:5px 0 3px;font-family:var(--mono);}
+.kpi-ch{font-size:10px;font-family:var(--mono);font-weight:600;}
+.up{color:var(--green3);}.dn{color:var(--red3);}.nt{color:var(--text3);}
+
+/* ━━━━━━━━━━━━━━━━━ CARDS / GRID ━━━━━━━━━━━━━━━━━ */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:11px;padding:15px;}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:13px;margin-bottom:16px;}
+.sec-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
+.sec-title{font-size:14px;font-weight:700;color:#fff;}
+.sec-sub{font-size:10px;color:var(--text3);font-family:var(--mono);margin-top:2px;}
+.ph{margin-bottom:16px;}.ph-title{font-size:20px;font-weight:800;color:#fff;}
+.ph-sub{font-size:11px;color:var(--text3);font-family:var(--mono);margin-top:3px;}
+.fl{display:flex;align-items:center;}.g8{gap:8px;}
+
+/* ━━━━━━━━━━━━━━━━━ BUTTONS ━━━━━━━━━━━━━━━━━ */
+.btn{padding:6px 14px;border-radius:7px;font-size:11.5px;font-weight:700;cursor:pointer;border:none;font-family:var(--sans);transition:all .13s;display:inline-flex;align-items:center;gap:5px;}
+.btn-primary{background:var(--blue);color:#fff;}.btn-primary:hover{background:var(--blue2);}
+.btn-ghost{background:var(--surface2);color:var(--text2);border:1px solid var(--border);}.btn-ghost:hover{color:var(--text);}
+.btn-green{background:rgba(16,185,129,.15);color:var(--green3);border:1px solid rgba(16,185,129,.3);}.btn-green:hover{background:rgba(16,185,129,.25);}
+.btn-red{background:rgba(239,68,68,.12);color:var(--red3);border:1px solid rgba(239,68,68,.25);}.btn-red:hover{background:rgba(239,68,68,.2);}
+.btn-orange{background:rgba(249,115,22,.12);color:var(--orange2);border:1px solid rgba(249,115,22,.25);}
+.btn-sm{padding:4px 10px;font-size:10.5px;}
+.btn:disabled{opacity:.45;cursor:not-allowed;}
+
+/* ━━━━━━━━━━━━━━━━━ TABLE ━━━━━━━━━━━━━━━━━ */
+.tbl-wrap{background:var(--surface);border:1px solid var(--border);border-radius:11px;overflow:hidden;}
+table{width:100%;border-collapse:collapse;}
+thead th{background:var(--surface2);padding:9px 13px;font-size:9.5px;color:var(--text3);text-transform:uppercase;letter-spacing:1.5px;font-weight:700;text-align:left;font-family:var(--mono);}
+tbody tr{border-top:1px solid var(--border);transition:background .1s;}
+tbody tr:hover{background:var(--surface2);}
+tbody td{padding:11px 13px;font-size:12px;font-family:var(--mono);}
+.tk{font-weight:700;color:#fff;font-size:13px;}
+.empty-state{padding:40px;text-align:center;color:var(--text3);font-family:var(--mono);font-size:12px;}
+
+/* ━━━━━━━━━━━━━━━━━ BADGES ━━━━━━━━━━━━━━━━━ */
+.badge{display:inline-flex;align-items:center;padding:2px 7px;border-radius:4px;font-size:9.5px;font-weight:700;font-family:var(--mono);letter-spacing:.4px;}
+.bg{background:rgba(16,185,129,.13);color:var(--green3);border:1px solid rgba(16,185,129,.28);}
+.by{background:rgba(245,158,11,.13);color:var(--yellow3);border:1px solid rgba(245,158,11,.28);}
+.br{background:rgba(239,68,68,.13);color:var(--red3);border:1px solid rgba(239,68,68,.28);}
+.bb{background:rgba(59,130,246,.13);color:var(--blue3);border:1px solid rgba(59,130,246,.28);}
+.bo{background:rgba(249,115,22,.13);color:var(--orange2);border:1px solid rgba(249,115,22,.28);}
+.bgr{background:rgba(78,106,133,.18);color:var(--text2);border:1px solid var(--border);}
+
+/* ━━━━━━━━━━━━━━━━━ SCORE BAR ━━━━━━━━━━━━━━━━━ */
+.sc-wrap{display:flex;align-items:center;gap:7px;}
+.sc-bg{width:56px;height:3.5px;background:var(--surface3);border-radius:2px;}
+.sc-fill{height:3.5px;border-radius:2px;}
+.sc-num{font-size:13px;font-weight:700;}
+.pos{color:var(--green3);}.neg{color:var(--red3);}
+
+/* ━━━━━━━━━━━━━━━━━ SIGNAL INBOX ━━━━━━━━━━━━━━━━━ */
+.inbox-layout{display:grid;grid-template-columns:1fr 380px;gap:14px;min-height:0;}
+.inbox-list{display:flex;flex-direction:column;gap:8px;}
+.signal-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px;transition:all .15s;cursor:pointer;}
+.signal-card:hover{border-color:var(--border2);background:var(--surface2);}
+.signal-card.selected{border-color:var(--blue2);background:var(--surface2);}
+.signal-card.pending{border-left:3px solid var(--yellow2);}
+.signal-card.approved,.signal-card.active{border-left:3px solid var(--blue2);opacity:.8;}
+.signal-card.rejected{border-left:3px solid var(--red2);opacity:.6;}
+.signal-card.watch{border-left:3px solid var(--orange2);}
+.sig-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:8px;}
+.sig-ticker{font-size:16px;font-weight:800;color:#fff;}
+.sig-sector{font-size:10px;color:var(--text3);margin-top:1px;}
+.sig-score-big{font-size:22px;font-weight:800;font-family:var(--mono);}
+.sig-meta{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;}
+.sig-stat{font-size:10px;font-family:var(--mono);color:var(--text2);}
+.sig-stat span{color:var(--text3);}
+
+/* ━━━━━━━━━━━━━━━━━ DETAIL PANEL ━━━━━━━━━━━━━━━━━ */
+.detail-panel{background:var(--surface);border:1px solid var(--border);border-radius:11px;padding:16px;position:sticky;top:0;height:fit-content;max-height:calc(100vh - 160px);overflow-y:auto;}
+.detail-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;height:300px;color:var(--text3);font-size:13px;font-family:var(--mono);}
+.dp-ticker{font-size:22px;font-weight:800;color:#fff;}
+.dp-sub{font-size:11px;color:var(--text3);font-family:var(--mono);margin-top:2px;margin-bottom:14px;}
+.price-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px;}
+.price-box{background:var(--surface2);border-radius:8px;padding:11px;}
+.price-lbl{font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:1px;font-family:var(--mono);}
+.price-val{font-size:17px;font-weight:800;font-family:var(--mono);margin-top:3px;}
+.dp-divider{height:1px;background:var(--border);margin:12px 0;}
+.notes-area{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px;color:var(--text);font-size:12px;font-family:var(--sans);resize:vertical;min-height:70px;outline:none;margin-bottom:12px;}
+.notes-area:focus{border-color:var(--blue2);}
+.action-btns{display:flex;gap:8px;flex-wrap:wrap;}
+
+/* ━━━━━━━━━━━━━━━━━ FACTORY ━━━━━━━━━━━━━━━━━ */
+.factory-layout{display:grid;grid-template-columns:320px 1fr;gap:14px;align-items:start;}
+.screen-panel{display:flex;flex-direction:column;gap:8px;}
+.screen-block{background:var(--surface);border:1px solid var(--border);border-radius:9px;overflow:hidden;}
+.sb-hdr{display:flex;align-items:center;justify-content:space-between;padding:9px 13px;background:var(--surface2);cursor:pointer;user-select:none;}
+.sb-title{font-size:12px;font-weight:700;color:var(--text);display:flex;align-items:center;gap:6px;}
+.sb-arrow{font-size:11px;color:var(--text3);transition:transform .18s;}
+.sb-arrow.open{transform:rotate(90deg);}
+.sb-body{display:none;padding:8px 13px;border-top:1px solid var(--border);}
+.sb-body.open{display:block;}
+.cr-row{display:flex;align-items:center;gap:7px;padding:5px 0;border-bottom:1px solid rgba(26,45,69,.5);}
+.cr-row:last-child{border-bottom:none;}
+.cr-lbl{font-size:11px;color:var(--text2);flex:1;line-height:1.3;}
+.tog{position:relative;width:28px;height:16px;flex-shrink:0;}
+.tog input{opacity:0;width:0;height:0;}
+.tog-sl{position:absolute;inset:0;background:var(--border2);border-radius:16px;cursor:pointer;transition:.18s;}
+.tog-sl::before{content:'';position:absolute;width:10px;height:10px;left:3px;top:3px;background:#fff;border-radius:50%;transition:.18s;}
+.tog input:checked+.tog-sl{background:var(--blue);}
+.tog input:checked+.tog-sl::before{transform:translateX(12px);}
+.cr-wt{font-size:9px;font-family:var(--mono);font-weight:700;color:var(--blue3);width:36px;text-align:right;flex-shrink:0;}
+.strat-block{background:var(--surface);border:1px solid var(--border);border-radius:9px;overflow:hidden;}
+.strat-hdr{padding:9px 13px;background:var(--surface2);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+.strat-hdr-title{font-size:11.5px;font-weight:700;color:var(--text);}
+.strat-list{max-height:148px;overflow-y:auto;}
+.strat-item{display:flex;align-items:center;gap:8px;padding:7px 13px;border-bottom:1px solid rgba(26,45,69,.4);cursor:pointer;transition:.12s;}
+.strat-item:last-child{border-bottom:none;}
+.strat-item:hover{background:var(--surface2);}
+.strat-item.active-strat{background:rgba(37,99,235,.1);border-left:2px solid var(--blue2);}
+.strat-add-row{padding:7px 13px;border-top:1px solid var(--border);display:flex;gap:6px;}
+.strat-add-row input{flex:1;background:var(--surface2);border:1px solid var(--border);color:var(--text);font-size:11px;font-family:var(--mono);padding:5px 9px;border-radius:6px;outline:none;}
+.strat-add-row input:focus{border-color:var(--blue2);}
+.thresh-row{padding:8px 13px;border-top:1px solid var(--border);display:flex;align-items:center;gap:8px;}
+.thresh-row label{font-size:10px;color:var(--text3);font-family:var(--mono);}
+.thresh-row input[type=range]{flex:1;accent-color:var(--blue2);}
+.thresh-val{font-size:11px;font-weight:700;color:var(--blue3);font-family:var(--mono);width:35px;text-align:right;}
+.scan-results-panel{background:var(--surface);border:1px solid var(--border);border-radius:11px;padding:16px;}
+.scan-tabs{display:flex;gap:6px;margin-bottom:14px;}
+.scan-tab{padding:5px 12px;border-radius:6px;font-size:10.5px;font-weight:700;cursor:pointer;border:1px solid var(--border);background:var(--surface2);color:var(--text2);font-family:var(--mono);transition:.13s;}
+.scan-tab.active{background:rgba(37,99,235,.2);border-color:var(--blue2);color:var(--blue3);}
+.auto-badge{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:6px;border:1px solid var(--border);background:var(--surface2);font-size:10px;font-family:var(--mono);color:var(--text3);}
+.auto-badge.on{border-color:var(--green2);background:rgba(16,185,129,.1);color:var(--green3);}
+
+/* ━━━━━━━━━━━━━━━━━ POSITIONS ━━━━━━━━━━━━━━━━━ */
+.pos-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:13px;transition:all .15s;}
+.pos-card:hover{border-color:var(--border2);}
+.pos-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:10px;margin-bottom:16px;}
+
+/* ━━━━━━━━━━━━━━━━━ WATCHLIST ━━━━━━━━━━━━━━━━━ */
+.watch-table{width:100%;}
+
+/* ━━━━━━━━━━━━━━━━━ TOAST ━━━━━━━━━━━━━━━━━ */
+#toast{position:fixed;bottom:22px;right:22px;background:var(--surface3);border:1px solid var(--border2);color:var(--text);border-radius:9px;padding:10px 16px;font-size:12px;font-family:var(--mono);z-index:9000;opacity:0;transform:translateY(8px);transition:.22s;pointer-events:none;max-width:320px;}
+#toast.show{opacity:1;transform:none;}
+#toast.err{border-color:var(--red2);color:var(--red3);}
+
+/* ━━━━━━━━━━━━━━━━━ MODAL ━━━━━━━━━━━━━━━━━ */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:8000;align-items:center;justify-content:center;}
+.modal-overlay.open{display:flex;}
+.modal-box{background:var(--surface);border:1px solid var(--border2);border-radius:14px;padding:22px;width:460px;max-height:90vh;overflow-y:auto;}
+.modal-title{font-size:15px;font-weight:800;color:#fff;margin-bottom:16px;}
+.form-row{margin-bottom:12px;}
+.form-row label{display:block;font-size:9.5px;color:var(--text3);font-family:var(--mono);text-transform:uppercase;letter-spacing:1px;margin-bottom:5px;}
+.form-row input,.form-row select,.form-row textarea{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:7px;padding:8px 11px;color:var(--text);font-size:12px;font-family:var(--mono);outline:none;transition:.13s;}
+.form-row input:focus,.form-row select:focus,.form-row textarea:focus{border-color:var(--blue2);}
+.form-row select option{background:var(--surface2);}
+.form-grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.modal-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:16px;}
+
+/* ━━━━━━━━━━━━━━━━━ SPINNER ━━━━━━━━━━━━━━━━━ */
+.spin{width:18px;height:18px;border:2px solid var(--border2);border-top-color:var(--blue2);border-radius:50%;animation:spin .7s linear infinite;display:inline-block;}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading-state{display:flex;align-items:center;gap:10px;padding:20px;color:var(--text3);font-family:var(--mono);font-size:11px;}
+
+/* ━━━━━━━━━━━━━━━━━ PERF CHART ━━━━━━━━━━━━━━━━━ */
+.perf-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;}
+.perf-period-btns{display:flex;gap:3px;}
+.ppb{font-size:8.5px;padding:3px 7px;border-radius:5px;border:1px solid var(--border2);background:var(--surface2);color:var(--text3);cursor:pointer;font-family:var(--mono);font-weight:600;transition:all .13s;}
+.ppb.active{background:rgba(37,99,235,.2);border-color:var(--blue2);color:var(--blue3);}
+
+/* ━━━━━━━━━━━━━━━━━ AUDIT ━━━━━━━━━━━━━━━━━ */
+.a-stat{background:var(--surface2);border-radius:8px;padding:12px;text-align:center;}
+.a-stat-lbl{font-size:9px;color:var(--text3);font-family:var(--mono);text-transform:uppercase;letter-spacing:1px;margin-bottom:5px;}
+.a-stat-val{font-size:22px;font-weight:800;font-family:var(--mono);}
+.a-stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:14px;}
+.audit-filter-row{display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap;}
+.af-btn{padding:4px 10px;border-radius:5px;font-size:10px;border:1px solid var(--border);background:var(--surface2);color:var(--text3);cursor:pointer;font-family:var(--mono);transition:.13s;}
+.af-btn.active{border-color:var(--blue2);color:var(--blue3);background:rgba(37,99,235,.15);}
+</style>
+</head>
+<body>
+
+<!-- ━━━━━━━━━━━━━━━ LOGIN SCREEN ━━━━━━━━━━━━━━━ -->
+<div id="login-screen">
+  <div class="login-box">
+    <div class="login-logo"><span>●</span> NurInvest</div>
+    <div class="login-sub">Back Office Platform</div>
+    <div class="login-field">
+      <label>Email</label>
+      <input type="email" id="login-email" placeholder="email@nurinvest.uz" onkeydown="if(event.key==='Enter')doLogin()">
+    </div>
+    <div class="login-field">
+      <label>Parol</label>
+      <input type="password" id="login-pass" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()">
+    </div>
+    <button class="login-btn" id="login-btn" onclick="doLogin()">Kirish</button>
+    <div class="login-err" id="login-err"></div>
+    <div class="login-version">v12.0 · Equal-Weight Scoring · Twelve Data</div>
+  </div>
+</div>
+
+<!-- ━━━━━━━━━━━━━━━ MAIN APP ━━━━━━━━━━━━━━━ -->
+<div id="app" style="display:none;width:100%;height:100vh;display:none;">
+
+<!-- SIDEBAR -->
+<div class="sidebar">
+  <div class="logo">
+    <div class="logo-name"><span class="logo-dot"></span>NurInvest</div>
+    <div class="logo-sub">Back Office</div>
+  </div>
+  <nav>
+    <div class="nav-section">Asosiy</div>
+    <div class="nav-item active" onclick="go('dash',this)">
+      <span class="nav-icon">⬛</span>Dashboard
+    </div>
+    <div class="nav-section">Trading</div>
+    <div class="nav-item" onclick="go('inbox',this)">
+      <span class="nav-icon">📥</span>Signal Inbox
+      <span class="nav-badge nb-red" id="inbox-badge" style="display:none">0</span>
+    </div>
+    <div class="nav-item" onclick="go('factory',this)">
+      <span class="nav-icon">◆</span>Idea Factory
+    </div>
+    <div class="nav-item" onclick="go('watchlist',this)">
+      <span class="nav-icon">👁</span>Watchlist
+      <span class="nav-badge nb-orange" id="watch-badge" style="display:none">0</span>
+    </div>
+    <div class="nav-section">Tahlil</div>
+    <div class="nav-item" onclick="go('audit',this)">
+      <span class="nav-icon">🏆</span>Idea Audit
+    </div>
+    <div class="nav-section">Tizim</div>
+    <div class="nav-item" onclick="go('debug',this)">
+      <span class="nav-icon">🔧</span>Debug / FMP
+      <span class="nav-badge" id="fmp-status-badge" style="background:var(--surface3);color:var(--text3)">?</span>
+    </div>
+  <div class="sidebar-foot">
+    <div class="user-row">
+      <div class="avatar" id="user-avatar">?</div>
+      <div>
+        <div class="user-name" id="user-name">—</div>
+        <div class="user-role" id="user-role">—</div>
+      </div>
+      <button class="logout-btn" onclick="doLogout()" title="Chiqish">⏻</button>
+    </div>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div class="main">
+  <div class="topbar">
+    <div class="search">
+      <span style="color:var(--text3);font-size:12px">🔍</span>
+      <input id="search-inp" placeholder="Ticker qidirish..." onkeydown="gsearch(event)">
+    </div>
+    <div id="mkt-ticker" class="mkt" style="font-size:9px;gap:8px;display:none"></div>
+    <div class="mkt"><span class="mkt-dot"></span><span id="mkt-status">LIVE</span></div>
+    <div style="font-size:9px;color:var(--text3);font-family:var(--mono);padding:2px 7px;background:var(--surface2);border-radius:5px;border:1px solid var(--border)" title="Twelve Data API kunlik limit: 800">
+      TD <span id="fmp-counter">0</span>/800
+    </div>
+    <button class="btn btn-ghost btn-sm" onclick="showManualSignalModal()">+ Manual Signal</button>
+    <div style="font-size:10px;color:var(--text3);font-family:var(--mono)" id="last-sync">—</div>
+  </div>
+
+  <div class="content">
+
+    <!-- ═══ DASHBOARD ═══ -->
+    <div class="page active" id="page-dash">
+      <div class="ph">
+        <div class="ph-title">⬛ Dashboard</div>
+        <div class="ph-sub" id="dash-sub">Yuklanmoqda...</div>
+      </div>
+      <div class="kpi-row">
+        <div class="kpi c1">
+          <div class="kpi-lbl">Aktiv g'oyalar</div>
+          <div class="kpi-val" id="kpi-active">—</div>
+          <div class="kpi-ch nt" id="kpi-active-ch">ochiq pozitsiya</div>
+        </div>
+        <div class="kpi c2">
+          <div class="kpi-lbl">O'rtacha daromad</div>
+          <div class="kpi-val" id="kpi-avg">—</div>
+          <div class="kpi-ch nt" id="kpi-avg-period">yopilgan pozitsiyalar</div>
+        </div>
+        <div class="kpi c3">
+          <div class="kpi-lbl">Inbox (kutmoqda)</div>
+          <div class="kpi-val" id="kpi-inbox">—</div>
+          <div class="kpi-ch nt" id="kpi-inbox-alert">Signal Inbox</div>
+        </div>
+        <div class="kpi c4">
+          <div class="kpi-lbl">Win Rate</div>
+          <div class="kpi-val" id="kpi-winrate">—</div>
+          <div class="kpi-ch nt">barcha davr</div>
+        </div>
+      </div>
+      <div class="grid2">
+        <div class="card">
+          <div class="sec-hdr">
+            <div><div class="sec-title">Sektor taqsimoti</div><div class="sec-sub" id="sector-sub">ochiq pozitsiyalar</div></div>
+          </div>
+          <div id="sector-chart" style="min-height:120px"><div class="loading-state"><div class="spin"></div>Yuklanmoqda...</div></div>
+          <div id="sector-alert-area"></div>
+        </div>
+        <div class="card">
+          <div class="sec-hdr"><div class="sec-title">Oxirgi signallar</div></div>
+          <div id="dash-recent-signals"><div class="loading-state"><div class="spin"></div></div></div>
+        </div>
+      </div>
+      <div class="sec-hdr">
+        <div class="sec-title">Ochiq pozitsiyalar</div>
+        <button class="btn btn-ghost btn-sm" onclick="go('inbox',document.querySelectorAll('.nav-item')[2])">Barchasi →</button>
+      </div>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>TICKER</th><th>KIRISH</th><th>JORIY NARX</th><th>TARGET</th><th>STOP</th><th>PNL</th><th>KUN</th><th>AMAL</th></tr></thead>
+          <tbody id="dash-pos-tbl"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ═══ SIGNAL INBOX ═══ -->
+    <div class="page" id="page-inbox">
+      <div class="ph">
+        <div class="fl" style="justify-content:space-between;align-items:flex-start">
+          <div>
+            <div class="ph-title">📥 Signal Inbox</div>
+            <div class="ph-sub">Signallar — tasdiqlash, rad etish yoki watchlist ga qo'shish</div>
+          </div>
+          <div class="fl g8" style="flex-wrap:wrap">
+            <button class="btn btn-ghost btn-sm" id="f-all" onclick="setInboxFilter('all',this)" style="border-color:var(--blue2);color:var(--blue3)">Hammasi</button>
+            <button class="btn btn-ghost btn-sm" id="f-pending" onclick="setInboxFilter('pending',this)">🟡 Pending</button>
+            <button class="btn btn-ghost btn-sm" id="f-active" onclick="setInboxFilter('active',this)">✅ Aktiv</button>
+            <button class="btn btn-ghost btn-sm" id="f-watch" onclick="setInboxFilter('watch',this)">👁 Watch</button>
+            <button class="btn btn-ghost btn-sm" id="f-rejected" onclick="setInboxFilter('rejected',this)">❌ Rad</button>
+            <span style="font-size:10px;color:var(--text3);font-family:var(--mono)" id="inbox-count"></span>
+          </div>
+        </div>
+      </div>
+      <div class="inbox-layout">
+        <div class="inbox-list" id="inbox-list"><div class="loading-state"><div class="spin"></div>Signallar yuklanmoqda...</div></div>
+        <div class="detail-panel" id="detail-panel">
+          <div class="detail-empty"><div style="font-size:28px;margin-bottom:10px">📋</div><div>Signalni tanlang</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ IDEA FACTORY ═══ -->
+    <div class="page" id="page-factory">
+      <div class="ph">
+        <div class="fl" style="justify-content:space-between;align-items:flex-start">
+          <div>
+            <div class="ph-title">◆ Idea Factory</div>
+            <div class="ph-sub">Avtomatik screener — mezonlar asosida signal topish</div>
+          </div>
+          <div class="fl g8">
+            <div class="auto-badge" id="auto-badge"><span style="width:5px;height:5px;border-radius:50%;background:var(--border2);display:inline-block;flex-shrink:0" id="auto-dot"></span><span id="auto-label">Auto: OFF</span></div>
+            <button class="btn btn-ghost btn-sm" onclick="toggleAutoRun()" id="auto-btn">⏰ Avtomatik</button>
+            <button class="btn btn-primary" id="scan-btn" onclick="runScan()">▶ Run Scan</button>
+          </div>
+        </div>
+      </div>
+      <div class="factory-layout">
+        <div class="screen-panel">
+          <div class="strat-block">
+            <div class="strat-hdr">
+              <span class="strat-hdr-title">Strategiyalar</span>
+              <span style="font-size:9px;color:var(--text3);font-family:var(--mono)" id="strat-count"></span>
+            </div>
+            <div class="strat-list" id="strat-list"></div>
+            <div class="strat-add-row">
+              <input type="text" id="new-strat-name" placeholder="Yangi strategiya nomi..." onkeydown="if(event.key==='Enter')saveStrategy()">
+              <button class="btn btn-ghost btn-sm" onclick="saveStrategy()">Saqlash</button>
+            </div>
+            <div class="thresh-row">
+              <label>Chegara (threshold)</label>
+              <input type="range" min="0" max="100" value="80" id="threshold-slider" oninput="document.getElementById('thresh-val').textContent=this.value+'%'">
+              <span class="thresh-val" id="thresh-val">80%</span>
+            </div>
+            <!-- Score formula box -->
+            <div style="margin:10px 0 4px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 12px">
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+                <span style="font-size:9px;color:var(--text3);font-family:var(--mono)">BALL TIZIMI</span>
+                <span style="font-size:12px;font-weight:800;color:var(--blue3);font-family:var(--mono)" id="score-disp">0 / 100</span>
+              </div>
+              <div style="font-size:9px;color:var(--text2);font-family:var(--mono)" id="score-formula">0 ta mezon yoqilgan</div>
+              <div style="font-size:9px;color:var(--blue3);font-family:var(--mono);margin-top:3px" id="per-weight">— ball</div>
+              <div style="margin-top:6px;height:3px;background:var(--surface3);border-radius:2px">
+                <div id="meter-fill" style="height:100%;background:var(--blue3);border-radius:2px;width:0%;transition:width .3s"></div>
+              </div>
+              <div style="display:flex;gap:8px;margin-top:6px;font-size:8.5px;font-family:var(--mono)">
+                <span style="color:var(--green3)">≥80 → 📥 Inbox</span>
+                <span style="color:var(--yellow3)">65-79 → 👁 Watch</span>
+                <span style="color:var(--red3)">&lt;65 → Rad</span>
+              </div>
+            </div>
+          </div>
+          <!-- Criteria sections -->
+          <div class="screen-block">
+            <div class="sb-hdr" onclick="toggleBlock(this)"><div class="sb-title">Texnik <span class="badge bb" id="badge-technical" style="font-size:8px;margin-left:2px"></span></div><span class="sb-arrow open">›</span></div>
+            <div class="sb-body open" id="body-technical"></div>
+            <div style="padding:5px 13px 8px;font-size:10px;color:var(--text3);cursor:pointer;font-family:var(--mono)" onclick="addCriteria('technical')">+ Mezon qo'shish</div>
+          </div>
+          <div class="screen-block">
+            <div class="sb-hdr" onclick="toggleBlock(this)"><div class="sb-title">Moliyaviy <span class="badge bb" id="badge-financial" style="font-size:8px;margin-left:2px"></span></div><span class="sb-arrow">›</span></div>
+            <div class="sb-body" id="body-financial"></div>
+            <div style="padding:5px 13px 8px;font-size:10px;color:var(--text3);cursor:pointer;font-family:var(--mono)" onclick="addCriteria('financial')">+ Mezon qo'shish</div>
+          </div>
+          <div class="screen-block">
+            <div class="sb-hdr" onclick="toggleBlock(this)"><div class="sb-title">Pul oqimi <span class="badge bb" id="badge-cashflow" style="font-size:8px;margin-left:2px"></span></div><span class="sb-arrow">›</span></div>
+            <div class="sb-body" id="body-cashflow"></div>
+            <div style="padding:5px 13px 8px;font-size:10px;color:var(--text3);cursor:pointer;font-family:var(--mono)" onclick="addCriteria('cashflow')">+ Mezon qo'shish</div>
+          </div>
+          <div class="screen-block">
+            <div class="sb-hdr" onclick="toggleBlock(this)"><div class="sb-title">O'sish <span class="badge bb" id="badge-growth" style="font-size:8px;margin-left:2px"></span></div><span class="sb-arrow">›</span></div>
+            <div class="sb-body" id="body-growth"></div>
+            <div style="padding:5px 13px 8px;font-size:10px;color:var(--text3);cursor:pointer;font-family:var(--mono)" onclick="addCriteria('growth')">+ Mezon qo'shish</div>
+          </div>
+          <button class="btn btn-ghost" style="width:100%" onclick="saveCurrentStrategy()">💾 Strategiyani saqlash</button>
+        </div>
+        <!-- Results panel -->
+        <div class="scan-results-panel">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+            <div class="sec-title">Skan natijalari</div>
+            <div id="scan-info" style="font-size:10px;color:var(--text3);font-family:var(--mono)"></div>
+          </div>
+          <div class="scan-tabs">
+            <button class="scan-tab active" id="tab-ideas" onclick="switchScanTab('ideas',this)">💡 G'oyalar <span id="cnt-ideas" class="badge bg" style="margin-left:4px">0</span></button>
+            <button class="scan-tab" id="tab-potential" onclick="switchScanTab('potential',this)">⚡ Potentsial <span id="cnt-potential" class="badge by" style="margin-left:4px">0</span></button>
+            <button class="scan-tab" id="tab-recent" onclick="switchScanTab('recent',this)">🕐 Oxirgi skanlar</button>
+          </div>
+          <div id="scan-content">
+            <div class="empty-state">▶ Run Scan tugmasini bosing yoki strategiya tanlang</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ POSITIONS ═══ -->
+    <div class="page" id="page-positions">
+      <div class="ph">
+        <div class="fl" style="justify-content:space-between">
+          <div>
+            <div class="ph-title">📊 Pozitsiyalar</div>
+            <div class="ph-sub">Ochiq va yopilgan pozitsiyalar</div>
+          </div>
+          <div class="fl g8">
+            <button class="btn btn-ghost btn-sm" id="pf-open" onclick="setPositionFilter('open',this)" style="border-color:var(--blue2);color:var(--blue3)">Ochiq</button>
+            <button class="btn btn-ghost btn-sm" id="pf-closed" onclick="setPositionFilter('closed',this)">Yopilgan</button>
+            <button class="btn btn-ghost btn-sm" id="pf-all" onclick="setPositionFilter('all',this)">Hammasi</button>
+          </div>
+        </div>
+      </div>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>TICKER</th><th>KIRISH</th><th>JORIY</th><th>TARGET1</th><th>STOP</th><th>PNL</th><th>STATUS</th><th>OCHILGAN</th><th>AMAL</th></tr></thead>
+          <tbody id="pos-tbl"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ═══ WATCHLIST ═══ -->
+    <div class="page" id="page-watchlist">
+      <div class="ph">
+        <div class="fl" style="justify-content:space-between">
+          <div>
+            <div class="ph-title">👁 Watchlist</div>
+            <div class="ph-sub">Kuzatuv ro'yxati — trigger bo'lganda Signal Inbox ga qaytadi</div>
+          </div>
+          <button class="btn btn-ghost btn-sm" onclick="showAddWatchModal()">+ Qo'shish</button>
+        </div>
+      </div>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>TICKER</th><th>JORIY NARX</th><th>TRIGGER TURI</th><th>TRIGGER QIYMATI</th><th>SANA</th><th>STATUS</th><th>IZOH</th><th>AMAL</th></tr></thead>
+          <tbody id="watch-tbl"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ═══ AUDIT ═══ -->
+    <div class="page" id="page-audit">
+      <div class="ph">
+        <div class="ph-title">🏆 Idea Audit</div>
+        <div class="ph-sub">Tahlilchilar samaradorligi va yopilgan g'oyalar tarixi</div>
+      </div>
+      <!-- Statistika -->
+      <div class="a-stats-grid" id="audit-stats">
+        <div class="a-stat"><div class="a-stat-lbl">Jami yopildi</div><div class="a-stat-val" id="as-total">—</div></div>
+        <div class="a-stat"><div class="a-stat-lbl">Win Rate</div><div class="a-stat-val up" id="as-winrate">—</div></div>
+        <div class="a-stat"><div class="a-stat-lbl">O'rt. daromad</div><div class="a-stat-val" id="as-avg">—</div></div>
+        <div class="a-stat"><div class="a-stat-lbl">Eng yaxshi</div><div class="a-stat-val up" id="as-best">—</div></div>
+      </div>
+      <!-- Filters -->
+      <div class="audit-filter-row">
+        <span style="font-size:10px;color:var(--text3);font-family:var(--mono);padding:4px 6px">Davr:</span>
+        <button class="af-btn active" onclick="setAuditPeriod('all',this)">Barchasi</button>
+        <button class="af-btn" onclick="setAuditPeriod('1m',this)">1 oy</button>
+        <button class="af-btn" onclick="setAuditPeriod('3m',this)">3 oy</button>
+        <button class="af-btn" onclick="setAuditPeriod('6m',this)">6 oy</button>
+        <button class="af-btn" onclick="setAuditPeriod('1y',this)">1 yil</button>
+        <span style="font-size:10px;color:var(--text3);font-family:var(--mono);padding:4px 6px;margin-left:10px">Natija:</span>
+        <button class="af-btn active" id="ar-all" onclick="setAuditResult('all',this)">Barchasi</button>
+        <button class="af-btn" id="ar-win" onclick="setAuditResult('win',this)">Win</button>
+        <button class="af-btn" id="ar-loss" onclick="setAuditResult('loss',this)">Loss</button>
+      </div>
+      <!-- Leaderboard -->
+      <div class="grid2" style="margin-bottom:16px">
+        <div class="card">
+          <div class="sec-hdr"><div class="sec-title">Tahlilchilar reytingi</div></div>
+          <div id="leaderboard"></div>
+        </div>
+        <div class="card">
+          <div class="sec-hdr"><div class="sec-title">Top g'oyalar</div></div>
+          <div id="top-ideas"></div>
+        </div>
+      </div>
+      <!-- Table -->
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>TICKER</th><th>TAHLILCHI</th><th>KIRISH</th><th>CHIQISH</th><th>DAROMAD</th><th>NATIJA</th><th>TURI</th><th>OCHILGAN</th><th>YOPILGAN</th></tr></thead>
+          <tbody id="audit-tbl"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ━━━━━━━━━━━━━━━ DEBUG PAGE ━━━━━━━━━━━━━━━ -->
+    <div class="page" id="page-debug">
+      <div class="ph">
+        <div class="ph-title">🔧 Debug Panel</div>
+        <div class="ph-sub">FMP API holati, Supabase ulanish va tizim loglari</div>
+      </div>
+
+      <!-- FMP Status Card -->
+      <div class="grid2" style="margin-bottom:16px">
+        <div class="card">
+          <div class="sec-hdr"><div class="sec-title">Twelve Data API Holati</div></div>
+          <div style="display:flex;flex-direction:column;gap:10px">
+            <div style="padding:10px 12px;background:rgba(37,99,235,.1);border:1px solid rgba(37,99,235,.3);border-radius:8px;font-size:11px;color:var(--blue3);font-family:var(--mono);line-height:1.6">
+              ℹ️ FMP /api/v3 → O'chirildi (Legacy). Twelve Data ishlatilmoqda.<br>
+              Bepul: 800 call/kun · <a href="https://twelvedata.com/apikey" target="_blank" style="color:var(--blue3)">twelvedata.com/apikey</a> da ro'yxatdan o'ting
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 12px;background:var(--surface2);border-radius:8px">
+              <span style="font-size:11px;color:var(--text2);font-family:var(--mono)">Status</span>
+              <span id="dbg-fmp-status" style="font-family:var(--mono);font-weight:700;font-size:12px">—</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 12px;background:var(--surface2);border-radius:8px">
+              <span style="font-size:11px;color:var(--text2);font-family:var(--mono)">Bugungi calllar</span>
+              <span id="dbg-fmp-calls" style="font-family:var(--mono);font-weight:700;font-size:12px">—</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 12px;background:var(--surface2);border-radius:8px">
+              <span style="font-size:11px;color:var(--text2);font-family:var(--mono)">Oxirgi xato</span>
+              <span id="dbg-fmp-err" style="font-family:var(--mono);font-size:11px;color:var(--red3);max-width:200px;text-align:right">—</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 12px;background:var(--surface2);border-radius:8px">
+              <span style="font-size:11px;color:var(--text2);font-family:var(--mono)">Market interval</span>
+              <span style="font-family:var(--mono);font-size:12px;color:var(--blue3)">10 daqiqa (144 call/kun)</span>
+            </div>
+            <!-- API Key kiritish -->
+            <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 12px">
+              <div style="font-size:10px;color:var(--text3);font-family:var(--mono);margin-bottom:6px">TWELVE DATA API KEY</div>
+              <div style="display:flex;gap:8px">
+                <input id="td-key-input" type="text" placeholder="Twelve Data key ni shu yerga kiriting..."
+                  style="flex:1;background:var(--surface3);border:1px solid var(--border);border-radius:6px;padding:7px 10px;color:var(--text);font-size:11px;font-family:var(--mono);outline:none"
+                  value="">
+                <button class="btn btn-primary btn-sm" onclick="saveTdKey()">Saqlash</button>
+              </div>
+              <div id="td-key-status" style="font-size:10px;color:var(--text3);font-family:var(--mono);margin-top:5px"></div>
+            </div>
+            <div style="display:flex;gap:8px">
+              <button class="btn btn-green" style="flex:1" onclick="debugTestFmp()">🔍 Test qilish</button>
+              <button class="btn btn-ghost" style="flex:1" onclick="debugResetCalls()">🔄 Counter reset</button>
+            </div>
+            <button class="btn btn-primary" style="width:100%" onclick="debugForceFetch()">▶ Hozir Market Fetch</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="sec-hdr"><div class="sec-title">Supabase Holati</div></div>
+          <div style="display:flex;flex-direction:column;gap:10px">
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 12px;background:var(--surface2);border-radius:8px">
+              <span style="font-size:11px;color:var(--text2);font-family:var(--mono)">URL</span>
+              <span style="font-family:var(--mono);font-size:10px;color:var(--blue3)">whgxnmauvfzdwyzvgesr</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 12px;background:var(--surface2);border-radius:8px">
+              <span style="font-size:11px;color:var(--text2);font-family:var(--mono)">Foydalanuvchi</span>
+              <span id="dbg-user" style="font-family:var(--mono);font-size:11px">—</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 12px;background:var(--surface2);border-radius:8px">
+              <span style="font-size:11px;color:var(--text2);font-family:var(--mono)">Role</span>
+              <span id="dbg-role" style="font-family:var(--mono);font-size:11px">—</span>
+            </div>
+            <button class="btn btn-ghost" style="width:100%" onclick="debugTestSupabase()">🔍 Supabase Ping</button>
+            <div id="dbg-sb-result" style="font-size:10px;font-family:var(--mono);color:var(--text3);min-height:18px"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- FMP Log -->
+      <div class="card">
+        <div class="sec-hdr">
+          <div class="sec-title">FMP API Log</div>
+          <button class="btn btn-ghost btn-sm" onclick="fmpLogs.length=0;renderFmpLog()">🗑 Tozalash</button>
+        </div>
+        <div id="fmp-log-body" style="font-family:var(--mono);font-size:11px;max-height:300px;overflow-y:auto">
+          <div style="color:var(--text3);padding:10px">Hali log yo'q. FMP chaqiruvi bo'lganda bu yerda ko'rinadi.</div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- .content -->
+</div><!-- .main -->
+</div><!-- #app -->
+
+<!-- MANUAL SIGNAL MODAL -->
+<div class="modal-overlay" id="modal-signal">
+  <div class="modal-box">
+    <div class="modal-title">📥 Manual Signal qo'shish</div>
+    <div class="form-grid2">
+      <div class="form-row"><label>Ticker *</label><input id="ms-ticker" placeholder="NVDA" style="text-transform:uppercase"></div>
+      <div class="form-row"><label>Sektor</label>
+        <select id="ms-sector"><option>Technology</option><option>Healthcare</option><option>Financials</option><option>Consumer</option><option>Energy</option><option>Industrials</option><option>Materials</option><option>Utilities</option><option>Real Estate</option><option>Communication</option></select>
+      </div>
+    </div>
+    <div class="form-grid2">
+      <div class="form-row"><label>Kirish narxi *</label><input id="ms-entry" type="number" step="0.01" placeholder="134.20"></div>
+      <div class="form-row"><label>Stop Loss *</label><input id="ms-stop" type="number" step="0.01" placeholder="122.00"></div>
+    </div>
+    <div class="form-grid2">
+      <div class="form-row"><label>Target 1 *</label><input id="ms-t1" type="number" step="0.01" placeholder="155.00"></div>
+      <div class="form-row"><label>Target 2</label><input id="ms-t2" type="number" step="0.01" placeholder="175.00"></div>
+    </div>
+    <div class="form-grid2">
+      <div class="form-row"><label>Ishonch darajasi</label>
+        <select id="ms-conviction"><option>High</option><option>Medium</option><option>Low</option></select>
+      </div>
+      <div class="form-row"><label>Risk darajasi</label>
+        <select id="ms-risk"><option>Low</option><option>Medium</option><option>High</option></select>
+      </div>
+    </div>
+    <div class="form-row"><label>Izoh</label><textarea id="ms-note" rows="2" placeholder="Signal sababi..."></textarea></div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal('modal-signal')">Bekor</button>
+      <button class="btn btn-primary" onclick="submitManualSignal()">Saqlash</button>
+    </div>
+  </div>
+</div>
+
+<!-- APPROVE MODAL -->
+<div class="modal-overlay" id="modal-approve">
+  <div class="modal-box">
+    <div class="modal-title">✅ Signalni tasdiqlash</div>
+    <div id="approve-ticker-info" style="font-size:13px;color:var(--text2);margin-bottom:14px;font-family:var(--mono)"></div>
+    <div class="form-grid2">
+      <div class="form-row"><label>Kirish narxi *</label><input id="ap-entry" type="number" step="0.01"></div>
+      <div class="form-row"><label>Stop Loss *</label><input id="ap-stop" type="number" step="0.01"></div>
+    </div>
+    <div class="form-grid2">
+      <div class="form-row"><label>Target 1 *</label><input id="ap-t1" type="number" step="0.01"></div>
+      <div class="form-row"><label>Target 2</label><input id="ap-t2" type="number" step="0.01"></div>
+    </div>
+    <div class="form-row"><label>Ishonch darajasi</label>
+      <select id="ap-conviction"><option>High</option><option>Medium</option><option>Low</option></select>
+    </div>
+    <div class="form-row"><label>Izoh</label><textarea id="ap-note" rows="2" placeholder="Tasdiqlash sababi..."></textarea></div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal('modal-approve')">Bekor</button>
+      <button class="btn btn-green" onclick="confirmApprove()">✅ Tasdiqlash</button>
+    </div>
+  </div>
+</div>
+
+<!-- REJECT MODAL -->
+<div class="modal-overlay" id="modal-reject">
+  <div class="modal-box">
+    <div class="modal-title">❌ Signalni rad etish</div>
+    <div id="reject-ticker-info" style="font-size:13px;color:var(--text2);margin-bottom:14px;font-family:var(--mono)"></div>
+    <div class="form-row"><label>Sabab *</label>
+      <select id="rj-reason">
+        <option value="VALUATION_HIGH">Baholash juda yuqori</option>
+        <option value="MACRO_RISK">Makroiqtisodiy xavf</option>
+        <option value="SECTOR_HEADWIND">Sektor muammosi</option>
+        <option value="LOW_CONVICTION">Past ishonch</option>
+        <option value="ALREADY_IN_PORTFOLIO">Portfelda mavjud</option>
+      </select>
+    </div>
+    <div class="form-row"><label>Izoh</label><textarea id="rj-note" rows="2" placeholder="Qo'shimcha izoh..."></textarea></div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal('modal-reject')">Bekor</button>
+      <button class="btn btn-red" onclick="confirmReject()">❌ Rad etish</button>
+    </div>
+  </div>
+</div>
+
+<!-- WATCH MODAL -->
+<div class="modal-overlay" id="modal-watch">
+  <div class="modal-box">
+    <div class="modal-title">👁 Watchlist ga qo'shish</div>
+    <div id="watch-ticker-info" style="font-size:13px;color:var(--text2);margin-bottom:14px;font-family:var(--mono)"></div>
+    <div class="form-row"><label>Trigger turi</label>
+      <select id="wt-type" onchange="toggleWatchFields()">
+        <option value="price">Narx</option>
+        <option value="time">Vaqt</option>
+        <option value="news">Yangilik</option>
+      </select>
+    </div>
+    <div id="wt-price-field" class="form-row"><label>Trigger narxi *</label><input id="wt-value" type="number" step="0.01" placeholder="128.00"></div>
+    <div id="wt-date-field" class="form-row" style="display:none"><label>Trigger sanasi *</label><input id="wt-date" type="datetime-local"></div>
+    <div class="form-row"><label>Izoh</label><input id="wt-note" placeholder="FED meeting o'tgandan keyin..."></div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal('modal-watch')">Bekor</button>
+      <button class="btn btn-orange" onclick="confirmWatch()">👁 Watch ga qo'shish</button>
+    </div>
+  </div>
+</div>
+
+<!-- CLOSE POSITION MODAL -->
+<div class="modal-overlay" id="modal-close-pos">
+  <div class="modal-box">
+    <div class="modal-title">📤 Pozitsiyani yopish</div>
+    <div id="close-pos-info" style="font-size:13px;color:var(--text2);margin-bottom:14px;font-family:var(--mono)"></div>
+    <div class="form-row"><label>Chiqish narxi *</label><input id="cp-exit" type="number" step="0.01"></div>
+    <div class="form-row"><label>Turi</label>
+      <select id="cp-type"><option value="manual">Manual</option><option value="target1">Target 1</option><option value="target2">Target 2</option><option value="stop">Stop</option></select>
+    </div>
+    <div class="form-row"><label>Izoh</label><input id="cp-note" placeholder="Chiqish sababi..."></div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal('modal-close-pos')">Bekor</button>
+      <button class="btn btn-primary" onclick="confirmClosePosition()">Yopish</button>
+    </div>
+  </div>
+</div>
+
+<!-- ADD WATCH MODAL -->
+<div class="modal-overlay" id="modal-add-watch">
+  <div class="modal-box">
+    <div class="modal-title">+ Watchlist ga qo'shish</div>
+    <div class="form-row"><label>Ticker *</label><input id="aw-ticker" placeholder="AAPL" style="text-transform:uppercase"></div>
+    <div class="form-row"><label>Trigger turi</label>
+      <select id="aw-type" onchange="toggleAddWatchFields()">
+        <option value="price">Narx</option>
+        <option value="time">Vaqt</option>
+        <option value="news">Yangilik</option>
+      </select>
+    </div>
+    <div id="aw-price-field" class="form-row"><label>Trigger narxi</label><input id="aw-value" type="number" step="0.01"></div>
+    <div id="aw-date-field" class="form-row" style="display:none"><label>Trigger sanasi</label><input id="aw-date" type="datetime-local"></div>
+    <div class="form-row"><label>Izoh</label><input id="aw-note" placeholder="Izoh..."></div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal('modal-add-watch')">Bekor</button>
+      <button class="btn btn-primary" onclick="submitAddWatch()">Qo'shish</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// SUPABASE CONFIG
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+const SUPABASE_URL = 'https://whgxnmauvfzdwyzvgesr.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndoZ3hubWF1dmZ6ZHd5enZnZXNyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE4MjQ5MTksImV4cCI6MjA4NzQwMDkxOX0.3LykG9zMDpcewZ9Tw2Jh4FRX5bIQnXvuhAgCzoOpQt4';
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// TWELVE DATA API CONFIG
+// ⚠️ FMP /api/v3 endpoint 2025-Aug dan o'chirildi (Legacy)
+// Twelve Data bepul: 800 call/kun
+// Ro'yxatdan o'tish: https://twelvedata.com/apikey
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+const FMP_API_KEY = 'EN7fO45J3Qkb3B1UqPNrZOlDeA7rqa6c'; // eski (ishlamaydi)
+const FMP_BASE = 'https://financialmodelingprep.com/api/v3'; // eski (legacy)
+
+// ✅ TWELVE DATA — yangi provider
+let TD_API_KEY = localStorage.getItem('td_api_key') || 'YOUR_TWELVE_DATA_KEY'; // twelvedata.com dan oling (bepul)
+const TD_BASE = 'https://api.twelvedata.com';
+const FMP_MARKET_INTERVAL = 600000; // 10 daqiqa = 144 call/kun
+const FMP_DAILY_LIMIT = 800; // Twelve Data bepul: 800/kun
+const FMP_WARN_THRESHOLD = 700;
+
+// FMP holat
+let fmpStatus = 'unknown'; // 'ok' | 'limit' | 'error' | 'unknown'
+let fmpLastError = null;
+
+// API call counter (localStorage da saqlanadi)
+let fmpCallsToday = parseInt(localStorage.getItem('fmp_calls_today') || '0');
+let fmpCallsDate = localStorage.getItem('fmp_calls_date') || '';
+
+function trackFmpCall(n = 1) {
+  const today = new Date().toISOString().slice(0, 10);
+  if (fmpCallsDate !== today) {
+    fmpCallsToday = 0;
+    fmpCallsDate = today;
+    localStorage.setItem('fmp_calls_date', fmpCallsDate);
+  }
+  fmpCallsToday += n;
+  localStorage.setItem('fmp_calls_today', fmpCallsToday);
+  updateFmpCounter();
+}
+
+function updateFmpCounter() {
+  const counterEl = document.getElementById('fmp-counter');
+  if (!counterEl) return;
+  counterEl.textContent = fmpCallsToday;
+  const wrapper = counterEl.parentElement;
+  if (fmpCallsToday >= FMP_DAILY_LIMIT) {
+    wrapper.style.color = 'var(--red3)';
+    wrapper.title = 'FMP limit tugadi! Ertaga yangilanadi.';
+  } else if (fmpCallsToday >= FMP_WARN_THRESHOLD) {
+    wrapper.style.color = 'var(--yellow3)';
+    wrapper.title = `FMP limitga yaqinlashmoqda: ${fmpCallsToday}/${FMP_DAILY_LIMIT}`;
+  } else {
+    wrapper.style.color = '';
+    wrapper.title = `FMP API: ${fmpCallsToday}/${FMP_DAILY_LIMIT} call bugun`;
+  }
+}
+
+// Twelve Data API ni test qilish
+async function testFmpConnection() {
+  // Key kiritilmagan bo'lsa
+  if (!TD_API_KEY || TD_API_KEY === 'YOUR_TWELVE_DATA_KEY') {
+    fmpStatus = 'error';
+    fmpLastError = 'API key kiritilmagan! twelvedata.com dan oling.';
+    logFmp('⚠️ Twelve Data API key yo\'q. twelvedata.com ga ro\'yxatdan o\'ting (bepul).', true);
+    toast('⚠️ API key kerak! Debug panelda "API Key Sozlash" tugmasini bosing.', true, 8000);
+    return false;
+  }
+
+  try {
+    const res = await fetch(`${TD_BASE}/price?symbol=AAPL&apikey=${TD_API_KEY}`,
+      { signal: AbortSignal.timeout(8000) });
+    const data = await res.json();
+
+    if (!res.ok || data.status === 'error') {
+      const errMsg = data.message || `HTTP ${res.status}`;
+      fmpStatus = errMsg.toLowerCase().includes('limit') ? 'limit' : 'error';
+      fmpLastError = errMsg;
+      console.error('❌ Twelve Data xato:', errMsg);
+      logFmp(`❌ Twelve Data: ${errMsg}`, true);
+      if (fmpStatus === 'limit') toast('⚠️ Twelve Data limit tugadi (800/kun). Ertaga yangilanadi.', true, 8000);
+      else toast(`⚠️ Twelve Data xato: ${errMsg}`, true, 6000);
+      return false;
+    }
+
+    if (data.price) {
+      fmpStatus = 'ok';
+      fmpLastError = null;
+      trackFmpCall(1);
+      console.log('✅ Twelve Data ulandi. AAPL:', data.price);
+      logFmp(`✅ Twelve Data ulandi — AAPL: $${data.price}`);
+      return true;
+    }
+
+    fmpStatus = 'error';
+    fmpLastError = JSON.stringify(data).slice(0, 80);
+    logFmp(`⚠️ Twelve Data: kutilmagan javob: ${fmpLastError}`, true);
+    return false;
+
+  } catch (e) {
+    fmpStatus = 'error';
+    fmpLastError = e.message;
+    console.error('❌ Twelve Data fetch xato:', e.message);
+    logFmp(`❌ Ulanish xatosi: ${e.message}`, true);
+    return false;
+  }
+}
+
+// FMP log (debug panel uchun)
+const fmpLogs = [];
+function logFmp(msg, isError = false) {
+  const ts = new Date().toLocaleTimeString('uz-UZ', { timeZone: 'Asia/Tashkent' });
+  fmpLogs.unshift({ ts, msg, isError });
+  if (fmpLogs.length > 50) fmpLogs.pop();
+  renderFmpLog();
+}
+function renderFmpLog() {
+  const el = document.getElementById('fmp-log-body');
+  if (!el) return;
+  el.innerHTML = fmpLogs.slice(0, 20).map(l =>
+    `<div style="padding:3px 0;border-bottom:1px solid var(--border);color:${l.isError ? 'var(--red3)' : 'var(--green3)'}">
+      <span style="color:var(--text3)">[${l.ts}]</span> ${l.msg}
+    </div>`
+  ).join('');
+}
+
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// STATE
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+let currentUser = null;
+let currentAnalyst = null;
+let selectedSignalId = null;
+let pendingSignalId = null; // for approve/reject/watch modals
+let pendingPositionId = null;
+let inboxFilter = 'all';
+let posFilter = 'open';
+let auditPeriod = 'all';
+let auditResult = 'all';
+let currentScanTab = 'ideas';
+let scanData = { ideas: [], potential: [] };
+let strategies = [];
+let activeStrategy = null;
+let criteria = { technical: [], financial: [], cashflow: [], growth: [] };
+let autoRunEnabled = false;
+let priceCache = {};
+let realtimeChannels = [];
+
+// Default criteria templates
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// SCORING TIZIMI (Hujjatga ko'ra: 100 ball max)
+// Technical/Financial/Cashflow: har biri 0-10 ball
+// Growth Signals: har biri 0-15 ball
+// Thresholds: >= 80 = Inbox | 65-79 = Watchlist | < 65 = Reject
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+const SCORE_THRESHOLDS = { inbox: 80, watchlist: 65 };
+
+const DEFAULT_CRITERIA = {
+  technical: [
+    { id: 'rsi',         label: 'RSI(14) > 50 — Momentum musbat',      enabled: true,  weight: 10, realData: true,  description: 'Kunlik o\'zgarish proxy' },
+    { id: 'ma200',       label: 'Narx > 200 DMA — Uzoq trend',          enabled: true,  weight: 10, realData: false, description: 'Simulatsiya (API kerak)' },
+    { id: 'vol_surge',   label: 'Volume o\'rtachadan 20%+ yuqori',       enabled: true,  weight: 8,  realData: true,  description: 'Real hajm ma\'lumoti' },
+    { id: 'week52_high', label: '52-hafta highdan 15% ichida',           enabled: false, weight: 10, realData: true,  description: 'Real 52-hafta ma\'lumoti' },
+    { id: 'macd',        label: 'MACD crossover (bullish)',              enabled: false, weight: 8,  realData: false, description: 'Simulatsiya (API kerak)' },
+  ],
+  financial: [
+    { id: 'pe',         label: 'P/E < 30 — Arzon baholama',            enabled: true,  weight: 10, realData: false, description: 'Simulatsiya (fundamental API kerak)' },
+    { id: 'ps',         label: 'P/S < 5 — Sotuv baholama',             enabled: false, weight: 8,  realData: false, description: 'Simulatsiya' },
+    { id: 'ev_ebitda',  label: 'EV/EBITDA < 15',                       enabled: false, weight: 8,  realData: false, description: 'Simulatsiya' },
+    { id: 'debt_eq',    label: 'Debt/Equity < 1 — Past qarz',          enabled: false, weight: 8,  realData: false, description: 'Simulatsiya' },
+    { id: 'pfcf',       label: 'P/FCF < 20 — Naqd pul',               enabled: false, weight: 8,  realData: false, description: 'Simulatsiya' },
+  ],
+  cashflow: [
+    { id: 'fcf',        label: 'FCF musbat — Erkin pul oqimi',         enabled: true,  weight: 10, realData: false, description: 'Simulatsiya (fundamental API kerak)' },
+    { id: 'fcf_margin', label: 'FCF margin > 10%',                     enabled: false, weight: 8,  realData: false, description: 'Simulatsiya' },
+    { id: 'ocf_income', label: 'OCF/Net Income > 1 — Sifatli daromad', enabled: false, weight: 8,  realData: false, description: 'Simulatsiya' },
+    { id: 'capex_low',  label: 'CapEx/Revenue < 15% — Samarali',       enabled: false, weight: 6,  realData: false, description: 'Simulatsiya' },
+  ],
+  growth: [
+    { id: 'rev_growth', label: 'Revenue o\'sishi > 15% (YoY)',         enabled: true,  weight: 15, realData: false, description: 'Simulatsiya (fundamental API kerak)' },
+    { id: 'eps_growth', label: 'EPS o\'sishi > 20% (YoY)',             enabled: true,  weight: 15, realData: false, description: 'Simulatsiya' },
+    { id: 'rev_accel',  label: 'Revenue tezlashishi (kuchli momentum)', enabled: false, weight: 12, realData: true,  description: 'Narx momentum proxy' },
+    { id: 'gross_margin', label: 'Gross margin > 40%',                 enabled: false, weight: 10, realData: false, description: 'Simulatsiya' },
+    { id: 'inst_buying', label: 'Institutional buying (13F)',           enabled: false, weight: 12, realData: false, description: 'Simulatsiya' },
+  ]
+};
+
+// To'liq SP500 + NASDAQ100 + qo'shimcha tickers (500+)
+const SP500_SAMPLE = [
+  // Mega cap
+  'AAPL','MSFT','NVDA','GOOGL','GOOG','AMZN','META','TSLA','LLY',
+  // Financials
+  'V','MA','JPM','BAC','WFC','GS','MS','BLK','SCHW','AXP','C','USB','PNC','TFC','COF','AIG','MET','PRU','ALL','CB','PGR','TRV','MMC','AON','SPGI','MCO','ICE','CME','CBOE','NDAQ',
+  // Healthcare
+  'UNH','JNJ','ABBV','MRK','TMO','ABT','DHR','BMY','AMGN','GILD','ISRG','MDT','SYK','BSX','EW','REGN','VRTX','BIIB','ZTS','IQV','DXCM','HCA','CI','HUM','CVS','MCK','ABC','CAH','BAX','BDX','ZBH','COO','HOLX','IDXX','PODD','XRAY',
+  // Technology
+  'AVGO','ORCL','CRM','ADBE','AMD','QCOM','TXN','AMAT','LRCX','KLAC','MRVL','ADI','MU','INTC','CSCO','IBM','HPQ','HPE','DELL','NTAP','CDNS','SNPS','ANSS','PTC','CTSH','ACN','INTU','NOW','WDAY','TEAM','SNOW','DDOG','ZS','OKTA','CRWD','PANW','FTNT','NET','GTLB','HUBS','VEEV','PAYC','SMAR','BILL','PATH','MDB','ESTC','CFLT',
+  // Consumer
+  'WMT','HD','MCD','COST','PG','KO','PEP','PM','MO','CL','EL','ULTA','NKE','SBUX','CMG','YUM','DPZ','DRI','MKC','GIS','CPB','K','SJM','HRL','TSN','CAG','MDLZ','KHC','STZ','BUD','DEO','MNST','KDP','FIZZ','CELH',
+  // Industrials
+  'CAT','DE','HON','RTX','LMT','NOC','GD','BA','GE','MMM','ITW','EMR','ETN','PH','IR','ROK','AME','TDG','CARR','OTIS','FTV','XYL','IEX','ROP','CSGP','VRSK','CPRT','FAST','GWW','MSC','AOS','NVT','GNRC',
+  // Energy
+  'XOM','CVX','COP','EOG','SLB','MPC','VLO','PSX','PXD','OXY','DVN','FANG','HAL','BKR','APA','MRO','HES','TRGP','WMB','ET','KMI','OKE','EPD',
+  // Communication
+  'GOOGL','META','NFLX','DIS','CMCSA','CHTR','WBD','PARA','FOX','FOXA','T','VZ','TMUS','LUMN','AMC','DISH',
+  // Real Estate
+  'AMT','PLD','EQIX','CCI','PSA','O','WELL','VTR','BXP','SLG','ARE','KIM','SPG','MAC','NLY','AGNC',
+  // Utilities
+  'NEE','DUK','SO','D','AEP','EXC','SRE','XEL','PCG','ED','ES','AWK','WEC','ETR','FE','PPL','CMS','NI','AES','LNT',
+  // Materials
+  'LIN','APD','SHW','ECL','DD','DOW','LYB','IFF','PPG','NEM','GOLD','FCX','AA','ALB','FMC','MOS','CF','NUE','STLD','RS','CMC','WRK','IP','PKG','SEE',
+  // NASDAQ extra
+  'PYPL','SQ','COIN','HOOD','SOFI','AFRM','UPST','LC','MELI','SE','GRAB','BIDU','JD','PDD','BABA','NIO','LI','XPEV','RIVN','LCID','F','GM',
+  // Mid cap growth
+  'DKNG','RBLX','U','TTWO','EA','ATVI','MTCH','BMBL','SNAP','PINS','TWTR','LYFT','UBER','ABNB','VRBO','EXPE','BKNG','TRIP','TKTS','OPEN','COMP','ZETA',
+  // More SP500
+  'TJX','ROST','BURL','GPS','ANF','AEO','URBN','PVH','VFC','HBI','WWW','SKX','CROX','DECK','ONON','LULU','UAA','UA',
+  'LOW','TGT','DG','DLTR','WBA','CVS','RAD','KR','SFM','CASY','WEIS','CHEF','US','USFD','SYY','PFGC'
+];
+
+// Sectors mapping
+const SECTORS = {
+  'AAPL':'Technology','MSFT':'Technology','NVDA':'Technology','GOOGL':'Technology',
+  'AMZN':'Consumer','META':'Technology','TSLA':'Technology','LLY':'Healthcare',
+  'V':'Financials','UNH':'Healthcare','JNJ':'Healthcare','XOM':'Energy','JPM':'Financials',
+  'PG':'Consumer','MA':'Financials','HD':'Consumer','CVX':'Energy','ABBV':'Healthcare',
+  'MRK':'Healthcare','AVGO':'Technology','COST':'Consumer','PEP':'Consumer','KO':'Consumer',
+  'ADBE':'Technology','ORCL':'Technology','CSCO':'Technology','TMO':'Healthcare',
+  'GS':'Financials','BAC':'Financials','NFLX':'Technology','QCOM':'Technology',
+  'AMD':'Technology','TXN':'Technology','PANW':'Technology','INTC':'Technology',
+  'PYPL':'Financials','DEFAULT':'Technology'
+};
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// AUTH
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+async function doLogin() {
+  const email = document.getElementById('login-email').value.trim();
+  const pass = document.getElementById('login-pass').value;
+  const btn = document.getElementById('login-btn');
+  const err = document.getElementById('login-err');
+  if (!email || !pass) { err.textContent = 'Email va parol kiriting'; return; }
+  btn.disabled = true; btn.textContent = 'Kirish...'; err.textContent = '';
+  const { data, error } = await sb.auth.signInWithPassword({ email, password: pass });
+  if (error) {
+    err.textContent = error.message === 'Invalid login credentials' ? 'Email yoki parol noto\'g\'ri' : error.message;
+    btn.disabled = false; btn.textContent = 'Kirish'; return;
+  }
+  await initApp(data.user);
+}
+
+async function doLogout() {
+  await sb.auth.signOut();
+  realtimeChannels.forEach(ch => sb.removeChannel(ch));
+  realtimeChannels = [];
+  currentUser = null; currentAnalyst = null;
+  document.getElementById('app').style.display = 'none';
+  document.getElementById('login-screen').style.display = 'flex';
+}
+
+async function initApp(user) {
+  currentUser = user;
+  document.getElementById('login-screen').style.display = 'none';
+  document.getElementById('app').style.display = 'flex';
+
+  // Load analyst profile
+  const { data: analyst } = await sb.from('analysts').select('*').eq('id', user.id).single();
+  currentAnalyst = analyst || { name: user.email, role: 'analyst', email: user.email };
+
+  // Update UI
+  document.getElementById('user-name').textContent = currentAnalyst.name;
+  document.getElementById('user-role').textContent = currentAnalyst.role;
+  document.getElementById('user-avatar').textContent = (currentAnalyst.name || 'A')[0].toUpperCase();
+
+  // Update last login
+  await sb.from('analysts').update({ last_login: new Date().toISOString() }).eq('id', user.id);
+
+  // Init everything
+  await Promise.all([loadDashboard(), loadSignals(), loadStrategies(), loadPositions(), loadWatchlist(), loadAudit()]);
+  setupRealtime();
+
+  // FMP API ni test qil, keyin market worker boshlash
+  updateFmpCounter();
+  console.log('🔍 FMP API tekshirilmoqda...');
+  const fmpOk = await testFmpConnection();
+  updateDebugPanel(); // Badge yangilash
+  if (fmpOk) {
+    startMarketDataWorker();
+  } else {
+    if (fmpStatus !== 'limit') {
+      console.log('⚠️ FMP test muvaffaqiyatsiz, lekin worker ishga tushiriladi...');
+      startMarketDataWorker();
+    } else {
+      const statusEl = document.getElementById('mkt-status');
+      if (statusEl) { statusEl.textContent = 'LIMIT'; statusEl.style.color = 'var(--red3)'; }
+    }
+  }
+}
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// NAVIGATION
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+function go(page, navEl) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('page-' + page).classList.add('active');
+  if (navEl) navEl.classList.add('active');
+  if (page === 'dash') loadDashboard();
+  if (page === 'positions') loadPositions();
+  if (page === 'watchlist') loadWatchlist();
+  if (page === 'audit') loadAudit();
+  if (page === 'factory') loadStrategies();
+  if (page === 'debug') updateDebugPanel();
+}
+
+function saveTdKey() {
+  const input = document.getElementById('td-key-input');
+  const statusEl = document.getElementById('td-key-status');
+  const key = input?.value?.trim();
+  if (!key || key.length < 10) {
+    if (statusEl) { statusEl.textContent = '⚠️ Key kamida 10 belgidan iborat bo\'lishi kerak'; statusEl.style.color = 'var(--red3)'; }
+    return;
+  }
+  TD_API_KEY = key;
+  localStorage.setItem('td_api_key', key);
+  if (statusEl) { statusEl.textContent = `✅ Saqlandi: ${key.slice(0,8)}...`; statusEl.style.color = 'var(--green3)'; }
+  logFmp(`✅ Twelve Data API key yangilandi`);
+  toast('✅ API key saqlandi! Test qilinmoqda...');
+  debugTestFmp();
+}
+
+function updateDebugPanel() {
+  // FMP holat
+  const statusEl = document.getElementById('dbg-fmp-status');
+  if (statusEl) {
+    const colors = { ok: 'var(--green3)', limit: 'var(--red3)', error: 'var(--red3)', unknown: 'var(--text3)' };
+    const labels = { ok: '✅ ISHLAYAPTI', limit: '🔴 LIMIT TUGADI', error: '❌ XATO', unknown: '⏳ Tekshirilmagan' };
+    statusEl.textContent = labels[fmpStatus] || fmpStatus;
+    statusEl.style.color = colors[fmpStatus] || '';
+  }
+  const callsEl = document.getElementById('dbg-fmp-calls');
+  if (callsEl) {
+    callsEl.textContent = `${fmpCallsToday} / ${FMP_DAILY_LIMIT}`;
+    callsEl.style.color = fmpCallsToday >= FMP_DAILY_LIMIT ? 'var(--red3)' : fmpCallsToday >= FMP_WARN_THRESHOLD ? 'var(--yellow3)' : 'var(--green3)';
+  }
+  const errEl = document.getElementById('dbg-fmp-err');
+  if (errEl) { errEl.textContent = fmpLastError || '—'; }
+
+  const userEl = document.getElementById('dbg-user');
+  if (userEl && currentUser) { userEl.textContent = currentUser.email; }
+  const roleEl = document.getElementById('dbg-role');
+  if (roleEl && currentAnalyst) {
+    roleEl.textContent = currentAnalyst.role;
+    roleEl.style.color = currentAnalyst.role === 'admin' ? 'var(--yellow3)' : 'var(--blue3)';
+  }
+
+  // FMP badge yangilash
+  const badge = document.getElementById('fmp-status-badge');
+  if (badge) {
+    const bColors = { ok: 'var(--green2)', limit: 'var(--red)', error: 'var(--red)', unknown: 'var(--text3)' };
+    badge.textContent = fmpStatus === 'ok' ? 'OK' : fmpStatus === 'limit' ? 'LIMIT' : fmpStatus === 'error' ? 'ERR' : '?';
+    badge.style.background = bColors[fmpStatus] || '';
+    badge.style.color = '#fff';
+  }
+
+  renderFmpLog();
+
+  // Key inputni to'ldirish
+  const keyInput = document.getElementById('td-key-input');
+  if (keyInput) {
+    keyInput.value = (TD_API_KEY && TD_API_KEY !== 'YOUR_TWELVE_DATA_KEY') ? TD_API_KEY : '';
+    const keyStatus = document.getElementById('td-key-status');
+    if (keyStatus && TD_API_KEY && TD_API_KEY !== 'YOUR_TWELVE_DATA_KEY') {
+      keyStatus.textContent = `✅ Key yuklangan: ${TD_API_KEY.slice(0,8)}...`;
+      keyStatus.style.color = 'var(--green3)';
+    }
+  }
+}
+
+async function debugTestFmp() {
+  toast('🔍 Twelve Data test qilinmoqda...');
+  const ok = await testFmpConnection();
+  updateDebugPanel();
+  if (ok) toast('✅ Twelve Data ishlayapti!');
+}
+
+function debugResetCalls() {
+  fmpCallsToday = 0;
+  fmpCallsDate = new Date().toISOString().slice(0, 10);
+  localStorage.setItem('fmp_calls_today', '0');
+  localStorage.setItem('fmp_calls_date', fmpCallsDate);
+  fmpStatus = 'unknown';
+  fmpLastError = null;
+  updateFmpCounter();
+  updateDebugPanel();
+  toast('🔄 FMP counter reset qilindi');
+}
+
+async function debugForceFetch() {
+  toast('▶ Market fetch boshlandi...');
+  await fetchMarketPrices();
+  updateDebugPanel();
+}
+
+async function debugTestSupabase() {
+  const resultEl = document.getElementById('dbg-sb-result');
+  if (resultEl) resultEl.textContent = '⏳ Ping...';
+  try {
+    const start = Date.now();
+    const { data, error } = await sb.from('analysts').select('count').limit(1);
+    const ms = Date.now() - start;
+    if (error) {
+      if (resultEl) { resultEl.textContent = `❌ Xato: ${error.message}`; resultEl.style.color = 'var(--red3)'; }
+    } else {
+      if (resultEl) { resultEl.textContent = `✅ Supabase javob berdi (${ms}ms)`; resultEl.style.color = 'var(--green3)'; }
+    }
+  } catch(e) {
+    if (resultEl) { resultEl.textContent = `❌ ${e.message}`; resultEl.style.color = 'var(--red3)'; }
+  }
+}
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// DASHBOARD
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+async function loadDashboard() {
+  const [posRes, signalRes, auditRes] = await Promise.all([
+    sb.from('positions').select('*').eq('analyst_id', currentUser.id).eq('status', 'open'),
+    sb.from('signals').select('*').eq('analyst_id', currentUser.id).eq('status', 'pending').order('created_at', { ascending: false }),
+    sb.from('audit_results').select('*').eq('analyst_id', currentUser.id)
+  ]);
+  const positions = posRes.data || [];
+  const pendingSignals = signalRes.data || [];
+  const audits = auditRes.data || [];
+
+  // KPIs
+  document.getElementById('kpi-active').textContent = positions.length;
+  document.getElementById('kpi-inbox').textContent = pendingSignals.length;
+  const badge = document.getElementById('inbox-badge');
+  if (pendingSignals.length > 0) { badge.textContent = pendingSignals.length; badge.style.display = ''; }
+  else badge.style.display = 'none';
+
+  // Avg return from closed positions
+  const wins = audits.filter(a => a.result === 'win').length;
+  const total = audits.length;
+  const avgRet = total > 0 ? (audits.reduce((s, a) => s + parseFloat(a.return_pct || 0), 0) / total).toFixed(1) : '—';
+  const winRate = total > 0 ? ((wins / total) * 100).toFixed(1) : '—';
+  document.getElementById('kpi-avg').textContent = avgRet !== '—' ? avgRet + '%' : '—';
+  document.getElementById('kpi-winrate').textContent = winRate !== '—' ? winRate + '%' : '—';
+
+  const now = new Date().toLocaleString('uz-UZ', { timeZone: 'Asia/Tashkent' });
+  document.getElementById('dash-sub').textContent = `Yangilangan: ${now}`;
+  document.getElementById('last-sync').textContent = now.split(', ')[1] || now;
+
+  // Alert level
+  const alertEl = document.getElementById('kpi-inbox-alert');
+  if (pendingSignals.length >= 10) {
+    alertEl.textContent = '⚠️ Juda ko\'p signal!'; alertEl.className = 'kpi-ch dn';
+  } else if (pendingSignals.length >= 5) {
+    alertEl.textContent = '⚠️ Diqqat'; alertEl.className = 'kpi-ch by';
+  } else {
+    alertEl.textContent = 'Signal Inbox'; alertEl.className = 'kpi-ch nt';
+  }
+
+  // Sector chart
+  renderSectorChart(positions);
+
+  // Recent signals
+  renderDashRecentSignals(pendingSignals);
+
+  // Open positions table
+  renderDashPositions(positions);
+
+  // Update pos badge
+  const pb = document.getElementById('pos-badge');
+  if (positions.length > 0) { pb.textContent = positions.length; pb.style.display = ''; }
+  else pb.style.display = 'none';
+}
+
+function renderSectorChart(positions) {
+  const el = document.getElementById('sector-chart');
+  if (positions.length === 0) { el.innerHTML = '<div class="empty-state">Hozircha ochiq pozitsiya yo\'q</div>'; return; }
+  const sectors = {};
+  positions.forEach(p => { const s = p.sector || 'Other'; sectors[s] = (sectors[s] || 0) + 1; });
+  const total = positions.length;
+  const sorted = Object.entries(sectors).sort((a, b) => b[1] - a[1]);
+  const colors = ['#3b82f6', '#34d399', '#f59e0b', '#f87171', '#8b5cf6', '#06b6d4', '#f97316'];
+  let html = '<div style="display:flex;flex-direction:column;gap:7px">';
+  sorted.forEach(([name, count], i) => {
+    const pct = ((count / total) * 100).toFixed(1);
+    const color = colors[i % colors.length];
+    html += `<div>
+      <div style="display:flex;justify-content:space-between;margin-bottom:3px">
+        <span style="font-size:11px;color:var(--text2);font-family:var(--mono)">${name}</span>
+        <span style="font-size:11px;color:${parseFloat(pct)>60?'var(--red3)':parseFloat(pct)>40?'var(--yellow3)':'var(--text2)'};font-family:var(--mono);font-weight:700">${count} · ${pct}%</span>
+      </div>
+      <div style="height:5px;background:var(--surface3);border-radius:3px">
+        <div style="width:${pct}%;height:100%;background:${color};border-radius:3px"></div>
+      </div>
+    </div>`;
+  });
+  html += '</div>';
+  el.innerHTML = html;
+
+  // Alerts
+  const alertArea = document.getElementById('sector-alert-area');
+  const criticals = sorted.filter(([_, c]) => (c / total) * 100 > 60);
+  const warnings = sorted.filter(([_, c]) => { const p = (c / total) * 100; return p > 40 && p <= 60; });
+  let alerts = '';
+  criticals.forEach(([name]) => alerts += `<div class="sector-alert sa-red">⚠️ ${name} sektori 60% dan oshdi — Qizil ogohlantirish!</div>`);
+  warnings.forEach(([name]) => alerts += `<div class="sector-alert sa-yellow">⚡ ${name} sektori 40% dan oshdi — Diversifikatsiya tavsiya</div>`);
+  alertArea.innerHTML = alerts;
+}
+
+function renderDashRecentSignals(signals) {
+  const el = document.getElementById('dash-recent-signals');
+  if (signals.length === 0) { el.innerHTML = '<div class="empty-state">Pending signallar yo\'q</div>'; return; }
+  el.innerHTML = signals.slice(0, 5).map(s => `
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border)">
+      <div><div style="font-weight:700;color:#fff;font-family:var(--mono)">${s.ticker}</div>
+        <div style="font-size:9.5px;color:var(--text3)">${fmtDate(s.created_at)} · ${s.sector || ''}</div>
+      </div>
+      <div style="text-align:right">
+        <div style="font-size:12px;color:var(--green3);font-family:var(--mono)">$${parseFloat(s.entry_price).toFixed(2)}</div>
+        <span class="badge by" style="font-size:8px">PENDING</span>
+      </div>
+    </div>`).join('');
+}
+
+function renderDashPositions(positions) {
+  const el = document.getElementById('dash-pos-tbl');
+  if (positions.length === 0) { el.innerHTML = '<tr><td colspan="8" class="empty-state">Ochiq pozitsiya yo\'q</td></tr>'; return; }
+  el.innerHTML = positions.map(p => {
+    const cur = priceCache[p.ticker] || parseFloat(p.current_price) || parseFloat(p.entry_price);
+    const pnl = ((cur - parseFloat(p.entry_price)) / parseFloat(p.entry_price) * 100).toFixed(1);
+    const days = Math.floor((Date.now() - new Date(p.opened_at)) / 86400000);
+    return `<tr>
+      <td><div class="tk">${p.ticker}</div></td>
+      <td>$${parseFloat(p.entry_price).toFixed(2)}</td>
+      <td style="color:var(--blue3)">$${cur.toFixed(2)}</td>
+      <td style="color:var(--green3)">$${parseFloat(p.target1 || 0).toFixed(2)}</td>
+      <td style="color:var(--red3)">$${parseFloat(p.stop_loss).toFixed(2)}</td>
+      <td class="${parseFloat(pnl) >= 0 ? 'pos' : 'neg'}" style="font-weight:700">${parseFloat(pnl) >= 0 ? '+' : ''}${pnl}%</td>
+      <td style="color:var(--text3)">${days} kun</td>
+      <td><button class="btn btn-ghost btn-sm" onclick="showClosePositionModal('${p.id}','${p.ticker}',${p.entry_price})">Yopish</button></td>
+    </tr>`;
+  }).join('');
+}
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// SIGNAL INBOX
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+async function loadSignals() {
+  let q = sb.from('signals').select('*').eq('analyst_id', currentUser.id).order('created_at', { ascending: false });
+  if (inboxFilter !== 'all') q = q.eq('status', inboxFilter);
+  const { data } = await q;
+  const signals = data || [];
+  document.getElementById('inbox-count').textContent = signals.length + ' ta signal';
+  const list = document.getElementById('inbox-list');
+  if (signals.length === 0) { list.innerHTML = '<div class="empty-state">Signal topilmadi</div>'; return; }
+
+  // Badge update
+  const pending = signals.filter(s => s.status === 'pending').length;
+  const badge = document.getElementById('inbox-badge');
+  if (pending > 0) { badge.textContent = pending; badge.style.display = ''; }
+  else badge.style.display = 'none';
+
+  list.innerHTML = signals.map(s => {
+    const sc = s.score || 0;
+    const color = sc >= 80 ? 'var(--green3)' : sc >= 60 ? 'var(--yellow3)' : 'var(--red3)';
+    const up = s.target1 ? (((s.target1 - s.entry_price) / s.entry_price) * 100).toFixed(1) : null;
+    const dn = (((s.stop_loss - s.entry_price) / s.entry_price) * 100).toFixed(1);
+    const statusBadge = {
+      pending: '<span class="badge by">PENDING</span>',
+      approved: '<span class="badge bg">TASDIQLANDI</span>',
+      active: '<span class="badge bb">AKTIV</span>',
+      watch: '<span class="badge bo">WATCH</span>',
+      rejected: '<span class="badge br">RAD ETILDI</span>',
+      closed: '<span class="badge bgr">YOPILDI</span>',
+    }[s.status] || '<span class="badge bgr">' + s.status.toUpperCase() + '</span>';
+    return `<div class="signal-card ${s.status}" onclick="selectSignal('${s.id}')" id="sc-${s.id}">
+      <div class="sig-top">
+        <div>
+          <div class="sig-ticker">${s.ticker}</div>
+          <div class="sig-sector">${s.sector || ''} · ${s.source === 'auto' ? '🤖 Auto' : '✍️ Manual'}</div>
+        </div>
+        <div style="text-align:right">
+          <div class="sig-score-big" style="color:${color}">${sc}</div>
+          ${statusBadge}
+        </div>
+      </div>
+      <div class="sig-meta">
+        <div class="sig-stat"><span>Kirish: </span>$${parseFloat(s.entry_price).toFixed(2)}</div>
+        ${up ? `<div class="sig-stat"><span>Target: </span><span style="color:var(--green3)">+${up}%</span></div>` : ''}
+        <div class="sig-stat"><span>Stop: </span><span style="color:var(--red3)">${dn}%</span></div>
+        <div class="sig-stat"><span>Sana: </span>${fmtDate(s.created_at)}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function setInboxFilter(f, btn) {
+  inboxFilter = f;
+  document.querySelectorAll('#page-inbox .btn-ghost').forEach(b => {
+    b.style.borderColor = ''; b.style.color = '';
+  });
+  if (btn) { btn.style.borderColor = 'var(--blue2)'; btn.style.color = 'var(--blue3)'; }
+  loadSignals();
+  document.getElementById('detail-panel').innerHTML = '<div class="detail-empty"><div style="font-size:28px;margin-bottom:10px">📋</div><div>Signalni tanlang</div></div>';
+}
+
+async function selectSignal(id) {
+  selectedSignalId = id;
+  document.querySelectorAll('.signal-card').forEach(c => c.classList.remove('selected'));
+  const card = document.getElementById('sc-' + id);
+  if (card) card.classList.add('selected');
+  const { data: s } = await sb.from('signals').select('*').eq('id', id).single();
+  if (!s) return;
+  const cur = priceCache[s.ticker];
+  const up = s.target1 ? (((s.target1 - s.entry_price) / s.entry_price) * 100).toFixed(1) : '—';
+  const dn = (((s.stop_loss - s.entry_price) / s.entry_price) * 100).toFixed(1);
+  const rr = s.target1 ? (Math.abs(up) / Math.abs(dn)).toFixed(1) : '—';
+  const isPending = s.status === 'pending';
+  const criteria = s.criteria_detail ? Object.entries(s.criteria_detail).map(([k, v]) =>
+    `<span class="badge ${v ? 'bg' : 'br'}" style="margin:2px;font-size:8px">${v ? '✓' : '✗'} ${k.toUpperCase()}</span>`
+  ).join('') : '';
+
+  document.getElementById('detail-panel').innerHTML = `
+    <div class="dp-ticker">${s.ticker}</div>
+    <div class="dp-sub">${s.sector || ''} · Score ${s.score || '—'} · ${s.strategy_name || 'Manual'} · ${s.source === 'auto' ? '🤖' : '✍️'}</div>
+    <div class="price-grid">
+      <div class="price-box"><div class="price-lbl">KIRISH</div><div class="price-val" style="color:var(--green3)">$${parseFloat(s.entry_price).toFixed(2)}</div></div>
+      <div class="price-box"><div class="price-lbl">JORIY${cur ? '' : ' (eski)'}</div><div class="price-val" style="color:var(--blue3)">$${cur ? cur.toFixed(2) : parseFloat(s.entry_price).toFixed(2)}</div></div>
+      <div class="price-box"><div class="price-lbl">TARGET 1 +${up}%</div><div class="price-val">$${s.target1 ? parseFloat(s.target1).toFixed(2) : '—'}</div></div>
+      <div class="price-box"><div class="price-lbl">STOP ${dn}%</div><div class="price-val" style="color:var(--red3)">$${parseFloat(s.stop_loss).toFixed(2)}</div></div>
+      ${s.target2 ? `<div class="price-box"><div class="price-lbl">TARGET 2</div><div class="price-val">$${parseFloat(s.target2).toFixed(2)}</div></div>` : ''}
+      <div class="price-box"><div class="price-lbl">R/R NISBAT</div><div class="price-val" style="color:var(--yellow3)">${rr}x</div></div>
+    </div>
+    ${criteria ? `<div style="margin-bottom:12px">${criteria}</div>` : ''}
+    ${s.note ? `<div style="font-size:11px;color:var(--text2);font-family:var(--mono);padding:8px 10px;background:var(--surface2);border-radius:7px;margin-bottom:12px;line-height:1.5">"${s.note}"</div>` : ''}
+    ${s.reject_reason ? `<div class="badge br" style="margin-bottom:10px">Sabab: ${s.reject_reason}</div>` : ''}
+    <div class="dp-divider"></div>
+    ${isPending ? `<div class="action-btns">
+      <button class="btn btn-green" onclick="showApproveModal('${s.id}','${s.ticker}',${s.entry_price},${s.stop_loss},${s.target1||0})">✅ Tasdiqlash</button>
+      <button class="btn btn-orange btn-sm" onclick="showWatchModal('${s.id}','${s.ticker}')">👁 Watch</button>
+      <button class="btn btn-red btn-sm" onclick="showRejectModal('${s.id}','${s.ticker}')">❌ Rad</button>
+    </div>` : `<div style="font-size:11px;color:var(--text3);font-family:var(--mono);text-align:center;padding:8px">Bu signal "${s.status}" holatida</div>`}
+    <div style="font-size:9px;color:var(--text3);font-family:var(--mono);margin-top:10px">Qo'shilgan: ${fmtDate(s.created_at)}</div>
+  `;
+}
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// SIGNAL ACTIONS
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+function showApproveModal(id, ticker, entry, stop, target) {
+  pendingSignalId = id;
+  document.getElementById('approve-ticker-info').textContent = `${ticker} · Kirish: $${parseFloat(entry).toFixed(2)}`;
+  document.getElementById('ap-entry').value = parseFloat(entry).toFixed(2);
+  document.getElementById('ap-stop').value = parseFloat(stop).toFixed(2);
+  document.getElementById('ap-t1').value = parseFloat(target || 0) > 0 ? parseFloat(target).toFixed(2) : '';
+  document.getElementById('ap-t2').value = '';
+  document.getElementById('ap-note').value = '';
+  document.getElementById('modal-approve').classList.add('open');
+}
+
+async function confirmApprove() {
+  const entry = parseFloat(document.getElementById('ap-entry').value);
+  const stop = parseFloat(document.getElementById('ap-stop').value);
+  const t1 = parseFloat(document.getElementById('ap-t1').value) || null;
+  const t2 = parseFloat(document.getElementById('ap-t2').value) || null;
+  const conviction = document.getElementById('ap-conviction').value;
+  const note = document.getElementById('ap-note').value;
+
+  if (!entry || !stop) { toast('Kirish narxi va stop loss majburiy', true); return; }
+  if (stop >= entry) { toast('Stop loss kirish narxidan kichik bo\'lishi kerak', true); return; }
+  if (t1 && t1 <= entry) { toast('Target 1 kirish narxidan katta bo\'lishi kerak', true); return; }
+
+  closeModal('modal-approve');
+
+  // 1. Update signal
+  await sb.from('signals').update({ status: 'active', entry_price: entry, stop_loss: stop, target1: t1, target2: t2, conviction, note }).eq('id', pendingSignalId);
+
+  // 2. Get signal to find ticker etc
+  const { data: sig } = await sb.from('signals').select('*').eq('id', pendingSignalId).single();
+
+  // 3. Create position
+  await sb.from('positions').insert({
+    signal_id: pendingSignalId,
+    analyst_id: currentUser.id,
+    ticker: sig.ticker,
+    entry_price: entry,
+    stop_loss: stop,
+    target1: t1,
+    target2: t2,
+    current_price: priceCache[sig.ticker] || entry,
+    status: 'open',
+    opened_at: new Date().toISOString()
+  });
+
+  toast('✅ ' + sig.ticker + ' pozitsiya ochildi!');
+  await Promise.all([loadSignals(), loadDashboard()]);
+}
+
+function showRejectModal(id, ticker) {
+  pendingSignalId = id;
+  document.getElementById('reject-ticker-info').textContent = ticker;
+  document.getElementById('rj-note').value = '';
+  document.getElementById('modal-reject').classList.add('open');
+}
+
+async function confirmReject() {
+  const reason = document.getElementById('rj-reason').value;
+  const note = document.getElementById('rj-note').value;
+  closeModal('modal-reject');
+  // Trigger fn_signal_rejected will auto-insert audit
+  await sb.from('signals').update({ status: 'rejected', reject_reason: reason, note }).eq('id', pendingSignalId);
+  toast('Signal rad etildi');
+  await Promise.all([loadSignals(), loadDashboard()]);
+}
+
+function showWatchModal(id, ticker) {
+  pendingSignalId = id;
+  document.getElementById('watch-ticker-info').textContent = ticker;
+  document.getElementById('wt-note').value = '';
+  document.getElementById('wt-value').value = '';
+  document.getElementById('modal-watch').classList.add('open');
+}
+
+function toggleWatchFields() {
+  const t = document.getElementById('wt-type').value;
+  document.getElementById('wt-price-field').style.display = t === 'price' ? '' : 'none';
+  document.getElementById('wt-date-field').style.display = t === 'time' ? '' : 'none';
+}
+
+async function confirmWatch() {
+  const watchType = document.getElementById('wt-type').value;
+  const triggerValue = parseFloat(document.getElementById('wt-value').value) || null;
+  const triggerDate = document.getElementById('wt-date').value || null;
+  const note = document.getElementById('wt-note').value;
+
+  if (watchType === 'price' && !triggerValue) { toast('Narx trigger majburiy', true); return; }
+
+  const { data: sig } = await sb.from('signals').select('*').eq('id', pendingSignalId).single();
+  closeModal('modal-watch');
+
+  await sb.from('signals').update({
+    status: 'watch',
+    watch_trigger: { type: watchType, value: triggerValue, date: triggerDate, note }
+  }).eq('id', pendingSignalId);
+
+  await sb.from('watchlist').insert({
+    signal_id: pendingSignalId,
+    analyst_id: currentUser.id,
+    ticker: sig.ticker,
+    entry_price: sig.entry_price,
+    watch_type: watchType,
+    trigger_value: triggerValue,
+    trigger_date: triggerDate,
+    trigger_note: note,
+    source: 'inbox',
+    status: 'active',
+    score: sig.score
+  });
+
+  toast('👁 ' + sig.ticker + ' Watchlist ga qo\'shildi');
+  await Promise.all([loadSignals(), loadWatchlist()]);
+}
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// MANUAL SIGNAL
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+function showManualSignalModal() { document.getElementById('modal-signal').classList.add('open'); }
+
+async function submitManualSignal() {
+  const ticker = document.getElementById('ms-ticker').value.toUpperCase().trim();
+  const entry = parseFloat(document.getElementById('ms-entry').value);
+  const stop = parseFloat(document.getElementById('ms-stop').value);
+  const t1 = parseFloat(document.getElementById('ms-t1').value) || null;
+  const t2 = parseFloat(document.getElementById('ms-t2').value) || null;
+  const conviction = document.getElementById('ms-conviction').value;
+  const risk = document.getElementById('ms-risk').value;
+  const sector = document.getElementById('ms-sector').value;
+  const note = document.getElementById('ms-note').value;
+
+  if (!ticker || !entry || !stop) { toast('Ticker, kirish narxi va stop majburiy', true); return; }
+  if (stop >= entry) { toast('Stop loss kirish narxidan kichik bo\'lishi kerak', true); return; }
+  if (t1 && t1 <= entry) { toast('Target 1 kirish narxidan katta bo\'lishi kerak', true); return; }
+
+  // Check duplicate
+  const { data: existing } = await sb.from('signals').select('id')
+    .eq('analyst_id', currentUser.id).eq('ticker', ticker).in('status', ['pending', 'active']).single();
+  if (existing) { toast(ticker + ' allaqachon aktiv yoki pending holatda', true); return; }
+
+  const { error } = await sb.from('signals').insert({
+    analyst_id: currentUser.id, ticker, entry_price: entry, stop_loss: stop,
+    target1: t1, target2: t2, conviction, risk_level: risk, sector, note,
+    source: 'manual', status: 'pending'
+  });
+  if (error) { toast('Xato: ' + error.message, true); return; }
+
+  closeModal('modal-signal');
+  toast('✅ ' + ticker + ' signal qo\'shildi');
+  await Promise.all([loadSignals(), loadDashboard()]);
+  go('inbox', document.querySelectorAll('.nav-item')[1]);
+}
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// POSITIONS
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+async function loadPositions() {
+  let q = sb.from('positions').select('*').eq('analyst_id', currentUser.id).order('opened_at', { ascending: false });
+  if (posFilter !== 'all') q = q.eq('status', posFilter);
+  const { data } = await q;
+  const positions = data || [];
+  const el = document.getElementById('pos-tbl');
+  if (positions.length === 0) { el.innerHTML = '<tr><td colspan="9" class="empty-state">Pozitsiya topilmadi</td></tr>'; return; }
+  el.innerHTML = positions.map(p => {
+    const cur = priceCache[p.ticker] || parseFloat(p.current_price) || parseFloat(p.entry_price);
+    const pnl = p.status === 'closed' && p.return_pct != null
+      ? parseFloat(p.return_pct).toFixed(1)
+      : ((cur - parseFloat(p.entry_price)) / parseFloat(p.entry_price) * 100).toFixed(1);
+    const days = Math.floor((Date.now() - new Date(p.opened_at)) / 86400000);
+    const statusB = p.status === 'open' ? '<span class="badge bg">OCHIQ</span>' : '<span class="badge bgr">YOPILDI</span>';
+    return `<tr>
+      <td><div class="tk">${p.ticker}</div></td>
+      <td>$${parseFloat(p.entry_price).toFixed(2)}</td>
+      <td style="color:var(--blue3)">$${cur.toFixed(2)}</td>
+      <td style="color:var(--green3)">$${parseFloat(p.target1 || 0).toFixed(2) || '—'}</td>
+      <td style="color:var(--red3)">$${parseFloat(p.stop_loss).toFixed(2)}</td>
+      <td class="${parseFloat(pnl) >= 0 ? 'pos' : 'neg'}" style="font-weight:700">${parseFloat(pnl) >= 0 ? '+' : ''}${pnl}%</td>
+      <td>${statusB}</td>
+      <td style="color:var(--text3)">${fmtDate(p.opened_at)} (${days}k)</td>
+      <td>${p.status === 'open' ? `<button class="btn btn-ghost btn-sm" onclick="showClosePositionModal('${p.id}','${p.ticker}',${p.entry_price})">Yopish</button>` : `<span style="color:var(--text3);font-size:10px;font-family:var(--mono)">${p.exit_type || '—'}</span>`}</td>
+    </tr>`;
+  }).join('');
+}
+
+function setPositionFilter(f, btn) {
+  posFilter = f;
+  document.querySelectorAll('#page-positions .btn-ghost').forEach(b => { b.style.borderColor = ''; b.style.color = ''; });
+  if (btn) { btn.style.borderColor = 'var(--blue2)'; btn.style.color = 'var(--blue3)'; }
+  loadPositions();
+}
+
+function showClosePositionModal(id, ticker, entry) {
+  pendingPositionId = id;
+  document.getElementById('close-pos-info').textContent = `${ticker} · Kirish: $${parseFloat(entry).toFixed(2)}`;
+  const cur = priceCache[ticker] || parseFloat(entry);
+  document.getElementById('cp-exit').value = cur.toFixed(2);
+  document.getElementById('cp-note').value = '';
+  document.getElementById('modal-close-pos').classList.add('open');
+}
+
+async function confirmClosePosition() {
+  const exit = parseFloat(document.getElementById('cp-exit').value);
+  const exitType = document.getElementById('cp-type').value;
+  const note = document.getElementById('cp-note').value;
+  if (!exit || exit <= 0) { toast('Chiqish narxini kiriting', true); return; }
+
+  const { data: pos } = await sb.from('positions').select('*').eq('id', pendingPositionId).single();
+  const returnPct = ((exit - parseFloat(pos.entry_price)) / parseFloat(pos.entry_price) * 100).toFixed(2);
+
+  await sb.from('positions').update({
+    exit_price: exit, exit_type: exitType, status: 'closed',
+    closed_at: new Date().toISOString(), return_pct: returnPct
+  }).eq('id', pendingPositionId);
+
+  closeModal('modal-close-pos');
+  toast(`📤 ${pos.ticker} yopildi: ${parseFloat(returnPct) >= 0 ? '+' : ''}${returnPct}%`);
+  await Promise.all([loadPositions(), loadDashboard(), loadAudit()]);
+}
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// WATCHLIST
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+async function loadWatchlist() {
+  const { data } = await sb.from('watchlist').select('*')
+    .eq('analyst_id', currentUser.id).order('added_at', { ascending: false });
+  const items = data || [];
+  const wb = document.getElementById('watch-badge');
+  const active = items.filter(w => w.status === 'active').length;
+  if (active > 0) { wb.textContent = active; wb.style.display = ''; } else wb.style.display = 'none';
+  const el = document.getElementById('watch-tbl');
+  if (items.length === 0) { el.innerHTML = '<tr><td colspan="8" class="empty-state">Watchlist bo\'sh</td></tr>'; return; }
+  el.innerHTML = items.map(w => {
+    const cur = priceCache[w.ticker] || parseFloat(w.current_price) || 0;
+    const statusB = { active: '<span class="badge bg">AKTIV</span>', triggered: '<span class="badge bb">TRIGGER</span>', expired: '<span class="badge bgr">TUGADI</span>', removed: '<span class="badge bgr">O\'CHIRILDI</span>' }[w.status] || '<span class="badge bgr">' + w.status + '</span>';
+    return `<tr>
+      <td><div class="tk">${w.ticker}</div></td>
+      <td style="color:var(--blue3)">${cur > 0 ? '$' + cur.toFixed(2) : '—'}</td>
+      <td><span class="badge bb">${w.watch_type?.toUpperCase() || 'NARX'}</span></td>
+      <td>${w.trigger_value ? '$' + parseFloat(w.trigger_value).toFixed(2) : '—'}</td>
+      <td style="color:var(--text3)">${w.trigger_date ? fmtDate(w.trigger_date) : '7 kun qoida'}</td>
+      <td>${statusB}</td>
+      <td style="color:var(--text2)">${w.trigger_note || '—'}</td>
+      <td>${w.status === 'active' ? `<button class="btn btn-ghost btn-sm" onclick="removeWatch('${w.id}')">O'chirish</button>` : ''}</td>
+    </tr>`;
+  }).join('');
+}
+
+async function removeWatch(id) {
+  await sb.from('watchlist').update({ status: 'removed' }).eq('id', id);
+  toast('Watchlist dan o\'chirildi');
+  loadWatchlist();
+}
+
+function showAddWatchModal() {
+  document.getElementById('aw-ticker').value = '';
+  document.getElementById('aw-value').value = '';
+  document.getElementById('aw-note').value = '';
+  document.getElementById('modal-add-watch').classList.add('open');
+}
+
+function toggleAddWatchFields() {
+  const t = document.getElementById('aw-type').value;
+  document.getElementById('aw-price-field').style.display = t === 'price' ? '' : 'none';
+  document.getElementById('aw-date-field').style.display = t === 'time' ? '' : 'none';
+}
+
+async function submitAddWatch() {
+  const ticker = document.getElementById('aw-ticker').value.toUpperCase().trim();
+  const watchType = document.getElementById('aw-type').value;
+  const triggerValue = parseFloat(document.getElementById('aw-value').value) || null;
+  const triggerDate = document.getElementById('aw-date').value || null;
+  const note = document.getElementById('aw-note').value;
+  if (!ticker) { toast('Ticker kiriting', true); return; }
+  await sb.from('watchlist').insert({
+    analyst_id: currentUser.id, ticker, watch_type: watchType,
+    trigger_value: triggerValue, trigger_date: triggerDate,
+    trigger_note: note, source: 'manual', status: 'active'
+  });
+  closeModal('modal-add-watch');
+  toast('👁 ' + ticker + ' Watchlist ga qo\'shildi');
+  loadWatchlist();
+}
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// IDEA AUDIT
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+async function loadAudit() {
+  let q = sb.from('audit_results').select('*, analysts(name)').order('closed_at', { ascending: false });
+
+  // Period filter
+  const now = new Date();
+  const periodMap = { '1m': 30, '3m': 90, '6m': 180, '1y': 365 };
+  if (auditPeriod !== 'all' && periodMap[auditPeriod]) {
+    const from = new Date(now - periodMap[auditPeriod] * 86400000).toISOString();
+    q = q.gte('closed_at', from);
+  }
+  if (auditResult !== 'all') q = q.eq('result', auditResult);
+
+  const { data } = await q;
+  const audits = data || [];
+
+  // Stats
+  const total = audits.length;
+  const wins = audits.filter(a => a.result === 'win').length;
+  const winRate = total > 0 ? ((wins / total) * 100).toFixed(1) : '—';
+  const avgRet = total > 0 ? (audits.reduce((s, a) => s + parseFloat(a.return_pct || 0), 0) / total).toFixed(1) : '—';
+  const best = total > 0 ? Math.max(...audits.map(a => parseFloat(a.return_pct || 0))).toFixed(1) : '—';
+
+  document.getElementById('as-total').textContent = total;
+  document.getElementById('as-winrate').textContent = winRate !== '—' ? winRate + '%' : '—';
+  document.getElementById('as-avg').textContent = avgRet !== '—' ? (parseFloat(avgRet) >= 0 ? '+' : '') + avgRet + '%' : '—';
+  document.getElementById('as-avg').className = 'a-stat-val ' + (parseFloat(avgRet) >= 0 ? 'pos' : 'neg');
+  document.getElementById('as-best').textContent = best !== '—' ? '+' + best + '%' : '—';
+
+  // Leaderboard
+  const byAnalyst = {};
+  audits.forEach(a => {
+    const name = a.analysts?.name || 'Unknown';
+    if (!byAnalyst[name]) byAnalyst[name] = { ideas: 0, wins: 0, returns: [], best: null, bestRet: -Infinity };
+    byAnalyst[name].ideas++;
+    if (a.result === 'win') byAnalyst[name].wins++;
+    byAnalyst[name].returns.push(parseFloat(a.return_pct || 0));
+    if (parseFloat(a.return_pct || 0) > byAnalyst[name].bestRet) {
+      byAnalyst[name].bestRet = parseFloat(a.return_pct || 0);
+      byAnalyst[name].best = a.ticker;
+    }
+  });
+  const leaderboard = Object.entries(byAnalyst).sort((a, b) => {
+    const wrA = a[1].wins / a[1].ideas; const wrB = b[1].wins / b[1].ideas;
+    return wrB - wrA;
+  });
+  const rankColors = ['var(--yellow2)', 'var(--text3)', 'var(--orange2)'];
+  document.getElementById('leaderboard').innerHTML = leaderboard.length === 0
+    ? '<div class="empty-state">Hali natija yo\'q</div>'
+    : leaderboard.map(([name, d], i) => {
+        const wr = ((d.wins / d.ideas) * 100).toFixed(1);
+        const avg = (d.returns.reduce((s, v) => s + v, 0) / d.returns.length).toFixed(1);
+        return `<div style="display:flex;align-items:center;gap:10px;padding:9px;background:var(--surface2);border-radius:8px;border:1px solid var(--border);margin-bottom:6px">
+          <div style="width:22px;height:22px;border-radius:6px;background:${rankColors[i]||'var(--surface3)'};display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:var(--bg);flex-shrink:0">${i + 1}</div>
+          <div style="flex:1"><div style="font-size:12px;font-weight:700;color:#fff">${name}</div>
+            <div style="font-size:9.5px;color:var(--text3);font-family:var(--mono)">${d.ideas} g'oya · best: ${d.best || '—'}</div></div>
+          <div style="text-align:right"><div style="font-size:13px;font-weight:800;font-family:var(--mono);color:var(--green3)">${wr}%</div><div style="font-size:9px;color:var(--text3);font-family:var(--mono)">win rate</div></div>
+          <div style="text-align:right"><div style="font-size:13px;font-weight:800;font-family:var(--mono);color:${parseFloat(avg)>=0?'var(--green3)':'var(--red3)'}">${parseFloat(avg)>=0?'+':''}${avg}%</div><div style="font-size:9px;color:var(--text3);font-family:var(--mono)">avg</div></div>
+        </div>`;
+      }).join('');
+
+  // Top ideas
+  const topIdeas = [...audits].sort((a, b) => parseFloat(b.return_pct) - parseFloat(a.return_pct)).slice(0, 4);
+  document.getElementById('top-ideas').innerHTML = topIdeas.length === 0
+    ? '<div class="empty-state">Natija yo\'q</div>'
+    : topIdeas.map(a => {
+        const r = parseFloat(a.return_pct).toFixed(1);
+        return `<div style="display:flex;justify-content:space-between;align-items:center;padding:7px 10px;background:var(--surface2);border-radius:7px;font-family:var(--mono);margin-bottom:5px">
+          <div><span style="font-weight:700;color:#fff">${a.ticker}</span><span style="font-size:9px;color:var(--text3);margin-left:6px">${a.analysts?.name || '—'}</span></div>
+          <span class="${parseFloat(r)>=0?'pos':'neg'}" style="font-weight:700">${parseFloat(r)>=0?'+':''}${r}%</span>
+        </div>`;
+      }).join('');
+
+  // Table
+  document.getElementById('audit-tbl').innerHTML = audits.length === 0
+    ? '<tr><td colspan="9" class="empty-state">Natija topilmadi</td></tr>'
+    : audits.map(a => {
+        const r = parseFloat(a.return_pct).toFixed(1);
+        const srcIcon = a.source === 'auto' ? '🤖' : '✍️';
+        return `<tr>
+          <td><div class="tk">${a.ticker} ${srcIcon}</div></td>
+          <td style="color:var(--text2)">${a.analysts?.name || '—'}</td>
+          <td>$${parseFloat(a.entry_price).toFixed(2)}</td>
+          <td>$${parseFloat(a.exit_price).toFixed(2)}</td>
+          <td class="${parseFloat(r)>=0?'pos':'neg'}" style="font-weight:700">${parseFloat(r)>=0?'+':''}${r}%</td>
+          <td><span class="badge ${a.result==='win'?'bg':'br'}">${a.result==='win'?'WIN':'LOSS'}</span></td>
+          <td style="color:var(--text3)">${a.exit_type || '—'}</td>
+          <td style="color:var(--text3)">${fmtDate(a.opened_at)}</td>
+          <td style="color:var(--text3)">${fmtDate(a.closed_at)}</td>
+        </tr>`;
+      }).join('');
+}
+
+function setAuditPeriod(p, btn) {
+  auditPeriod = p;
+  document.querySelectorAll('#page-audit .af-btn').forEach(b => {
+    if (['all','1m','3m','6m','1y'].some(x => b.textContent.toLowerCase().includes(x) || b.onclick?.toString().includes(`'${x}'`))) b.classList.remove('active');
+  });
+  btn.classList.add('active');
+  loadAudit();
+}
+
+function setAuditResult(r, btn) {
+  auditResult = r;
+  document.querySelectorAll('#ar-all,#ar-win,#ar-loss').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  loadAudit();
+}
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// IDEA FACTORY
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+async function loadStrategies() {
+  const { data } = await sb.from('strategies').select('*').eq('analyst_id', currentUser.id).order('created_at');
+  strategies = data || [];
+  renderStratList();
+  if (strategies.length > 0) {
+    const active = strategies.find(s => s.is_active) || strategies[0];
+    selectStrategy(active);
+  } else {
+    criteria = JSON.parse(JSON.stringify(DEFAULT_CRITERIA));
+    renderAllCriteria();
+  }
+  // Load recent scans
+  loadRecentScans();
+}
+
+function renderStratList() {
+  document.getElementById('strat-count').textContent = strategies.length + ' ta';
+  document.getElementById('strat-list').innerHTML = strategies.length === 0
+    ? '<div style="padding:10px 13px;font-size:10px;color:var(--text3);font-family:var(--mono)">↓ Quyida nom yozing va "Saqlash" bosing</div>'
+    : strategies.map(s => `
+      <div class="strat-item ${s.is_active ? 'active-strat' : ''}" onclick="selectAndActivate('${s.id}')">
+        <div style="flex:1">
+          <div style="font-size:11px;font-weight:700;color:${s.is_active ? '#fff' : 'var(--text2)'}">${s.name}</div>
+          <div style="font-size:9px;color:var(--text3);font-family:var(--mono)">Chegara: ${s.threshold}% ${s.is_active ? '· ✅ TANLANGAN' : ''}</div>
+        </div>
+        <div style="display:flex;gap:5px;align-items:center">
+          ${s.is_active ? '<span class="badge bg" style="font-size:7px">AKTIV</span>' : '<button class="btn btn-ghost btn-sm" style="font-size:9px;padding:2px 7px" onclick="event.stopPropagation();selectAndActivate(\''+s.id+'\')">Tanlash</button>'}
+          <button class="btn btn-red btn-sm" style="font-size:9px;padding:2px 5px" onclick="event.stopPropagation();deleteStrategy('${s.id}')">×</button>
+        </div>
+      </div>`).join('');
+}
+
+function selectStrategy(s) {
+  if (typeof s === 'string') s = JSON.parse(s.replace(/&quot;/g, '"'));
+  activeStrategy = s;
+  document.getElementById('threshold-slider').value = s.threshold || 80;
+  document.getElementById('thresh-val').textContent = (s.threshold || 80) + '%';
+  criteria = s.criteria ? (typeof s.criteria === 'string' ? JSON.parse(s.criteria) : s.criteria) : JSON.parse(JSON.stringify(DEFAULT_CRITERIA));
+  if (!criteria.technical) criteria = JSON.parse(JSON.stringify(DEFAULT_CRITERIA));
+  renderAllCriteria();
+}
+
+function renderAllCriteria() {
+  const allEnabled = Object.values(criteria).flat().filter(c => c.enabled).length;
+  const perBall = allEnabled > 0 ? (100 / allEnabled) : 0;
+  ['technical', 'financial', 'cashflow', 'growth'].forEach(cat => renderCriteria(cat, perBall));
+  updateScoreSummary(allEnabled, perBall);
+}
+
+function updateScoreSummary(n, perBall) {
+  const disp = document.getElementById('score-disp');
+  const formula = document.getElementById('score-formula');
+  const perW = document.getElementById('per-weight');
+  const meter = document.getElementById('meter-fill');
+  if (disp) disp.textContent = n > 0 ? '100 / 100' : '0 / 100';
+  if (perW) perW.textContent = n > 0 ? `Har bir mezon: ${perBall.toFixed(1)} ball` : '— ball';
+  if (formula) formula.textContent = n > 0
+    ? `${n} ta mezon yoqilgan · formula: passed/${n} × 100`
+    : '0 ta mezon yoqilgan — mezon qo\'shing';
+  if (meter) meter.style.width = n > 0 ? '100%' : '0%';
+}
+
+function renderCriteria(cat, perBall) {
+  if (perBall === undefined) {
+    const allEnabled = Object.values(criteria).flat().filter(c => c.enabled).length;
+    perBall = allEnabled > 0 ? (100 / allEnabled) : 0;
+  }
+  const items = criteria[cat] || [];
+  const enabled = items.filter(c => c.enabled).length;
+  document.getElementById('badge-' + cat).textContent = enabled + '/' + items.length;
+  document.getElementById('body-' + cat).innerHTML = items.map((c, i) => {
+    const ball = c.enabled ? perBall.toFixed(1) + ' b' : '-';
+    const ballColor = c.enabled ? 'var(--blue3)' : 'var(--text3)';
+    return `
+    <div class="cr-row">
+      <label class="tog"><input type="checkbox" ${c.enabled ? 'checked' : ''} onchange="toggleCriteria('${cat}',${i},this.checked)"><span class="tog-sl"></span></label>
+      <span class="cr-lbl" style="color:${c.enabled ? 'var(--text)' : 'var(--text3)'}">${c.label}</span>
+      <span class="cr-wt" style="color:${ballColor};font-weight:700">${ball}</span>
+      <button class="btn btn-ghost btn-sm" style="font-size:9px;padding:2px 5px;opacity:.4" onclick="removeCriteria('${cat}',${i})">×</button>
+    </div>`;
+  }).join('') || '<div style="font-size:10px;color:var(--text3);padding:5px 0;font-family:var(--mono)">Mezon yo\'q</div>';
+}
+
+function toggleCriteria(cat, idx, val) {
+  criteria[cat][idx].enabled = val;
+  renderAllCriteria(); // barcha kategoriyalarni qayta hisoblash (perBall o'zgaradi)
+}
+
+function removeCriteria(cat, idx) {
+  criteria[cat].splice(idx, 1);
+  renderAllCriteria(); // barcha kategoriyalarni qayta hisoblash
+}
+
+function addCriteria(cat) {
+  const label = prompt('Mezon nomi:');
+  if (!label) return;
+  criteria[cat].push({ id: label.toLowerCase().replace(/\s+/g, '_') + '_' + Date.now(), label, enabled: true });
+  renderAllCriteria(); // barcha qayta hisoblash
+}
+
+function toggleBlock(hdr) {
+  const body = hdr.nextElementSibling;
+  const arrow = hdr.querySelector('.sb-arrow');
+  body.classList.toggle('open');
+  arrow.classList.toggle('open');
+}
+
+async function saveStrategy() {
+  const name = document.getElementById('new-strat-name').value.trim();
+  if (!name) { toast('Strategiya nomini kiriting', true); return; }
+  const threshold = parseInt(document.getElementById('threshold-slider').value);
+
+  // Avval barchasini noaktiv qilish
+  await sb.from('strategies').update({ is_active: false }).eq('analyst_id', currentUser.id);
+
+  const { data: newStrat, error } = await sb.from('strategies').insert({
+    analyst_id: currentUser.id, name, threshold,
+    criteria: JSON.parse(JSON.stringify(DEFAULT_CRITERIA)),
+    is_active: true  // yangi strategiya darhol aktiv bo'ladi
+  }).select().single();
+
+  if (error) { toast('Xato: ' + (error.code === '23505' ? 'Bu nom allaqachon mavjud' : error.message), true); return; }
+
+  document.getElementById('new-strat-name').value = '';
+  toast('✅ "' + name + '" saqlandi va tanlandi — Run Scan bosing!');
+
+  await loadStrategies();
+  // Yangi strategiyani avtomatik tanlash
+  if (newStrat) selectStrategy(newStrat);
+}
+
+async function saveCurrentStrategy() {
+  if (!activeStrategy) { toast('Strategiya tanlanmagan', true); return; }
+  const threshold = parseInt(document.getElementById('threshold-slider').value);
+  await sb.from('strategies').update({ criteria, threshold, updated_at: new Date().toISOString() }).eq('id', activeStrategy.id);
+  toast('✅ Strategiya yangilandi');
+  loadStrategies();
+}
+
+async function selectAndActivate(id) {
+  await sb.from('strategies').update({ is_active: false }).eq('analyst_id', currentUser.id);
+  await sb.from('strategies').update({ is_active: true }).eq('id', id);
+  await loadStrategies();
+  toast('✅ Strategiya tanlandi — endi Run Scan bosing!');
+}
+
+async function activateStrategy(id) {
+  await selectAndActivate(id);
+}
+
+async function deleteStrategy(id) {
+  if (!confirm('Strategiyani o\'chirishni tasdiqlaysizmi?')) return;
+  await sb.from('strategies').delete().eq('id', id);
+  loadStrategies();
+}
+
+function toggleAutoRun() {
+  autoRunEnabled = !autoRunEnabled;
+  const badge = document.getElementById('auto-badge');
+  badge.className = 'auto-badge ' + (autoRunEnabled ? 'on' : '');
+  document.getElementById('auto-label').textContent = 'Auto: ' + (autoRunEnabled ? 'ON' : 'OFF');
+  document.getElementById('auto-dot').style.background = autoRunEnabled ? 'var(--green2)' : 'var(--border2)';
+  if (activeStrategy) {
+    sb.from('strategies').update({ auto_run: autoRunEnabled }).eq('id', activeStrategy.id);
+  }
+  toast(autoRunEnabled ? '⏰ Auto-run yoqildi (har kuni 21:00 UTC)' : 'Auto-run o\'chirildi');
+}
+
+// ─── SCAN ───
+async function runScan() {
+  if (!activeStrategy) {
+    toast('⚠️ Strategiya tanlang! Yuqorida strategiya nomiga bosing yoki yangi yarating.', true);
+    return;
+  }
+  const enabledCriteria = Object.values(criteria).flat().filter(c => c.enabled);
+  if (enabledCriteria.length === 0) { toast('Kamida 1 ta mezon yoqilishi kerak', true); return; }
+
+  const btn = document.getElementById('scan-btn');
+  btn.disabled = true; btn.innerHTML = '<div class="spin" style="width:12px;height:12px;border-width:2px"></div> Skanlanmoqda...';
+  // threshold UI sliderdan o'qiladi lekin SCORE_THRESHOLDS dan ham foydalaniladi
+  const N = enabledCriteria.length;
+  const perBall = N > 0 ? (100 / N) : 0; // har bir mezon = 100/N ball
+  const startTime = Date.now();
+  const totalTickers = SP500_SAMPLE.length;
+
+  document.getElementById('scan-content').innerHTML = `<div class="loading-state"><div class="spin"></div><span id="scan-progress">${totalTickers} ta ticker skanlanmoqda... FMP API dan real narxlar yuklanmoqda</span></div>`;
+
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  // TWELVE DATA dan real narxlar
+  // /price endpoint — eng ishonchli, free planda ishlaydi
+  // Batch: 50 ticker (ko'p bo'lsa xato beradi)
+  // BRK.B kabi maxsus belgilar filterlandi
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  let realPrices = {};
+  const batchSize = 50; // Free plan uchun xavfsiz chegara
+  // Maxsus belgilar bor tickerlarni o'chirish (BRK.B, BRK.A - TD ishlamaydi)
+  const validTickers = SP500_SAMPLE.filter(t => /^[A-Z]{1,5}$/.test(t));
+  const batches = [];
+  for (let i = 0; i < validTickers.length; i += batchSize) {
+    batches.push(validTickers.slice(i, i + batchSize));
+  }
+  logFmp(`📊 Scan: ${validTickers.length} ticker, ${batches.length} batch (har biri ${batchSize} ta)`);
+
+  let fetched = 0;
+  let failedBatches = 0;
+  for (const batch of batches) {
+    try {
+      if (!TD_API_KEY || TD_API_KEY === 'YOUR_TWELVE_DATA_KEY') {
+        logFmp('⚠️ Scan: API key yo\'q, simulatsiya rejimi', true);
+        break;
+      }
+
+      const symbols = batch.join(',');
+      // /price endpoint — narx + o'zgarish foizi (free planda ishonchli)
+      const url = `${TD_BASE}/price?symbol=${symbols}&apikey=${TD_API_KEY}`;
+      const res = await fetch(url, { signal: AbortSignal.timeout(20000) });
+
+      if (!res.ok) {
+        failedBatches++;
+        logFmp(`❌ Batch HTTP xato: ${res.status}`, true);
+      } else {
+        const data = await res.json();
+        console.log(`[TD Scan batch ${Math.ceil(fetched/batchSize)+1}] raw:`, JSON.stringify(data).slice(0, 200));
+
+        // Error tekshirish
+        if (data.status === 'error' || data.code) {
+          failedBatches++;
+          const msg = data.message || `code ${data.code}`;
+          logFmp(`❌ Batch API xato: ${msg}`, true);
+          if (msg.toLowerCase().includes('limit') || msg.toLowerCase().includes('429')) {
+            toast('⚠️ Twelve Data limit tugadi! Simulatsiya rejimida davom etadi.', true, 5000);
+            break;
+          }
+        } else {
+          trackFmpCall(1);
+
+          // /price response formatlar:
+          // Bitta ticker:  {"price":"234.5"}  yoki {"price":"234.5","symbol":"AAPL"}
+          // Ko'p ticker:   {"AAPL":{"price":"234.5"},"MSFT":{"price":"420.1"}}
+          if (batch.length === 1) {
+            // Bitta ticker
+            const sym = batch[0];
+            const p = parseFloat(data.price || 0);
+            if (p > 0) {
+              realPrices[sym] = {
+                regularMarketPrice: p,
+                regularMarketChangePercent: 0,
+                regularMarketVolume: 0, averageVolume: 0,
+                week52High: 0, week52Low: 0
+              };
+            }
+          } else {
+            // Ko'p ticker — har bir kalit ticker symbol
+            Object.entries(data).forEach(([sym, info]) => {
+              if (!info || typeof info !== 'object') return;
+              // Ba'zan TD `{"AAPL":{"price":"234.5"}}` yoki `{"AAPL":"234.5"}` beradi
+              const p = parseFloat(info.price || info || 0);
+              if (p > 0 && validTickers.includes(sym)) {
+                realPrices[sym] = {
+                  regularMarketPrice: p,
+                  regularMarketChangePercent: 0, // /price da yo'q
+                  regularMarketVolume: 0, averageVolume: 0,
+                  week52High: 0, week52Low: 0
+                };
+              }
+            });
+          }
+
+          const gotPrices = Object.keys(realPrices).length;
+          logFmp(`✅ Batch ${Math.ceil(fetched/batchSize)+1}: ${gotPrices} ta narx olindi`);
+        }
+      }
+    } catch(e) {
+      failedBatches++;
+      console.error('❌ Scan batch catch:', e.message);
+      logFmp(`❌ Batch ${Math.ceil(fetched/batchSize)+1} xato: ${e.message}`, true);
+    }
+    fetched += batch.length;
+    const prog = document.getElementById('scan-progress');
+    if (prog) prog.textContent =
+      `${fetched}/${validTickers.length} tekshirildi · ` +
+      `Real narxlar: ${Object.keys(realPrices).length} ta · ` +
+      `TD: ${fmpCallsToday}/${FMP_DAILY_LIMIT}`;
+    await new Promise(r => setTimeout(r, 300)); // Rate limit
+  }
+
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  // SCORING FORMULA (v5 bilan bir xil, hujjatga ko'ra):
+  //   perBall = 100 / N  (har bir mezon teng ball)
+  //   score   = Math.round(passed / N * 100)
+  //
+  // Misol: 10 mezon → har biri 10 ball
+  //         7 mezon → har biri 14.3 ball
+  //         8 tadan 6 tasi o'tsa → 75 ball
+  //
+  // Thresholds: ≥80 = Inbox | 65-79 = Watchlist | <65 = Rad
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  const results = SP500_SAMPLE.map(ticker => {
+    const q = realPrices[ticker];
+    const price = q?.regularMarketPrice || 0;
+    const changeP = q?.regularMarketChangePercent || 0;
+    const volume = q?.regularMarketVolume || 0;
+    const avgVolume = q?.averageVolume || 0;
+    const week52High = q?.week52High || 0;
+    const hasRealData = !!q;
+
+    let passed = 0;
+    const criteriaResults = [];
+
+    enabledCriteria.forEach(c => {
+      let pass = false;
+      let isReal = false;
+      let note = '';
+      const id = c.id.toLowerCase();
+
+      if (hasRealData) {
+        if (id === 'rsi') {
+          pass = changeP > 0; isReal = true;
+          note = pass ? `+${changeP.toFixed(2)}%` : `${changeP.toFixed(2)}%`;
+        } else if (id === 'vol_surge') {
+          const ratio = avgVolume > 0 ? volume / avgVolume : 0;
+          pass = ratio >= 1.2 || (avgVolume === 0 && volume > 1000000);
+          isReal = avgVolume > 0;
+          note = avgVolume > 0 ? `${ratio.toFixed(1)}x` : `${(volume/1e6).toFixed(1)}M`;
+        } else if (id === 'week52_high') {
+          pass = week52High > 0 && price >= week52High * 0.85;
+          isReal = week52High > 0;
+          note = week52High > 0 ? `${((price/week52High)*100).toFixed(0)}% of 52wH` : '—';
+        } else if (id === 'rev_accel') {
+          pass = changeP > 1.5; isReal = true;
+          note = `${changeP.toFixed(2)}%`;
+        } else {
+          pass = Math.random() > 0.50; isReal = false; note = '~SIM';
+        }
+      } else {
+        pass = Math.random() > 0.50; isReal = false; note = '~SIM';
+      }
+
+      if (pass) passed++;
+      criteriaResults.push({ id: c.id, label: c.label, pass, isReal, note, pts: perBall });
+    });
+
+    // score = passed/total * 100
+    const score = N > 0 ? Math.round(passed / N * 100) : 0;
+    const sector = SECTORS[ticker] || 'Other';
+
+    let status;
+    if (score >= SCORE_THRESHOLDS.inbox) status = 'idea';
+    else if (score >= SCORE_THRESHOLDS.watchlist) status = 'potential';
+    else status = 'rejected';
+
+    const upsidePct = 0.10 + (score / 1000);
+    const stopPct   = 0.06 - (score / 5000);
+
+    return {
+      ticker, score, passed, total: N, perBall,
+      sector,
+      entry_price:  parseFloat((price || 100).toFixed(2)),
+      target_price: parseFloat(((price || 100) * (1 + upsidePct)).toFixed(2)),
+      stop_price:   parseFloat(((price || 100) * (1 - stopPct)).toFixed(2)),
+      risk_level: score >= 80 ? 'Low' : score >= 65 ? 'Medium' : 'High',
+      status, criteriaResults,
+      criteria_detail: Object.fromEntries(criteriaResults.map(c => [c.id, c.pass])),
+      change_pct: parseFloat(changeP.toFixed(2)),
+      hasRealData
+    };
+  }).filter(r => r.entry_price > 0);
+
+  const ideas     = results.filter(r => r.status === 'idea');
+  const potential = results.filter(r => r.status === 'potential');
+  const rejected  = results.filter(r => r.status === 'rejected');
+  const duration  = Date.now() - startTime;
+  const realDataCount = Object.keys(realPrices).length;
+
+  scanData = { ideas, potential };
+  document.getElementById('cnt-ideas').textContent = ideas.length;
+  document.getElementById('cnt-potential').textContent = potential.length;
+  document.getElementById('scan-info').textContent =
+    `${realDataCount} ta real narx · ${results.length} ta tekshirildi · ` +
+    `${ideas.length} Inbox | ${potential.length} Watchlist | ${rejected.length} Rad · ` +
+    `${(duration / 1000).toFixed(1)}s`;
+
+  // Supabase ga saqlash (idea + potential)
+  if (ideas.length > 0 || potential.length > 0) {
+    const toInsert = [...ideas, ...potential].map(r => ({
+      strategy_id: activeStrategy.id, analyst_id: currentUser.id,
+      ticker: r.ticker, score: r.score,
+      matched: r.passed, total: r.total,
+      status: r.status,
+      entry_price: r.entry_price, target_price: r.target_price,
+      stop_price: r.stop_price, risk_level: r.risk_level,
+      sector: r.sector, criteria_detail: r.criteria_detail,
+      source: 'manual', scanned_at: new Date().toISOString()
+    }));
+    const { error: insertErr } = await sb.from('scan_results').insert(toInsert);
+    if (insertErr) logFmp(`❌ scan_results saqlash xato: ${insertErr.message}`, true);
+  }
+
+  btn.disabled = false; btn.innerHTML = '▶ Run Scan';
+  renderScanResults();
+
+  const realLabel = realDataCount > 0 ? `${realDataCount} ta real narx` : 'simulatsiya';
+  toast(`✅ Skan: ${ideas.length} Inbox · ${potential.length} Watchlist · ${rejected.length} Rad (${realLabel} · TD: ${fmpCallsToday}/${FMP_DAILY_LIMIT})`);
+}
+
+function renderScanResults() {
+  const tab = currentScanTab;
+  const data = scanData[tab] || [];
+  if (tab === 'recent') { loadRecentScans(); return; }
+  if (data.length === 0) {
+    document.getElementById('scan-content').innerHTML =
+      `<div class="empty-state">
+        ${tab === 'ideas' ? '📭 80+ ball olgan aksiya topilmadi' : '📭 65-79 ball oralig\'ida aksiya topilmadi'}
+        <div style="margin-top:8px;font-size:10px">Strategiya mezonlarini o'zgartiring yoki Run Scan ni qayta bosing</div>
+      </div>`;
+    return;
+  }
+  const sorted = [...data].sort((a, b) => b.score - a.score);
+  const isIdea = tab === 'ideas';
+
+  document.getElementById('scan-content').innerHTML = `
+    <table style="width:100%;border-collapse:collapse">
+      <thead><tr style="background:var(--surface2)">
+        <th style="padding:8px 10px;font-size:9px;color:var(--text3);text-align:left;font-family:var(--mono)">TICKER</th>
+        <th style="padding:8px 10px;font-size:9px;color:var(--text3);text-align:left;font-family:var(--mono)">BALL / 100</th>
+        <th style="padding:8px 10px;font-size:9px;color:var(--text3);text-align:left;font-family:var(--mono)">MEZONLAR</th>
+        <th style="padding:8px 10px;font-size:9px;color:var(--text3);text-align:left;font-family:var(--mono)">SEKTOR</th>
+        <th style="padding:8px 10px;font-size:9px;color:var(--text3);text-align:left;font-family:var(--mono)">NARX</th>
+        <th style="padding:8px 10px;font-size:9px;color:var(--text3);text-align:left;font-family:var(--mono)">BUGUN</th>
+        <th style="padding:8px 10px;font-size:9px;color:var(--text3);text-align:left;font-family:var(--mono)">TARGET</th>
+        <th style="padding:8px 10px;font-size:9px;color:var(--text3);text-align:left;font-family:var(--mono)">AMAL</th>
+      </tr></thead>
+      <tbody>
+        ${sorted.map(r => {
+          const sc = r.score;
+          const color = sc >= 80 ? 'var(--green3)' : sc >= 65 ? 'var(--yellow3)' : 'var(--red3)';
+          const upside = (((r.target_price - r.entry_price) / r.entry_price) * 100).toFixed(1);
+          const chg = r.change_pct || 0;
+          const dataTag = r.hasRealData
+            ? `<span style="font-size:7px;background:rgba(16,185,129,.15);color:var(--green3);border:1px solid rgba(16,185,129,.3);border-radius:3px;padding:1px 4px;margin-left:4px">📡 REAL</span>`
+            : `<span style="font-size:7px;background:var(--surface3);color:var(--text3);border:1px solid var(--border);border-radius:3px;padding:1px 4px;margin-left:4px">~SIM</span>`;
+
+          const criDetails = r.criteriaResults || [];
+          const passedCri = criDetails.filter(c => c.pass);
+          const failedCri = criDetails.filter(c => !c.pass);
+          const criHtml = `
+            <div style="font-size:9px;font-family:var(--mono)">
+              <span style="color:var(--green3);font-weight:700">✅ ${passedCri.length}</span><span style="color:var(--text3)">/${criDetails.length}</span>
+              <span style="font-size:8px;color:var(--text3)"> · har biri ${r.perBall ? r.perBall.toFixed(1) : (100/Math.max(criDetails.length,1)).toFixed(1)}b</span>
+              ${passedCri.slice(0,2).map(c =>
+                `<div style="color:var(--green3);font-size:8px;margin-top:1px">${c.isReal ? '📡' : '~'} ${c.label.split(' —')[0]} <span style="color:var(--text3)">${c.note||''}</span></div>`
+              ).join('')}
+              ${failedCri.length > 0 ? `<div style="color:var(--red3);font-size:8px">❌ ${failedCri[0].label.split(' —')[0]}</div>` : ''}
+            </div>`;
+
+          const actionBtn = isIdea
+            ? `<button class="btn btn-green btn-sm" onclick="sendToInbox('${r.ticker}',${r.entry_price},${r.target_price},${r.stop_price},'${r.sector}','${r.risk_level}',${r.score})">📥 Inbox</button>`
+            : `<div style="display:flex;flex-direction:column;gap:3px">
+                <button class="btn btn-orange btn-sm" style="font-size:9px" onclick="sendToWatchlistFromScan('${r.ticker}',${r.entry_price},${r.score})">👁 Watch</button>
+                <button class="btn btn-ghost btn-sm" style="font-size:9px" onclick="sendToInbox('${r.ticker}',${r.entry_price},${r.target_price},${r.stop_price},'${r.sector}','${r.risk_level}',${r.score})">📥 Inbox</button>
+              </div>`;
+
+          return `<tr style="border-top:1px solid var(--border)">
+            <td style="padding:9px 10px">
+              <div class="tk">${r.ticker}${dataTag}</div>
+              <div style="font-size:8.5px;color:var(--text3)">${r.risk_level} risk</div>
+            </td>
+            <td style="padding:9px 10px">
+              <div style="display:flex;align-items:center;gap:6px">
+                <div style="width:50px;height:5px;background:var(--surface3);border-radius:3px">
+                  <div style="width:${sc}%;height:100%;background:${color};border-radius:3px"></div>
+                </div>
+                <span style="font-size:17px;font-weight:800;color:${color};font-family:var(--mono)">${sc}</span>
+              </div>
+            </td>
+            <td style="padding:9px 10px">${criHtml}</td>
+            <td style="padding:9px 10px;font-size:10px;color:var(--text3);font-family:var(--mono)">${r.sector}</td>
+            <td style="padding:9px 10px;font-family:var(--mono);font-weight:700">$${r.entry_price.toFixed(2)}</td>
+            <td style="padding:9px 10px;font-family:var(--mono)" class="${chg >= 0 ? 'pos' : 'neg'}">${chg >= 0 ? '+' : ''}${chg.toFixed(2)}%</td>
+            <td style="padding:9px 10px;font-family:var(--mono);color:var(--green3)">+${upside}%</td>
+            <td style="padding:9px 10px">${actionBtn}</td>
+          </tr>`;
+        }).join('')}
+      </tbody>
+    </table>
+    <div style="padding:8px 12px;font-size:9.5px;color:var(--text3);font-family:var(--mono);border-top:1px solid var(--border);display:flex;gap:12px;flex-wrap:wrap">
+      <span>📡 = Real data (Twelve Data)</span>
+      <span>~ = Simulatsiya (fundamental API kerak)</span>
+      <span style="color:var(--green3)">≥ 80 → 📥 Inbox</span>
+      <span style="color:var(--yellow3)">65-79 → 👁 Watchlist</span>
+      <span style="color:var(--red3)">&lt; 65 → Auto Rad</span>
+    </div>`;
+}
+
+function switchScanTab(tab, el) {
+  currentScanTab = tab;
+  document.querySelectorAll('.scan-tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  renderScanResults();
+}
+
+async function loadRecentScans() {
+  const { data } = await sb.from('scan_results').select('*')
+    .eq('analyst_id', currentUser.id).order('scanned_at', { ascending: false }).limit(50);
+  const items = data || [];
+  if (currentScanTab !== 'recent') return;
+  document.getElementById('scan-content').innerHTML = items.length === 0
+    ? '<div class="empty-state">Hali skan amalga oshirilmagan</div>'
+    : `<table style="width:100%;border-collapse:collapse">
+        <thead><tr style="background:var(--surface2)">
+          <th style="padding:7px 10px;font-size:9px;color:var(--text3);font-family:var(--mono);text-align:left">TICKER</th>
+          <th style="padding:7px 10px;font-size:9px;color:var(--text3);font-family:var(--mono);text-align:left">SCORE</th>
+          <th style="padding:7px 10px;font-size:9px;color:var(--text3);font-family:var(--mono);text-align:left">STATUS</th>
+          <th style="padding:7px 10px;font-size:9px;color:var(--text3);font-family:var(--mono);text-align:left">SANA</th>
+          <th style="padding:7px 10px;font-size:9px;color:var(--text3);font-family:var(--mono);text-align:left">AMAL</th>
+        </tr></thead>
+        <tbody>
+          ${items.map(r => {
+            const statusB = { idea: '<span class="badge bg">G\'OYA</span>', potential: '<span class="badge by">POTENTSIAL</span>', rejected: '<span class="badge br">RAD</span>' }[r.status] || r.status;
+            return `<tr style="border-top:1px solid var(--border)">
+              <td style="padding:9px 10px"><div class="tk">${r.ticker}</div></td>
+              <td style="padding:9px 10px;font-weight:700;color:var(--blue3);font-family:var(--mono)">${r.score}</td>
+              <td style="padding:9px 10px">${statusB}</td>
+              <td style="padding:9px 10px;font-size:10px;color:var(--text3);font-family:var(--mono)">${fmtDate(r.scanned_at)}</td>
+              <td style="padding:9px 10px">${r.status === 'rejected' ? '' : `<button class="btn btn-ghost btn-sm" onclick="sendToInboxFromScan('${r.id}','${r.ticker}',${r.entry_price||0},${r.target_price||0},${r.stop_price||0},'${r.sector||''}','${r.risk_level||'Medium'}',${r.score})">📥 Inbox</button>`}</td>
+            </tr>`;
+          }).join('')}
+        </tbody>
+      </table>`;
+}
+
+async function sendToInbox(ticker, entry, target, stop, sector, risk, score) {
+  // Check duplicate
+  const { data: existing } = await sb.from('signals').select('id')
+    .eq('analyst_id', currentUser.id).eq('ticker', ticker).in('status', ['pending', 'active']).maybeSingle();
+  if (existing) { toast(ticker + ' allaqachon Inbox da mavjud', true); return; }
+  await sb.from('signals').insert({
+    analyst_id: currentUser.id, ticker, entry_price: entry, target1: target,
+    stop_loss: stop, sector, risk_level: risk, score,
+    strategy_name: activeStrategy?.name, source: 'auto', status: 'pending'
+  });
+  toast('📥 ' + ticker + ' Inbox ga yuborildi');
+  loadSignals();
+}
+
+async function sendToInboxFromScan(scanId, ticker, entry, target, stop, sector, risk, score) {
+  const { data: existing } = await sb.from('signals').select('id')
+    .eq('analyst_id', currentUser.id).eq('ticker', ticker).in('status', ['pending', 'active']).maybeSingle();
+  if (existing) { toast(ticker + ' allaqachon Inbox da mavjud', true); return; }
+  const { data: scanResult } = await sb.from('scan_results').select('*').eq('id', scanId).single();
+  await sb.from('signals').insert({
+    scan_result_id: scanId, analyst_id: currentUser.id, ticker,
+    entry_price: entry || 0, target1: target || null, stop_loss: stop || entry * 0.95,
+    sector, risk_level: risk, score, strategy_name: activeStrategy?.name,
+    source: 'auto', status: 'pending', criteria_detail: scanResult?.criteria_detail
+  });
+  toast('📥 ' + ticker + ' Inbox ga yuborildi');
+  loadSignals();
+}
+
+async function sendToWatchlistFromScan(ticker, entry, score) {
+  // 65-79 balllik aksiyalarni watchlistga qo'shish
+  const { data: existing } = await sb.from('watchlist').select('id')
+    .eq('analyst_id', currentUser.id).eq('ticker', ticker).eq('status', 'active').maybeSingle();
+  if (existing) { toast(ticker + ' allaqachon Watchlist da', true); return; }
+  await sb.from('watchlist').insert({
+    analyst_id: currentUser.id, ticker,
+    entry_price: entry, score,
+    watch_type: 'price',
+    source: 'scan',
+    status: 'active',
+    trigger_note: `Scan ball: ${score}/100 (65-79 oralig'i — kuzatuvda)`
+  });
+  toast('👁 ' + ticker + ' Watchlist ga qo\'shildi (ball: ' + score + ')');
+  loadWatchlist();
+}
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// MARKET DATA — Real narxlar (Twelve Data)
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+let marketWorkerTimer = null;
+
+async function startMarketDataWorker() {
+  await fetchMarketPrices();
+  marketWorkerTimer = setInterval(fetchMarketPrices, FMP_MARKET_INTERVAL); // 10 min = 144 call/kun
+}
+
+async function fetchMarketPrices() {
+  if (!TD_API_KEY || TD_API_KEY === 'YOUR_TWELVE_DATA_KEY') return;
+  if (fmpCallsToday >= FMP_DAILY_LIMIT) {
+    const statusEl = document.getElementById('mkt-status');
+    if (statusEl) { statusEl.textContent = 'LIMIT'; statusEl.style.color = 'var(--red3)'; }
+    return;
+  }
+
+  try {
+    const [posRes, watchRes] = await Promise.all([
+      sb.from('positions').select('ticker').eq('analyst_id', currentUser.id).eq('status', 'open'),
+      sb.from('watchlist').select('ticker').eq('analyst_id', currentUser.id).eq('status', 'active')
+    ]);
+    const tickers = [...new Set([
+      ...(posRes.data || []).map(p => p.ticker),
+      ...(watchRes.data || []).map(w => w.ticker)
+    ])].filter(t => t && /^[A-Z]{1,5}$/.test(t)).slice(0, 50);
+
+    if (tickers.length === 0) {
+      const el = document.getElementById('mkt-status');
+      if (el) { el.textContent = 'STANDBY'; el.style.color = ''; }
+      return;
+    }
+
+    // /price endpoint — narx uchun eng ishonchli
+    const symbols = tickers.join(',');
+    const url = `${TD_BASE}/price?symbol=${symbols}&apikey=${TD_API_KEY}`;
+    const res = await fetch(url, { signal: AbortSignal.timeout(12000) });
+
+    if (!res.ok) {
+      const errMsg = `HTTP ${res.status}`;
+      fmpStatus = 'error'; fmpLastError = errMsg;
+      logFmp(`❌ Market update xato: ${errMsg}`, true);
+      const el = document.getElementById('mkt-status');
+      if (el) { el.textContent = 'ERROR'; el.style.color = 'var(--red3)'; }
+      return;
+    }
+
+    const raw = await res.json();
+    console.log('[Market] TD /price raw:', JSON.stringify(raw).slice(0, 300));
+
+    if (raw.status === 'error' || raw.code) {
+      fmpStatus = (raw.message || '').toLowerCase().includes('limit') ? 'limit' : 'error';
+      fmpLastError = raw.message;
+      logFmp(`❌ Twelve Data: ${raw.message}`, true);
+      if (fmpStatus === 'limit') {
+        toast('⚠️ Twelve Data limit tugadi (800/kun). Ertaga yangilanadi.', true, 8000);
+        clearInterval(marketWorkerTimer);
+      }
+      const el = document.getElementById('mkt-status');
+      if (el) { el.textContent = fmpStatus === 'limit' ? 'LIMIT' : 'ERROR'; el.style.color = 'var(--red3)'; }
+      return;
+    }
+
+    trackFmpCall(1);
+    fmpStatus = 'ok'; fmpLastError = null;
+
+    // /price parse: bitta ticker {"price":"234.5"} | ko'p {"AAPL":{"price":"234.5"},...}
+    const priceMap = {}; // {AAPL: 234.5}
+    if (tickers.length === 1) {
+      const p = parseFloat(raw.price || 0);
+      if (p > 0) priceMap[tickers[0]] = p;
+    } else {
+      Object.entries(raw).forEach(([sym, info]) => {
+        if (!info || typeof info !== 'object') return;
+        const p = parseFloat(info.price || 0);
+        if (p > 0) priceMap[sym] = p;
+      });
+    }
+
+    if (Object.keys(priceMap).length === 0) {
+      logFmp('⚠️ Market: TD /price dan narxlar kelmadi');
+      return;
+    }
+
+    Object.entries(priceMap).forEach(([sym, price]) => {
+      priceCache[sym] = price;
+    });
+    logFmp(`✅ Market update: ${Object.keys(priceMap).length} ta narx — ${Object.keys(priceMap).slice(0,5).join(', ')}`);
+
+    // Supabase market_data upsert
+    const upsertData = Object.entries(priceMap).map(([ticker, price]) => ({
+      ticker, price, change_pct: 0, volume: null, market_cap: null,
+      updated_at: new Date().toISOString()
+    }));
+    if (upsertData.length > 0) {
+      const { error: upsertErr } = await sb.from('market_data').upsert(upsertData, { onConflict: 'ticker' });
+      if (upsertErr) logFmp(`❌ Supabase upsert: ${upsertErr.message}`, true);
+    }
+
+    // Positions va watchlist trigger
+    for (const [sym, price] of Object.entries(priceMap)) {
+      if (!price) continue;
+      await sb.from('positions').update({ current_price: price })
+        .eq('ticker', sym).eq('status', 'open').eq('analyst_id', currentUser.id);
+      await checkPositionTrigger(sym, price);
+      await checkWatchlistTrigger(sym, price);
+    }
+
+    // Topbar ticker chiziq (narx bilan)
+    const topbarEntries = Object.entries(priceMap).slice(0, 5);
+    const topbarTickers = topbarEntries.map(([sym, price]) =>
+      `<span style="color:#fff;font-weight:700">${sym}</span> <span style="color:var(--green3)">$${price.toFixed(2)}</span>`
+    ).join(' · ');
+    const tickerEl = document.getElementById('mkt-ticker');
+    if (topbarTickers && tickerEl) { tickerEl.innerHTML = topbarTickers; tickerEl.style.display = ''; }
+
+    const now = new Date().toLocaleTimeString('uz-UZ', { timeZone: 'Asia/Tashkent' });
+    document.getElementById('last-sync').textContent = now;
+    const statusEl = document.getElementById('mkt-status');
+    if (statusEl) {
+      statusEl.textContent = `LIVE · ${fmpCallsToday}/${FMP_DAILY_LIMIT}`;
+      statusEl.style.color = fmpCallsToday >= FMP_WARN_THRESHOLD ? 'var(--yellow3)' : '';
+    }
+    refreshVisibleData();
+
+  } catch (e) {
+    fmpStatus = 'error'; fmpLastError = e.message;
+    console.warn('❌ fetchMarketPrices catch:', e.message);
+    logFmp(`❌ Ulanish xatosi: ${e.message}`, true);
+    const statusEl = document.getElementById('mkt-status');
+    if (statusEl) { statusEl.textContent = 'STALE'; statusEl.style.color = 'var(--text3)'; }
+  }
+}
+
+async function checkPositionTrigger(ticker, price) {
+  const { data: positions } = await sb.from('positions').select('*')
+    .eq('ticker', ticker).eq('status', 'open').eq('analyst_id', currentUser.id);
+  if (!positions) return;
+  for (const pos of positions) {
+    let shouldClose = null;
+    if (price <= parseFloat(pos.stop_loss)) shouldClose = 'stop';
+    else if (pos.target1 && price >= parseFloat(pos.target1)) shouldClose = 'target1';
+    if (shouldClose) {
+      const returnPct = ((price - parseFloat(pos.entry_price)) / parseFloat(pos.entry_price) * 100).toFixed(2);
+      await sb.from('positions').update({
+        status: 'closed', exit_price: price, exit_type: shouldClose,
+        closed_at: new Date().toISOString(), return_pct: returnPct
+      }).eq('id', pos.id);
+      toast(`${pos.ticker} avtomatik yopildi (${shouldClose}): ${parseFloat(returnPct) >= 0 ? '+' : ''}${returnPct}%`);
+    }
+  }
+}
+
+async function checkWatchlistTrigger(ticker, price) {
+  const { data: items } = await sb.from('watchlist').select('*')
+    .eq('ticker', ticker).eq('status', 'active').eq('analyst_id', currentUser.id).eq('watch_type', 'price');
+  if (!items) return;
+  for (const item of items) {
+    if (item.trigger_value && price <= parseFloat(item.trigger_value)) {
+      await sb.from('watchlist').update({ status: 'triggered', triggered_at: new Date().toISOString() }).eq('id', item.id);
+      if (item.signal_id) {
+        await sb.from('signals').update({ status: 'pending' }).eq('id', item.signal_id);
+      }
+      toast(`👁 ${ticker} trigger bo'ldi: $${price.toFixed(2)}`);
+    }
+  }
+}
+
+function refreshVisibleData() {
+  const activePage = document.querySelector('.page.active')?.id;
+  if (activePage === 'page-dash') { renderDashPositions([]); loadDashboard(); }
+  if (activePage === 'page-positions') loadPositions();
+  if (activePage === 'page-watchlist') loadWatchlist();
+}
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// REALTIME SUBSCRIPTIONS
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+function setupRealtime() {
+  const ch1 = sb.channel('signals-rt').on('postgres_changes', {
+    event: '*', schema: 'public', table: 'signals', filter: `analyst_id=eq.${currentUser.id}`
+  }, () => { loadSignals(); loadDashboard(); }).subscribe();
+
+  const ch2 = sb.channel('positions-rt').on('postgres_changes', {
+    event: '*', schema: 'public', table: 'positions', filter: `analyst_id=eq.${currentUser.id}`
+  }, () => { loadPositions(); loadDashboard(); }).subscribe();
+
+  const ch3 = sb.channel('audit-rt').on('postgres_changes', {
+    event: 'INSERT', schema: 'public', table: 'audit_results', filter: `analyst_id=eq.${currentUser.id}`
+  }, () => loadAudit()).subscribe();
+
+  realtimeChannels = [ch1, ch2, ch3];
+}
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// UTILITIES
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+function fmtDate(dt) {
+  if (!dt) return '—';
+  const d = new Date(dt);
+  return d.toLocaleDateString('uz-UZ', { day: '2-digit', month: '2-digit', year: '2-digit' });
+}
+
+let toastTimer;
+function toast(msg, err = false, duration = 3500) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className = 'show' + (err ? ' err' : '');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => { el.className = ''; }, duration);
+}
+
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+function gsearch(e) {
+  if (e.key !== 'Enter') return;
+  const v = e.target.value.toUpperCase().trim(); e.target.value = '';
+  if (!v) return;
+  // Switch to inbox and filter
+  go('inbox', document.querySelectorAll('.nav-item')[1]);
+  document.getElementById('inbox-list').querySelectorAll('.signal-card').forEach(card => {
+    const ticker = card.querySelector('.sig-ticker')?.textContent;
+    card.style.display = ticker === v ? '' : 'none';
+  });
+  toast(`"${v}" qidirilmoqda...`);
+}
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// INIT — Session check on load
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+(async () => {
+  // Check if already logged in
+  const { data: { session } } = await sb.auth.getSession();
+  if (session?.user) {
+    await initApp(session.user);
+  }
+
+  // Auth state listener
+  sb.auth.onAuthStateChange(async (event, session) => {
+    if (event === 'SIGNED_OUT') {
+      currentUser = null;
+      document.getElementById('app').style.display = 'none';
+      document.getElementById('login-screen').style.display = 'flex';
+    }
+  });
+})();
+</script>
+</body>
+</html>
