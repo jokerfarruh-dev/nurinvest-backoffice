@@ -2625,7 +2625,7 @@ async function loadAdminPanel() {
   const archDiv = document.getElementById('adm-archived-strategies');
   if (!archDiv) return;
   if (!archived || archived.length === 0) {
-    archDiv.innerHTML = '<div style="color:var(--text3);font-size:12px;padding:20px;text-align:center">Arxivlangan strategiya yo'q</div>';
+    archDiv.innerHTML = '<div style="color:var(--text3);font-size:12px;padding:20px;text-align:center">Arxivlangan strategiya yo\'q</div>';
   } else {
     archDiv.innerHTML = `<div class="tbl-wrap"><table>
       <thead><tr><th>STRATEGIYA</th><th>TAHLILCHI</th><th>ARXIV SANASI</th><th>MEZONLAR</th><th>AMAL</th></tr></thead>
@@ -2671,7 +2671,7 @@ async function restoreStrategy(strategyId) {
 }
 
 function openAddAnalyst() {
-  toast('ℹ️ Tahlilchi qo'shish: Supabase → Authentication → Users → Invite user. Keyin analysts jadvaliga qo'shing.', false, 6000);
+  toast('ℹ️ Tahlilchi qo\'shish: Supabase → Authentication → Users → Invite user. Keyin analysts jadvaliga qo\'shing.', false, 6000);
 }
 
 function setupRealtime() {
