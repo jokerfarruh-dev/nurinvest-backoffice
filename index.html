@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>NurInvest — Back Office v12</title>
+<title>NurInvest — Back Office v13</title>
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
@@ -306,9 +306,11 @@ tbody td{padding:11px 13px;font-size:12px;font-family:var(--mono);}
       <span class="nav-icon">🏆</span>Idea Audit
     </div>
     <div class="nav-section">Tizim</div>
-    <div class="nav-item" onclick="go('debug',this)">
-      <span class="nav-icon">🔧</span>Debug / FMP
-      <span class="nav-badge" id="fmp-status-badge" style="background:var(--surface3);color:var(--text3)">?</span>
+    <div class="nav-item admin-only" id="nav-admin" onclick="go('admin',this)" style="display:none">
+      <span class="nav-icon">👑</span>Admin Panel
+    </div>
+    <div class="nav-item admin-only" id="nav-debug" onclick="go('debug',this)" style="display:none">
+      <span class="nav-icon">🔧</span>Debug / Tizim
     </div>
   <div class="sidebar-foot">
     <div class="user-row">
@@ -598,6 +600,60 @@ tbody td{padding:11px 13px;font-size:12px;font-family:var(--mono);}
       </div>
     </div>
 
+    <!-- ━━━━━━━━━━━━━━━ ADMIN PAGE ━━━━━━━━━━━━━━━ -->
+    <div class="page" id="page-admin">
+      <div class="ph">
+        <div class="ph-title">👑 Admin Panel</div>
+        <div class="ph-sub">Tahlilchilarni boshqarish — qo'shish, bloklash, strategiyalarni ko'rish</div>
+      </div>
+
+      <!-- KPI -->
+      <div class="kpi-row" style="grid-template-columns:repeat(3,1fr);margin-bottom:16px">
+        <div class="kpi c1">
+          <div class="kpi-lbl">Jami Tahlilchilar</div>
+          <div class="kpi-val" id="adm-total">—</div>
+        </div>
+        <div class="kpi c2">
+          <div class="kpi-lbl">Aktiv</div>
+          <div class="kpi-val" id="adm-active">—</div>
+        </div>
+        <div class="kpi c4">
+          <div class="kpi-lbl">Bloklangan</div>
+          <div class="kpi-val" id="adm-blocked">—</div>
+        </div>
+      </div>
+
+      <!-- Tahlilchilar jadvali -->
+      <div class="card" style="margin-bottom:16px">
+        <div class="sec-hdr">
+          <div>
+            <div class="sec-title">Tahlilchilar</div>
+            <div class="sec-sub">Barcha foydalanuvchilar ro'yxati</div>
+          </div>
+          <button class="btn btn-primary btn-sm" onclick="openAddAnalyst()">+ Tahlilchi qo'shish</button>
+        </div>
+        <div class="tbl-wrap">
+          <table>
+            <thead><tr><th>ISM</th><th>EMAIL</th><th>ROL</th><th>SO'NGI KIRISH</th><th>HOLAT</th><th>AMAL</th></tr></thead>
+            <tbody id="adm-analysts-tbl"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Arxivlangan strategiyalar -->
+      <div class="card">
+        <div class="sec-hdr">
+          <div>
+            <div class="sec-title">📦 Arxivlangan Strategiyalar</div>
+            <div class="sec-sub">Ketgan tahlilchilarning strategiyalari</div>
+          </div>
+        </div>
+        <div id="adm-archived-strategies">
+          <div style="color:var(--text3);font-size:12px;padding:20px;text-align:center">Yuklanmoqda...</div>
+        </div>
+      </div>
+    </div>
+
     <!-- ━━━━━━━━━━━━━━━ DEBUG PAGE ━━━━━━━━━━━━━━━ -->
     <div class="page" id="page-debug">
       <div class="ph">
@@ -838,57 +894,20 @@ const SUPABASE_URL = 'https://whgxnmauvfzdwyzvgesr.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndoZ3hubWF1dmZ6ZHd5enZnZXNyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE4MjQ5MTksImV4cCI6MjA4NzQwMDkxOX0.3LykG9zMDpcewZ9Tw2Jh4FRX5bIQnXvuhAgCzoOpQt4';
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-// TWELVE DATA API CONFIG
-// ⚠️ FMP /api/v3 endpoint 2025-Aug dan o'chirildi (Legacy)
-// Twelve Data bepul: 800 call/kun
-// Ro'yxatdan o'tish: https://twelvedata.com/apikey
+// MARKET DATA CONFIG — v13
+// ✅ API key frontenddan olib tashlandi
+// Narxlar Supabase market_data jadvalidan o'qiladi
+// Edge Function (cron, har 15 daqiqa) yangilab turadi
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-const FMP_API_KEY = 'EN7fO45J3Qkb3B1UqPNrZOlDeA7rqa6c'; // eski (ishlamaydi)
-const FMP_BASE = 'https://financialmodelingprep.com/api/v3'; // eski (legacy)
-
-// ✅ TWELVE DATA — yangi provider
-let TD_API_KEY = localStorage.getItem('td_api_key') || 'YOUR_TWELVE_DATA_KEY'; // twelvedata.com dan oling (bepul)
-const TD_BASE = 'https://api.twelvedata.com';
-const FMP_MARKET_INTERVAL = 600000; // 10 daqiqa = 144 call/kun
-const FMP_DAILY_LIMIT = 800; // Twelve Data bepul: 800/kun
-const FMP_WARN_THRESHOLD = 700;
-
-// FMP holat
-let fmpStatus = 'unknown'; // 'ok' | 'limit' | 'error' | 'unknown'
+const MARKET_REFRESH_INTERVAL = 60000; // 1 min da bir Supabase dan o'qish
+let fmpStatus = 'ok';
 let fmpLastError = null;
+let fmpCallsToday = 0;
+const FMP_DAILY_LIMIT = 800;
 
-// API call counter (localStorage da saqlanadi)
-let fmpCallsToday = parseInt(localStorage.getItem('fmp_calls_today') || '0');
-let fmpCallsDate = localStorage.getItem('fmp_calls_date') || '';
+function trackFmpCall(n = 1) { /* Edge Function tomonidan boshqariladi */ }
 
-function trackFmpCall(n = 1) {
-  const today = new Date().toISOString().slice(0, 10);
-  if (fmpCallsDate !== today) {
-    fmpCallsToday = 0;
-    fmpCallsDate = today;
-    localStorage.setItem('fmp_calls_date', fmpCallsDate);
-  }
-  fmpCallsToday += n;
-  localStorage.setItem('fmp_calls_today', fmpCallsToday);
-  updateFmpCounter();
-}
-
-function updateFmpCounter() {
-  const counterEl = document.getElementById('fmp-counter');
-  if (!counterEl) return;
-  counterEl.textContent = fmpCallsToday;
-  const wrapper = counterEl.parentElement;
-  if (fmpCallsToday >= FMP_DAILY_LIMIT) {
-    wrapper.style.color = 'var(--red3)';
-    wrapper.title = 'FMP limit tugadi! Ertaga yangilanadi.';
-  } else if (fmpCallsToday >= FMP_WARN_THRESHOLD) {
-    wrapper.style.color = 'var(--yellow3)';
-    wrapper.title = `FMP limitga yaqinlashmoqda: ${fmpCallsToday}/${FMP_DAILY_LIMIT}`;
-  } else {
-    wrapper.style.color = '';
-    wrapper.title = `FMP API: ${fmpCallsToday}/${FMP_DAILY_LIMIT} call bugun`;
-  }
-}
+function updateFmpCounter() { /* v13: Edge Function boshqaradi */ }
 
 // Twelve Data API ni test qilish
 async function testFmpConnection() {
@@ -1107,6 +1126,11 @@ async function initApp(user) {
   document.getElementById('user-role').textContent = currentAnalyst.role;
   document.getElementById('user-avatar').textContent = (currentAnalyst.name || 'A')[0].toUpperCase();
 
+  // ✅ v13: Admin bo'lsa — admin elementlarini ko'rsat
+  if (currentAnalyst.role === 'admin') {
+    document.querySelectorAll('.admin-only').forEach(el => el.style.display = '');
+  }
+
   // Update last login
   await sb.from('analysts').update({ last_login: new Date().toISOString() }).eq('id', user.id);
 
@@ -1114,22 +1138,8 @@ async function initApp(user) {
   await Promise.all([loadDashboard(), loadSignals(), loadStrategies(), loadPositions(), loadWatchlist(), loadAudit()]);
   setupRealtime();
 
-  // FMP API ni test qil, keyin market worker boshlash
-  updateFmpCounter();
-  console.log('🔍 FMP API tekshirilmoqda...');
-  const fmpOk = await testFmpConnection();
-  updateDebugPanel(); // Badge yangilash
-  if (fmpOk) {
-    startMarketDataWorker();
-  } else {
-    if (fmpStatus !== 'limit') {
-      console.log('⚠️ FMP test muvaffaqiyatsiz, lekin worker ishga tushiriladi...');
-      startMarketDataWorker();
-    } else {
-      const statusEl = document.getElementById('mkt-status');
-      if (statusEl) { statusEl.textContent = 'LIMIT'; statusEl.style.color = 'var(--red3)'; }
-    }
-  }
+  // Market worker — Supabase dan o'qish (API call yo'q)
+  startMarketDataWorker();
 }
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -1146,6 +1156,7 @@ function go(page, navEl) {
   if (page === 'audit') loadAudit();
   if (page === 'factory') loadStrategies();
   if (page === 'debug') updateDebugPanel();
+  if (page === 'admin') loadAdminPanel();
 }
 
 function saveTdKey() {
@@ -1226,7 +1237,6 @@ function debugResetCalls() {
   localStorage.setItem('fmp_calls_date', fmpCallsDate);
   fmpStatus = 'unknown';
   fmpLastError = null;
-  updateFmpCounter();
   updateDebugPanel();
   toast('🔄 FMP counter reset qilindi');
 }
@@ -2460,135 +2470,61 @@ async function sendToWatchlistFromScan(ticker, entry, score) {
 }
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-// MARKET DATA — Real narxlar (Twelve Data)
+// MARKET DATA — Supabase dan o'qish (v13)
+// ✅ API call yo'q — Edge Function cron yangilaydi
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 let marketWorkerTimer = null;
 
 async function startMarketDataWorker() {
   await fetchMarketPrices();
-  marketWorkerTimer = setInterval(fetchMarketPrices, FMP_MARKET_INTERVAL); // 10 min = 144 call/kun
+  marketWorkerTimer = setInterval(fetchMarketPrices, MARKET_REFRESH_INTERVAL);
 }
 
 async function fetchMarketPrices() {
-  if (!TD_API_KEY || TD_API_KEY === 'YOUR_TWELVE_DATA_KEY') return;
-  if (fmpCallsToday >= FMP_DAILY_LIMIT) {
-    const statusEl = document.getElementById('mkt-status');
-    if (statusEl) { statusEl.textContent = 'LIMIT'; statusEl.style.color = 'var(--red3)'; }
-    return;
-  }
-
+  // ✅ v13: Supabase market_data dan o'qish (API call yo'q)
   try {
+    const { data: marketRows, error } = await sb.from('market_data').select('*');
+    if (error) throw error;
+    if (!marketRows || marketRows.length === 0) return;
+
+    // priceCache ni yangilash
+    marketRows.forEach(row => {
+      if (row.ticker && row.price) priceCache[row.ticker] = parseFloat(row.price);
+    });
+
+    // Positions va watchlist trigger tekshirish
     const [posRes, watchRes] = await Promise.all([
       sb.from('positions').select('ticker').eq('analyst_id', currentUser.id).eq('status', 'open'),
       sb.from('watchlist').select('ticker').eq('analyst_id', currentUser.id).eq('status', 'active')
     ]);
-    const tickers = [...new Set([
+    const myTickers = [...new Set([
       ...(posRes.data || []).map(p => p.ticker),
       ...(watchRes.data || []).map(w => w.ticker)
-    ])].filter(t => t && /^[A-Z]{1,5}$/.test(t)).slice(0, 50);
-
-    if (tickers.length === 0) {
-      const el = document.getElementById('mkt-status');
-      if (el) { el.textContent = 'STANDBY'; el.style.color = ''; }
-      return;
-    }
-
-    // /price endpoint — narx uchun eng ishonchli
-    const symbols = tickers.join(',');
-    const url = `${TD_BASE}/price?symbol=${symbols}&apikey=${TD_API_KEY}`;
-    const res = await fetch(url, { signal: AbortSignal.timeout(12000) });
-
-    if (!res.ok) {
-      const errMsg = `HTTP ${res.status}`;
-      fmpStatus = 'error'; fmpLastError = errMsg;
-      logFmp(`❌ Market update xato: ${errMsg}`, true);
-      const el = document.getElementById('mkt-status');
-      if (el) { el.textContent = 'ERROR'; el.style.color = 'var(--red3)'; }
-      return;
-    }
-
-    const raw = await res.json();
-    console.log('[Market] TD /price raw:', JSON.stringify(raw).slice(0, 300));
-
-    if (raw.status === 'error' || raw.code) {
-      fmpStatus = (raw.message || '').toLowerCase().includes('limit') ? 'limit' : 'error';
-      fmpLastError = raw.message;
-      logFmp(`❌ Twelve Data: ${raw.message}`, true);
-      if (fmpStatus === 'limit') {
-        toast('⚠️ Twelve Data limit tugadi (800/kun). Ertaga yangilanadi.', true, 8000);
-        clearInterval(marketWorkerTimer);
-      }
-      const el = document.getElementById('mkt-status');
-      if (el) { el.textContent = fmpStatus === 'limit' ? 'LIMIT' : 'ERROR'; el.style.color = 'var(--red3)'; }
-      return;
-    }
-
-    trackFmpCall(1);
-    fmpStatus = 'ok'; fmpLastError = null;
-
-    // /price parse: bitta ticker {"price":"234.5"} | ko'p {"AAPL":{"price":"234.5"},...}
-    const priceMap = {}; // {AAPL: 234.5}
-    if (tickers.length === 1) {
-      const p = parseFloat(raw.price || 0);
-      if (p > 0) priceMap[tickers[0]] = p;
-    } else {
-      Object.entries(raw).forEach(([sym, info]) => {
-        if (!info || typeof info !== 'object') return;
-        const p = parseFloat(info.price || 0);
-        if (p > 0) priceMap[sym] = p;
-      });
-    }
-
-    if (Object.keys(priceMap).length === 0) {
-      logFmp('⚠️ Market: TD /price dan narxlar kelmadi');
-      return;
-    }
-
-    Object.entries(priceMap).forEach(([sym, price]) => {
-      priceCache[sym] = price;
-    });
-    logFmp(`✅ Market update: ${Object.keys(priceMap).length} ta narx — ${Object.keys(priceMap).slice(0,5).join(', ')}`);
-
-    // Supabase market_data upsert
-    const upsertData = Object.entries(priceMap).map(([ticker, price]) => ({
-      ticker, price, change_pct: 0, volume: null, market_cap: null,
-      updated_at: new Date().toISOString()
-    }));
-    if (upsertData.length > 0) {
-      const { error: upsertErr } = await sb.from('market_data').upsert(upsertData, { onConflict: 'ticker' });
-      if (upsertErr) logFmp(`❌ Supabase upsert: ${upsertErr.message}`, true);
-    }
-
-    // Positions va watchlist trigger
-    for (const [sym, price] of Object.entries(priceMap)) {
+    ])];
+    for (const ticker of myTickers) {
+      const price = priceCache[ticker];
       if (!price) continue;
-      await sb.from('positions').update({ current_price: price })
-        .eq('ticker', sym).eq('status', 'open').eq('analyst_id', currentUser.id);
-      await checkPositionTrigger(sym, price);
-      await checkWatchlistTrigger(sym, price);
+      await checkPositionTrigger(ticker, price);
+      await checkWatchlistTrigger(ticker, price);
     }
 
-    // Topbar ticker chiziq (narx bilan)
-    const topbarEntries = Object.entries(priceMap).slice(0, 5);
-    const topbarTickers = topbarEntries.map(([sym, price]) =>
-      `<span style="color:#fff;font-weight:700">${sym}</span> <span style="color:var(--green3)">$${price.toFixed(2)}</span>`
+    // Topbar yangilash
+    const topbarItems = marketRows.slice(0, 5);
+    const topbarHtml = topbarItems.map(r =>
+      `<span style="color:#fff;font-weight:700">${r.ticker}</span> <span style="color:var(--green3)">$${parseFloat(r.price).toFixed(2)}</span>`
     ).join(' · ');
     const tickerEl = document.getElementById('mkt-ticker');
-    if (topbarTickers && tickerEl) { tickerEl.innerHTML = topbarTickers; tickerEl.style.display = ''; }
+    if (tickerEl && topbarHtml) { tickerEl.innerHTML = topbarHtml; tickerEl.style.display = ''; }
 
     const now = new Date().toLocaleTimeString('uz-UZ', { timeZone: 'Asia/Tashkent' });
-    document.getElementById('last-sync').textContent = now;
+    const lastSyncEl = document.getElementById('last-sync');
+    if (lastSyncEl) lastSyncEl.textContent = now;
     const statusEl = document.getElementById('mkt-status');
-    if (statusEl) {
-      statusEl.textContent = `LIVE · ${fmpCallsToday}/${FMP_DAILY_LIMIT}`;
-      statusEl.style.color = fmpCallsToday >= FMP_WARN_THRESHOLD ? 'var(--yellow3)' : '';
-    }
-    refreshVisibleData();
+    if (statusEl) { statusEl.textContent = 'LIVE'; statusEl.style.color = 'var(--green3)'; }
 
-  } catch (e) {
-    fmpStatus = 'error'; fmpLastError = e.message;
-    console.warn('❌ fetchMarketPrices catch:', e.message);
-    logFmp(`❌ Ulanish xatosi: ${e.message}`, true);
+    refreshVisibleData();
+  } catch(e) {
+    console.warn('❌ fetchMarketPrices:', e.message);
     const statusEl = document.getElementById('mkt-status');
     if (statusEl) { statusEl.textContent = 'STALE'; statusEl.style.color = 'var(--text3)'; }
   }
@@ -2638,6 +2574,106 @@ function refreshVisibleData() {
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 // REALTIME SUBSCRIPTIONS
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// ADMIN PANEL — v13
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+async function loadAdminPanel() {
+  if (currentAnalyst?.role !== 'admin') return;
+
+  // Barcha analystlarni yuklash
+  const { data: analysts } = await sb.from('analysts').select('*').order('created_at');
+  if (!analysts) return;
+
+  const total = analysts.length;
+  const active = analysts.filter(a => a.is_active).length;
+  const blocked = analysts.filter(a => !a.is_active).length;
+
+  document.getElementById('adm-total').textContent = total;
+  document.getElementById('adm-active').textContent = active;
+  document.getElementById('adm-blocked').textContent = blocked;
+
+  // Jadval
+  const tbody = document.getElementById('adm-analysts-tbl');
+  if (!tbody) return;
+  tbody.innerHTML = analysts.map(a => {
+    const lastLogin = a.last_login ? new Date(a.last_login).toLocaleDateString('uz-UZ') : '—';
+    const isMe = a.id === currentUser.id;
+    const roleColor = a.role === 'admin' ? 'var(--blue3)' : 'var(--text2)';
+    const statusBadge = a.is_active
+      ? '<span style="color:var(--green3);font-size:10px;font-weight:700">● AKTIV</span>'
+      : '<span style="color:var(--red3);font-size:10px;font-weight:700">● BLOKLANGAN</span>';
+    const actions = isMe ? '<span style="color:var(--text3);font-size:11px">Bu siz</span>' : `
+      <button class="btn btn-ghost btn-sm" onclick="toggleAnalyst('${a.id}', ${a.is_active})" style="font-size:10px">
+        ${a.is_active ? '🔒 Bloklash' : '✅ Faollashtirish'}
+      </button>`;
+    return `<tr>
+      <td><strong>${a.name}</strong></td>
+      <td style="font-family:var(--mono);font-size:11px">${a.email}</td>
+      <td><span style="color:${roleColor};font-weight:700;font-size:11px">${a.role.toUpperCase()}</span></td>
+      <td style="font-family:var(--mono);font-size:11px">${lastLogin}</td>
+      <td>${statusBadge}</td>
+      <td>${actions}</td>
+    </tr>`;
+  }).join('');
+
+  // Arxivlangan strategiyalar
+  const { data: archived } = await sb.from('strategies')
+    .select('*, analysts(name, email)')
+    .not('archived_at', 'is', null)
+    .order('archived_at', { ascending: false });
+
+  const archDiv = document.getElementById('adm-archived-strategies');
+  if (!archDiv) return;
+  if (!archived || archived.length === 0) {
+    archDiv.innerHTML = '<div style="color:var(--text3);font-size:12px;padding:20px;text-align:center">Arxivlangan strategiya yo'q</div>';
+  } else {
+    archDiv.innerHTML = `<div class="tbl-wrap"><table>
+      <thead><tr><th>STRATEGIYA</th><th>TAHLILCHI</th><th>ARXIV SANASI</th><th>MEZONLAR</th><th>AMAL</th></tr></thead>
+      <tbody>${archived.map(s => `<tr>
+        <td><strong>${s.name}</strong></td>
+        <td style="font-size:11px">${s.analysts?.name || '—'}<br><span style="color:var(--text3);font-size:10px">${s.analysts?.email || ''}</span></td>
+        <td style="font-family:var(--mono);font-size:11px">${new Date(s.archived_at).toLocaleDateString('uz-UZ')}</td>
+        <td style="font-size:11px;color:var(--text2)">${s.threshold}% threshold</td>
+        <td><button class="btn btn-ghost btn-sm" onclick="restoreStrategy('${s.id}')" style="font-size:10px">♻️ Tiklash</button></td>
+      </tr>`).join('')}</tbody>
+    </table></div>`;
+  }
+}
+
+async function toggleAnalyst(analystId, currentStatus) {
+  const newStatus = !currentStatus;
+  const action = newStatus ? 'faollashtirish' : 'bloklash';
+  if (!confirm(`Bu tahlilchini ${action}ni xohlaysizmi?`)) return;
+
+  const { error } = await sb.from('analysts').update({ is_active: newStatus }).eq('id', analystId);
+  if (error) { toast(`❌ Xato: ${error.message}`, true); return; }
+
+  // Agar bloklansa — strategiyalarini arxivlaymiz
+  if (!newStatus) {
+    await sb.from('strategies')
+      .update({ archived_at: new Date().toISOString(), archived_by: currentUser.id })
+      .eq('analyst_id', analystId)
+      .is('archived_at', null);
+  }
+
+  toast(`✅ Tahlilchi ${action}ldi`);
+  loadAdminPanel();
+}
+
+async function restoreStrategy(strategyId) {
+  if (!confirm('Bu strategiyani tiklashni xohlaysizmi?')) return;
+  const { error } = await sb.from('strategies')
+    .update({ archived_at: null, archived_by: null })
+    .eq('id', strategyId);
+  if (error) { toast(`❌ Xato: ${error.message}`, true); return; }
+  toast('✅ Strategiya tiklandi');
+  loadAdminPanel();
+}
+
+function openAddAnalyst() {
+  toast('ℹ️ Tahlilchi qo'shish: Supabase → Authentication → Users → Invite user. Keyin analysts jadvaliga qo'shing.', false, 6000);
+}
+
 function setupRealtime() {
   const ch1 = sb.channel('signals-rt').on('postgres_changes', {
     event: '*', schema: 'public', table: 'signals', filter: `analyst_id=eq.${currentUser.id}`
