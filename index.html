@@ -1893,7 +1893,12 @@ function setAuditResult(r, btn) {
 // IDEA FACTORY
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 async function loadStrategies() {
-  const { data } = await sb.from('strategies').select('*').eq('analyst_id', currentUser.id).order('created_at');
+  // Admin barcha strategiyalarni ko'radi, tahlilchi faqat o'zinkini
+  const isAdmin = currentAnalyst?.role === 'admin';
+  const stratQuery = isAdmin
+    ? sb.from('strategies').select('*').order('created_at')
+    : sb.from('strategies').select('*').eq('analyst_id', currentUser.id).order('created_at');
+  const { data } = await stratQuery;
   strategies = data || [];
   renderStratList();
   if (strategies.length > 0) {
