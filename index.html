@@ -1893,11 +1893,11 @@ function setAuditResult(r, btn) {
 // IDEA FACTORY
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 async function loadStrategies() {
-  // Admin barcha strategiyalarni ko'radi, tahlilchi faqat o'zinkini
+  // Admin barcha strategiyalarni ko'radi (arxivlanmaganlar), tahlilchi faqat o'zinkini
   const isAdmin = currentAnalyst?.role === 'admin';
   const stratQuery = isAdmin
-    ? sb.from('strategies').select('*').order('created_at')
-    : sb.from('strategies').select('*').eq('analyst_id', currentUser.id).order('created_at');
+    ? sb.from('strategies').select('*').is('archived_at', null).order('created_at')
+    : sb.from('strategies').select('*').eq('analyst_id', currentUser.id).is('archived_at', null).order('created_at');
   const { data } = await stratQuery;
   strategies = data || [];
   renderStratList();
@@ -2048,8 +2048,14 @@ async function activateStrategy(id) {
 }
 
 async function deleteStrategy(id) {
-  if (!confirm('Strategiyani o\'chirishni tasdiqlaysizmi?')) return;
-  await sb.from('strategies').delete().eq('id', id);
+  if (!confirm('Strategiyani arxivlashni tasdiqlaysizmi? Admin arxivda ko\'ra oladi.')) return;
+  // Soft delete — o'chirmaydi, arxivga tushiradi
+  const { error } = await sb.from('strategies').update({
+    archived_at: new Date().toISOString(),
+    archived_by: currentUser.id
+  }).eq('id', id);
+  if (error) { toast('❌ Xato: ' + error.message, true); return; }
+  toast('📦 Strategiya arxivlandi');
   loadStrategies();
 }
 
