@@ -1757,16 +1757,39 @@ async function confirmClosePosition() {
   const note = document.getElementById('cp-note').value;
   if (!exit || exit <= 0) { toast('Chiqish narxini kiriting', true); return; }
 
-  const { data: pos } = await sb.from('positions').select('*').eq('id', pendingPositionId).single();
+  const { data: pos } = await sb.from('positions').select('*, signals(strategy_name, score, sector, conviction)').eq('id', pendingPositionId).single();
   const returnPct = ((exit - parseFloat(pos.entry_price)) / parseFloat(pos.entry_price) * 100).toFixed(2);
+  const isWin = parseFloat(returnPct) > 0;
+  const daysHeld = pos.opened_at ? Math.round((new Date() - new Date(pos.opened_at)) / 86400000) : 0;
 
+  // 1. Pozitsiyani yopish
   await sb.from('positions').update({
     exit_price: exit, exit_type: exitType, status: 'closed',
     closed_at: new Date().toISOString(), return_pct: returnPct
   }).eq('id', pendingPositionId);
 
+  // 2. audit_results ga yozish
+  await sb.from('audit_results').insert({
+    analyst_id: currentUser.id,
+    position_id: pendingPositionId,
+    signal_id: pos.signal_id,
+    ticker: pos.ticker,
+    entry_price: pos.entry_price,
+    exit_price: exit,
+    return_pct: parseFloat(returnPct),
+    result: isWin ? 'win' : 'loss',
+    exit_type: exitType,
+    score: pos.signals?.score || null,
+    sector: pos.sector || pos.signals?.sector || null,
+    strategy_name: pos.signals?.strategy_name || null,
+    source: 'manual',
+    opened_at: pos.opened_at || new Date().toISOString(),
+    closed_at: new Date().toISOString()
+  });
+
   closeModal('modal-close-pos');
-  toast(`📤 ${pos.ticker} yopildi: ${parseFloat(returnPct) >= 0 ? '+' : ''}${returnPct}%`);
+  const sign = parseFloat(returnPct) >= 0 ? '+' : '';
+  toast(`${isWin ? '🏆' : '📉'} ${pos.ticker} yopildi: ${sign}${returnPct}% (${isWin ? 'WIN' : 'LOSS'})`);
   await Promise.all([loadPositions(), loadDashboard(), loadAudit()]);
 }
 
@@ -2536,20 +2559,49 @@ async function fetchMarketPrices() {
 }
 
 async function checkPositionTrigger(ticker, price) {
-  const { data: positions } = await sb.from('positions').select('*')
+  const { data: positions } = await sb.from('positions').select('*, signals(strategy_name, score, sector, conviction)')
     .eq('ticker', ticker).eq('status', 'open').eq('analyst_id', currentUser.id);
   if (!positions) return;
   for (const pos of positions) {
     let shouldClose = null;
     if (price <= parseFloat(pos.stop_loss)) shouldClose = 'stop';
     else if (pos.target1 && price >= parseFloat(pos.target1)) shouldClose = 'target1';
+    else if (pos.target2 && price >= parseFloat(pos.target2)) shouldClose = 'target2';
     if (shouldClose) {
       const returnPct = ((price - parseFloat(pos.entry_price)) / parseFloat(pos.entry_price) * 100).toFixed(2);
+      const isWin = parseFloat(returnPct) > 0;
+      const daysHeld = pos.opened_at ? Math.round((new Date() - new Date(pos.opened_at)) / 86400000) : 0;
+      const now = new Date().toISOString();
+
+      // Pozitsiyani yopish
       await sb.from('positions').update({
         status: 'closed', exit_price: price, exit_type: shouldClose,
-        closed_at: new Date().toISOString(), return_pct: returnPct
+        closed_at: now, return_pct: returnPct
       }).eq('id', pos.id);
-      toast(`${pos.ticker} avtomatik yopildi (${shouldClose}): ${parseFloat(returnPct) >= 0 ? '+' : ''}${returnPct}%`);
+
+      // audit_results ga avtomatik yozish
+      await sb.from('audit_results').insert({
+        analyst_id: currentUser.id,
+        position_id: pos.id,
+        signal_id: pos.signal_id,
+        ticker: pos.ticker,
+        entry_price: pos.entry_price,
+        exit_price: price,
+        return_pct: parseFloat(returnPct),
+        result: isWin ? 'win' : 'loss',
+        exit_type: shouldClose,
+        score: pos.signals?.score || null,
+        sector: pos.sector || pos.signals?.sector || null,
+        strategy_name: pos.signals?.strategy_name || null,
+        source: 'auto',
+        opened_at: pos.opened_at || now,
+        closed_at: now
+      });
+
+      const sign = parseFloat(returnPct) >= 0 ? '+' : '';
+      const icon = shouldClose === 'stop' ? '🛑' : shouldClose === 'target2' ? '🎯🎯' : '🎯';
+      toast(`${icon} ${pos.ticker} avtomatik yopildi (${shouldClose}): ${sign}${returnPct}%`, false, 6000);
+      loadPositions(); loadDashboard();
     }
   }
 }
