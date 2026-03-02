@@ -348,6 +348,15 @@ tbody td{padding:11px 13px;font-size:12px;font-family:var(--mono);}
         <div class="ph-title">⬛ Dashboard</div>
         <div class="ph-sub" id="dash-sub">Yuklanmoqda...</div>
       </div>
+      <!-- Dashboard vaqt filtri -->
+      <div style="display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap">
+        <button class="af-btn active" id="dash-p-all" onclick="setDashPeriod('all',this)">Barchasi</button>
+        <button class="af-btn" id="dash-p-1w" onclick="setDashPeriod('1w',this)">1 hafta</button>
+        <button class="af-btn" id="dash-p-1m" onclick="setDashPeriod('1m',this)">1 oy</button>
+        <button class="af-btn" id="dash-p-3m" onclick="setDashPeriod('3m',this)">3 oy</button>
+        <button class="af-btn" id="dash-p-1y" onclick="setDashPeriod('1y',this)">1 yil</button>
+        <button class="af-btn" id="dash-p-3y" onclick="setDashPeriod('3y',this)">3 yil</button>
+      </div>
       <div class="kpi-row">
         <div class="kpi c1">
           <div class="kpi-lbl">Aktiv g'oyalar</div>
@@ -367,7 +376,7 @@ tbody td{padding:11px 13px;font-size:12px;font-family:var(--mono);}
         <div class="kpi c4">
           <div class="kpi-lbl">Win Rate</div>
           <div class="kpi-val" id="kpi-winrate">—</div>
-          <div class="kpi-ch nt">barcha davr</div>
+          <div class="kpi-ch nt" id="kpi-winrate-period">barcha davr</div>
         </div>
       </div>
       <div class="grid2">
@@ -1136,6 +1145,9 @@ async function initApp(user) {
 
   // Init everything
   await Promise.all([loadDashboard(), loadSignals(), loadStrategies(), loadPositions(), loadWatchlist(), loadAudit()]);
+  // Sana triggerlarini tekshirish (login da va har soatda)
+  checkDateTriggers();
+  setInterval(checkDateTriggers, 3600000); // har 1 soat
   setupRealtime();
 
   // Market worker — Supabase dan o'qish (API call yo'q)
@@ -1267,11 +1279,31 @@ async function debugTestSupabase() {
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 // DASHBOARD
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+let dashPeriod = 'all';
+
+function setDashPeriod(p, btn) {
+  dashPeriod = p;
+  document.querySelectorAll('[id^="dash-p-"]').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  loadDashboard();
+}
+
 async function loadDashboard() {
+  // Vaqt oralig'ini hisoblash
+  const periodMap = { '1w': 7, '1m': 30, '3m': 90, '1y': 365, '3y': 1095 };
+  let fromDate = null;
+  if (dashPeriod !== 'all' && periodMap[dashPeriod]) {
+    fromDate = new Date();
+    fromDate.setDate(fromDate.getDate() - periodMap[dashPeriod]);
+  }
+
+  let auditQuery = sb.from('audit_results').select('*').eq('analyst_id', currentUser.id);
+  if (fromDate) auditQuery = auditQuery.gte('closed_at', fromDate.toISOString());
+
   const [posRes, signalRes, auditRes] = await Promise.all([
     sb.from('positions').select('*').eq('analyst_id', currentUser.id).eq('status', 'open'),
     sb.from('signals').select('*').eq('analyst_id', currentUser.id).eq('status', 'pending').order('created_at', { ascending: false }),
-    sb.from('audit_results').select('*').eq('analyst_id', currentUser.id)
+    auditQuery
   ]);
   const positions = posRes.data || [];
   const pendingSignals = signalRes.data || [];
@@ -1284,13 +1316,17 @@ async function loadDashboard() {
   if (pendingSignals.length > 0) { badge.textContent = pendingSignals.length; badge.style.display = ''; }
   else badge.style.display = 'none';
 
-  // Avg return from closed positions
+  // Avg return & Win Rate — tanlangan davr bo'yicha
   const wins = audits.filter(a => a.result === 'win').length;
   const total = audits.length;
   const avgRet = total > 0 ? (audits.reduce((s, a) => s + parseFloat(a.return_pct || 0), 0) / total).toFixed(1) : '—';
   const winRate = total > 0 ? ((wins / total) * 100).toFixed(1) : '—';
   document.getElementById('kpi-avg').textContent = avgRet !== '—' ? avgRet + '%' : '—';
   document.getElementById('kpi-winrate').textContent = winRate !== '—' ? winRate + '%' : '—';
+  const periodLabel = { all: 'barcha davr', '1w': 'so\'nggi hafta', '1m': 'so\'nggi oy', '3m': 'so\'nggi 3 oy', '1y': 'so\'nggi yil', '3y': 'so\'nggi 3 yil' }[dashPeriod] || 'barcha davr';
+  const wrEl = document.getElementById('kpi-winrate-period');
+  if (wrEl) wrEl.textContent = periodLabel;
+  document.getElementById('kpi-avg-period').textContent = `${total > 0 ? total + ' ta' : ''} ${periodLabel}`;
 
   const now = new Date().toLocaleString('uz-UZ', { timeZone: 'Asia/Tashkent' });
   document.getElementById('dash-sub').textContent = `Yangilangan: ${now}`;
@@ -1481,14 +1517,20 @@ async function selectSignal(id) {
       <div class="price-box"><div class="price-lbl">R/R NISBAT</div><div class="price-val" style="color:var(--yellow3)">${rr}x</div></div>
     </div>
     ${criteria ? `<div style="margin-bottom:12px">${criteria}</div>` : ''}
-    ${s.note ? `<div style="font-size:11px;color:var(--text2);font-family:var(--mono);padding:8px 10px;background:var(--surface2);border-radius:7px;margin-bottom:12px;line-height:1.5">"${s.note}"</div>` : ''}
-    ${s.reject_reason ? `<div class="badge br" style="margin-bottom:10px">Sabab: ${s.reject_reason}</div>` : ''}
+    ${s.note ? `<div style="font-size:11px;color:var(--text2);font-family:var(--mono);padding:8px 10px;background:var(--surface2);border-radius:7px;margin-bottom:12px;line-height:1.5;border-left:3px solid var(--blue2)">💬 ${s.note}</div>` : ''}
+    ${s.reject_reason ? `<div class="badge br" style="margin-bottom:10px">❌ Sabab: ${s.reject_reason}</div>` : ''}
+    ${s.watch_trigger?.note ? `<div style="font-size:11px;color:var(--yellow3);font-family:var(--mono);padding:6px 10px;background:var(--surface2);border-radius:7px;margin-bottom:10px;border-left:3px solid var(--yellow2)">👁 Watch sababi: ${s.watch_trigger.note}</div>` : ''}
     <div class="dp-divider"></div>
-    ${isPending ? `<div class="action-btns">
+    ${isPending ? `
+    <div style="margin-bottom:10px">
+      <div style="font-size:9px;color:var(--text3);font-family:var(--mono);text-transform:uppercase;letter-spacing:1px;margin-bottom:5px">Tahlilchi izohi</div>
+      <textarea id="dp-analyst-note" class="notes-area" placeholder="Bu aksiya haqida fikringiz... (ixtiyoriy, Tasdiqlash/Watch/Rad bosganda saqlanadi)" style="min-height:60px;font-size:11px">${s.note||''}</textarea>
+    </div>
+    <div class="action-btns">
       <button class="btn btn-green" onclick="showApproveModal('${s.id}','${s.ticker}',${s.entry_price},${s.stop_loss},${s.target1||0})">✅ Tasdiqlash</button>
       <button class="btn btn-orange btn-sm" onclick="showWatchModal('${s.id}','${s.ticker}')">👁 Watch</button>
       <button class="btn btn-red btn-sm" onclick="showRejectModal('${s.id}','${s.ticker}')">❌ Rad</button>
-    </div>` : `<div style="font-size:11px;color:var(--text3);font-family:var(--mono);text-align:center;padding:8px">Bu signal "${s.status}" holatida</div>`}
+    </div>` : `<div style="font-size:11px;color:var(--text3);font-family:var(--mono);text-align:center;padding:8px">Bu signal "<strong>${s.status}</strong>" holatida</div>`}
     <div style="font-size:9px;color:var(--text3);font-family:var(--mono);margin-top:10px">Qo'shilgan: ${fmtDate(s.created_at)}</div>
   `;
 }
@@ -1503,7 +1545,9 @@ function showApproveModal(id, ticker, entry, stop, target) {
   document.getElementById('ap-stop').value = parseFloat(stop).toFixed(2);
   document.getElementById('ap-t1').value = parseFloat(target || 0) > 0 ? parseFloat(target).toFixed(2) : '';
   document.getElementById('ap-t2').value = '';
-  document.getElementById('ap-note').value = '';
+  // Kartochkadagi izohni modallga ko'chirish
+  const dpNote = document.getElementById('dp-analyst-note');
+  document.getElementById('ap-note').value = dpNote ? dpNote.value : '';
   document.getElementById('modal-approve').classList.add('open');
 }
 
@@ -1546,6 +1590,12 @@ async function confirmApprove() {
 }
 
 function showRejectModal(id, ticker) {
+  // Kartochkadagi izohni reject modal ga ko'chirish
+  const dpNote = document.getElementById('dp-analyst-note');
+  if (dpNote && dpNote.value) {
+    const rNote = document.getElementById('rj-note');
+    if (rNote && !rNote.value) rNote.value = dpNote.value;
+  }
   pendingSignalId = id;
   document.getElementById('reject-ticker-info').textContent = ticker;
   document.getElementById('rj-note').value = '';
@@ -1564,6 +1614,12 @@ async function confirmReject() {
 
 function showWatchModal(id, ticker) {
   pendingSignalId = id;
+  // Kartochkadagi izohni watch modal ga ko'chirish
+  const dpNote = document.getElementById('dp-analyst-note');
+  if (dpNote && dpNote.value) {
+    const wNote = document.getElementById('wt-note');
+    if (wNote && !wNote.value) wNote.value = dpNote.value;
+  }
   document.getElementById('watch-ticker-info').textContent = ticker;
   document.getElementById('wt-note').value = '';
   document.getElementById('wt-value').value = '';
@@ -2088,106 +2144,44 @@ async function runScan() {
   const startTime = Date.now();
   const totalTickers = SP500_SAMPLE.length;
 
-  document.getElementById('scan-content').innerHTML = `<div class="loading-state"><div class="spin"></div><span id="scan-progress">${totalTickers} ta ticker skanlanmoqda... FMP API dan real narxlar yuklanmoqda</span></div>`;
+  document.getElementById('scan-content').innerHTML = `<div class="loading-state"><div class="spin"></div><span id="scan-progress">${totalTickers} ta ticker skanlanmoqda...</span></div>`;
 
   // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  // TWELVE DATA dan real narxlar
-  // /price endpoint — eng ishonchli, free planda ishlaydi
-  // Batch: 50 ticker (ko'p bo'lsa xato beradi)
-  // BRK.B kabi maxsus belgilar filterlandi
+  // NARX OLISH — v13 SIMULATSIYA REJIMI
   // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  // MEMO: Hozir simulatsiya rejimida ishlaydi.
+  // Asl logika: screener API → mezonlarga mos stocklarni topadi.
+  // Pulli API (Twelve Data Pro yoki FMP) ulanganda:
+  //   1. Bu blokni o'chirib, quyidagi API chaqiruvni yoqing:
+  //      const url = `https://api.twelvedata.com/stocks?exchange=NASDAQ&apikey=YOUR_KEY`;
+  //      yoki FMP: `/stock-screener?marketCapMoreThan=1000000000&...`
+  //   2. Natijalarni realPrices formatiga moslashtiring
+  //   3. SP500_SAMPLE o'rniga API dan kelgan ticker listini ishlating
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  // Supabase market_data dan real narxlarni olish (8 ta ticker)
   let realPrices = {};
-  const batchSize = 50; // Free plan uchun xavfsiz chegara
-  // Maxsus belgilar bor tickerlarni o'chirish (BRK.B, BRK.A - TD ishlamaydi)
-  const validTickers = SP500_SAMPLE.filter(t => /^[A-Z]{1,5}$/.test(t));
-  const batches = [];
-  for (let i = 0; i < validTickers.length; i += batchSize) {
-    batches.push(validTickers.slice(i, i + batchSize));
-  }
-  logFmp(`📊 Scan: ${validTickers.length} ticker, ${batches.length} batch (har biri ${batchSize} ta)`);
-
-  let fetched = 0;
-  let failedBatches = 0;
-  for (const batch of batches) {
-    try {
-      if (!TD_API_KEY || TD_API_KEY === 'YOUR_TWELVE_DATA_KEY') {
-        logFmp('⚠️ Scan: API key yo\'q, simulatsiya rejimi', true);
-        break;
-      }
-
-      const symbols = batch.join(',');
-      // /price endpoint — narx + o'zgarish foizi (free planda ishonchli)
-      const url = `${TD_BASE}/price?symbol=${symbols}&apikey=${TD_API_KEY}`;
-      const res = await fetch(url, { signal: AbortSignal.timeout(20000) });
-
-      if (!res.ok) {
-        failedBatches++;
-        logFmp(`❌ Batch HTTP xato: ${res.status}`, true);
-      } else {
-        const data = await res.json();
-        console.log(`[TD Scan batch ${Math.ceil(fetched/batchSize)+1}] raw:`, JSON.stringify(data).slice(0, 200));
-
-        // Error tekshirish
-        if (data.status === 'error' || data.code) {
-          failedBatches++;
-          const msg = data.message || `code ${data.code}`;
-          logFmp(`❌ Batch API xato: ${msg}`, true);
-          if (msg.toLowerCase().includes('limit') || msg.toLowerCase().includes('429')) {
-            toast('⚠️ Twelve Data limit tugadi! Simulatsiya rejimida davom etadi.', true, 5000);
-            break;
-          }
-        } else {
-          trackFmpCall(1);
-
-          // /price response formatlar:
-          // Bitta ticker:  {"price":"234.5"}  yoki {"price":"234.5","symbol":"AAPL"}
-          // Ko'p ticker:   {"AAPL":{"price":"234.5"},"MSFT":{"price":"420.1"}}
-          if (batch.length === 1) {
-            // Bitta ticker
-            const sym = batch[0];
-            const p = parseFloat(data.price || 0);
-            if (p > 0) {
-              realPrices[sym] = {
-                regularMarketPrice: p,
-                regularMarketChangePercent: 0,
-                regularMarketVolume: 0, averageVolume: 0,
-                week52High: 0, week52Low: 0
-              };
-            }
-          } else {
-            // Ko'p ticker — har bir kalit ticker symbol
-            Object.entries(data).forEach(([sym, info]) => {
-              if (!info || typeof info !== 'object') return;
-              // Ba'zan TD `{"AAPL":{"price":"234.5"}}` yoki `{"AAPL":"234.5"}` beradi
-              const p = parseFloat(info.price || info || 0);
-              if (p > 0 && validTickers.includes(sym)) {
-                realPrices[sym] = {
-                  regularMarketPrice: p,
-                  regularMarketChangePercent: 0, // /price da yo'q
-                  regularMarketVolume: 0, averageVolume: 0,
-                  week52High: 0, week52Low: 0
-                };
-              }
-            });
-          }
-
-          const gotPrices = Object.keys(realPrices).length;
-          logFmp(`✅ Batch ${Math.ceil(fetched/batchSize)+1}: ${gotPrices} ta narx olindi`);
+  try {
+    const { data: mktData } = await sb.from('market_data').select('*');
+    if (mktData) {
+      mktData.forEach(row => {
+        if (row.ticker && row.price) {
+          realPrices[row.ticker] = {
+            regularMarketPrice: parseFloat(row.price),
+            regularMarketChangePercent: parseFloat(row.change_pct || 0),
+            regularMarketVolume: parseInt(row.volume || 0),
+            averageVolume: 0,
+            week52High: 0, week52Low: 0
+          };
         }
-      }
-    } catch(e) {
-      failedBatches++;
-      console.error('❌ Scan batch catch:', e.message);
-      logFmp(`❌ Batch ${Math.ceil(fetched/batchSize)+1} xato: ${e.message}`, true);
+      });
     }
-    fetched += batch.length;
-    const prog = document.getElementById('scan-progress');
-    if (prog) prog.textContent =
-      `${fetched}/${validTickers.length} tekshirildi · ` +
-      `Real narxlar: ${Object.keys(realPrices).length} ta · ` +
-      `TD: ${fmpCallsToday}/${FMP_DAILY_LIMIT}`;
-    await new Promise(r => setTimeout(r, 300)); // Rate limit
+  } catch(e) {
+    console.warn('market_data o\'qish xato:', e.message);
   }
+
+  const prog = document.getElementById('scan-progress');
+  if (prog) prog.textContent = `${totalTickers} ta ticker tekshirildi · Real narxlar: ${Object.keys(realPrices).length} ta · Qolganlar: simulatsiya`;
 
   // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
   // SCORING FORMULA (v5 bilan bir xil, hujjatga ko'ra):
@@ -2283,7 +2277,7 @@ async function runScan() {
   document.getElementById('scan-info').textContent =
     `${realDataCount} ta real narx · ${results.length} ta tekshirildi · ` +
     `${ideas.length} Inbox | ${potential.length} Watchlist | ${rejected.length} Rad · ` +
-    `${(duration / 1000).toFixed(1)}s`;
+    `${(duration / 1000).toFixed(1)}s · SIM rejim`;
 
   // Supabase ga saqlash (idea + potential)
   if (ideas.length > 0 || potential.length > 0) {
@@ -2304,8 +2298,8 @@ async function runScan() {
   btn.disabled = false; btn.innerHTML = '▶ Run Scan';
   renderScanResults();
 
-  const realLabel = realDataCount > 0 ? `${realDataCount} ta real narx` : 'simulatsiya';
-  toast(`✅ Skan: ${ideas.length} Inbox · ${potential.length} Watchlist · ${rejected.length} Rad (${realLabel} · TD: ${fmpCallsToday}/${FMP_DAILY_LIMIT})`);
+  const realLabel = realDataCount > 0 ? `${realDataCount} ta real narx + simulatsiya` : 'simulatsiya rejimi';
+  toast(`✅ Skan: ${ideas.length} Inbox · ${potential.length} Watchlist · ${rejected.length} Rad (${realLabel})`);
 }
 
 function renderScanResults() {
@@ -2561,17 +2555,36 @@ async function checkPositionTrigger(ticker, price) {
 }
 
 async function checkWatchlistTrigger(ticker, price) {
-  const { data: items } = await sb.from('watchlist').select('*')
+  // Narx trigger
+  const { data: priceItems } = await sb.from('watchlist').select('*')
     .eq('ticker', ticker).eq('status', 'active').eq('analyst_id', currentUser.id).eq('watch_type', 'price');
+  if (priceItems) {
+    for (const item of priceItems) {
+      if (item.trigger_value && price <= parseFloat(item.trigger_value)) {
+        await sb.from('watchlist').update({ status: 'triggered', triggered_at: new Date().toISOString() }).eq('id', item.id);
+        if (item.signal_id) await sb.from('signals').update({ status: 'pending' }).eq('id', item.signal_id);
+        toast(`🎯 ${ticker} narx triggeri: $${price.toFixed(2)} — Signal Inbox ga qaytdi!`, false, 6000);
+        loadSignals();
+      }
+    }
+  }
+}
+
+// Sana trigger tekshirish — login va har soatda chaqiriladi
+async function checkDateTriggers() {
+  const today = new Date().toISOString().split('T')[0];
+  const { data: items } = await sb.from('watchlist').select('*')
+    .eq('analyst_id', currentUser.id).eq('status', 'active').eq('watch_type', 'date');
   if (!items) return;
   for (const item of items) {
-    if (item.trigger_value && price <= parseFloat(item.trigger_value)) {
+    if (item.trigger_date && item.trigger_date.split('T')[0] <= today) {
       await sb.from('watchlist').update({ status: 'triggered', triggered_at: new Date().toISOString() }).eq('id', item.id);
-      if (item.signal_id) {
-        await sb.from('signals').update({ status: 'pending' }).eq('id', item.signal_id);
-      }
-      toast(`👁 ${ticker} trigger bo'ldi: $${price.toFixed(2)}`);
+      if (item.signal_id) await sb.from('signals').update({ status: 'pending' }).eq('id', item.signal_id);
+      toast(`📅 ${item.ticker} sana triggeri: ${item.trigger_date.split('T')[0]} — Signal Inbox ga qaytdi!`, false, 7000);
     }
+  }
+  if (items.some(i => i.trigger_date && i.trigger_date.split('T')[0] <= today)) {
+    loadSignals(); loadWatchlist();
   }
 }
 
