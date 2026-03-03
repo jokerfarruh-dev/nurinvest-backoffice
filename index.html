@@ -663,7 +663,41 @@ tbody td{padding:11px 13px;font-size:12px;font-family:var(--mono);}
       </div>
     </div>
 
-    <!-- ━━━━━━━━━━━━━━━ DEBUG PAGE ━━━━━━━━━━━━━━━ -->
+    <!-- ADD ANALYST MODAL -->
+<div class="modal-overlay" id="modal-add-analyst">
+  <div class="modal-box">
+    <div class="modal-title">👤 Yangi Tahlilchi Qo'shish</div>
+    <div class="form-row">
+      <label>Ism Familiya *</label>
+      <input id="aa-name" type="text" placeholder="Ali Valiyev">
+    </div>
+    <div class="form-row">
+      <label>Email *</label>
+      <input id="aa-email" type="email" placeholder="ali@nurinvest.uz">
+    </div>
+    <div class="form-grid2">
+      <div class="form-row">
+        <label>Parol * (min 8 ta belgi)</label>
+        <input id="aa-password" type="password" placeholder="••••••••">
+      </div>
+      <div class="form-row">
+        <label>Rol</label>
+        <select id="aa-role">
+          <option value="analyst">Tahlilchi</option>
+          <option value="admin">Admin</option>
+        </select>
+      </div>
+    </div>
+    <div id="aa-error" style="color:var(--red3);font-size:11px;font-family:var(--mono);margin-bottom:8px;display:none"></div>
+    <div id="aa-success" style="color:var(--green3);font-size:11px;font-family:var(--mono);margin-bottom:8px;display:none"></div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal('modal-add-analyst')">Bekor</button>
+      <button class="btn btn-primary" id="aa-submit-btn" onclick="submitAddAnalyst()">✅ Qo'shish</button>
+    </div>
+  </div>
+</div>
+
+<!-- ━━━━━━━━━━━━━━━ DEBUG PAGE ━━━━━━━━━━━━━━━ -->
     <div class="page" id="page-debug">
       <div class="ph">
         <div class="ph-title">🔧 Debug Panel</div>
@@ -2843,7 +2877,75 @@ async function restoreStrategy(strategyId) {
 }
 
 function openAddAnalyst() {
-  toast('ℹ️ Tahlilchi qo\'shish: Supabase → Authentication → Users → Invite user. Keyin analysts jadvaliga qo\'shing.', false, 6000);
+  document.getElementById('aa-name').value = '';
+  document.getElementById('aa-email').value = '';
+  document.getElementById('aa-password').value = '';
+  document.getElementById('aa-role').value = 'analyst';
+  document.getElementById('aa-error').style.display = 'none';
+  document.getElementById('aa-success').style.display = 'none';
+  document.getElementById('modal-add-analyst').classList.add('open');
+}
+
+async function submitAddAnalyst() {
+  const name = document.getElementById('aa-name').value.trim();
+  const email = document.getElementById('aa-email').value.trim();
+  const password = document.getElementById('aa-password').value;
+  const role = document.getElementById('aa-role').value;
+  const errEl = document.getElementById('aa-error');
+  const okEl = document.getElementById('aa-success');
+  const btn = document.getElementById('aa-submit-btn');
+
+  errEl.style.display = 'none';
+  okEl.style.display = 'none';
+
+  if (!name || !email || !password) {
+    errEl.textContent = 'Ism, email va parol majburiy!';
+    errEl.style.display = 'block';
+    return;
+  }
+  if (password.length < 8) {
+    errEl.textContent = 'Parol kamida 8 ta belgi bo\'lishi kerak';
+    errEl.style.display = 'block';
+    return;
+  }
+
+  btn.disabled = true;
+  btn.textContent = 'Yaratilmoqda...';
+
+  try {
+    const session = await sb.auth.getSession();
+    const token = session.data.session?.access_token;
+
+    const res = await fetch(`${SUPABASE_URL}/functions/v1/create-analyst`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify({ name, email, password, role })
+    });
+
+    const result = await res.json();
+
+    if (!res.ok || result.error) {
+      errEl.textContent = result.error || 'Xato yuz berdi';
+      errEl.style.display = 'block';
+    } else {
+      okEl.textContent = `✅ ${name} (${email}) muvaffaqiyatli qo\'shildi!`;
+      okEl.style.display = 'block';
+      setTimeout(() => {
+        closeModal('modal-add-analyst');
+        loadAdminPanel();
+        toast(`👤 ${name} tahlilchi sifatida qo\'shildi`);
+      }, 1500);
+    }
+  } catch(e) {
+    errEl.textContent = 'Tarmoq xatosi: ' + e.message;
+    errEl.style.display = 'block';
+  }
+
+  btn.disabled = false;
+  btn.textContent = '✅ Qo\'shish';
 }
 
 function setupRealtime() {
