@@ -1387,8 +1387,10 @@ async function loadDashboard() {
 
   // Update pos badge
   const pb = document.getElementById('pos-badge');
-  if (positions.length > 0) { pb.textContent = positions.length; pb.style.display = ''; }
-  else pb.style.display = 'none';
+  if (pb) {
+    if (positions.length > 0) { pb.textContent = positions.length; pb.style.display = ''; }
+    else pb.style.display = 'none';
+  }
 }
 
 function renderSectorChart(positions) {
@@ -2913,14 +2915,21 @@ async function submitAddAnalyst() {
   btn.textContent = 'Yaratilmoqda...';
 
   try {
-    const session = await sb.auth.getSession();
-    const token = session.data.session?.access_token;
+    const { data: { session } } = await sb.auth.getSession();
+    const token = session?.access_token;
+    if (!token) {
+      errEl.textContent = 'Session topilmadi. Qayta login qiling.';
+      errEl.style.display = 'block';
+      btn.disabled = false; btn.textContent = '✅ Qo\'shish';
+      return;
+    }
 
     const res = await fetch(`${SUPABASE_URL}/functions/v1/create-analyst`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
+        'Authorization': `Bearer ${token}`,
+        'apikey': SUPABASE_ANON_KEY
       },
       body: JSON.stringify({ name, email, password, role })
     });
