@@ -536,11 +536,11 @@ tbody td{padding:11px 13px;font-size:12px;font-family:var(--mono);}
           </div>
         </div>
       </div>
-      <div class="tbl-wrap">
-        <table>
-          <thead><tr><th>TICKER</th><th>KIRISH</th><th>JORIY</th><th>TARGET1</th><th>STOP</th><th>PNL</th><th>STATUS</th><th>OCHILGAN</th><th>AMAL</th></tr></thead>
-          <tbody id="pos-tbl"></tbody>
-        </table>
+      <div class="inbox-layout">
+        <div class="inbox-list" id="pos-list"><div class="loading-state"><div class="spin"></div>Yuklanmoqda...</div></div>
+        <div class="detail-panel" id="pos-detail-panel">
+          <div class="detail-empty"><div style="font-size:28px;margin-bottom:10px">📊</div><div>Pozitsiyani tanlang</div></div>
+        </div>
       </div>
     </div>
 
@@ -1422,7 +1422,10 @@ function renderDashPositions(positions) {
       <td style="color:var(--red3)">$${parseFloat(p.stop_loss).toFixed(2)}</td>
       <td class="${parseFloat(pnl) >= 0 ? 'pos' : 'neg'}" style="font-weight:700">${parseFloat(pnl) >= 0 ? '+' : ''}${pnl}%</td>
       <td style="color:var(--text3)">${days} kun</td>
-      <td><button class="btn btn-ghost btn-sm" onclick="showClosePositionModal('${p.id}','${p.ticker}',${p.entry_price})">Yopish</button></td>
+      <td style="display:flex;gap:4px">
+        <button class="btn btn-ghost btn-sm" onclick="go('positions',document.getElementById('nav-positions'));setTimeout(()=>selectPosition('${p.id}',${JSON.stringify(p).replace(/"/g,'&quot;')}),300)">Ko'rish</button>
+        <button class="btn btn-red btn-sm" onclick="showClosePositionModal('${p.id}','${p.ticker}',${p.entry_price})">Yopish</button>
+      </td>
     </tr>`;
   }).join('');
 }
@@ -1707,32 +1710,120 @@ async function submitManualSignal() {
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 // POSITIONS
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+let selectedPositionId = null;
+
 async function loadPositions() {
-  let q = sb.from('positions').select('*').eq('analyst_id', currentUser.id).order('opened_at', { ascending: false });
+  let q = sb.from('positions').select('*, signals(strategy_name, score, sector, conviction, note)')
+    .eq('analyst_id', currentUser.id).order('opened_at', { ascending: false });
   if (posFilter !== 'all') q = q.eq('status', posFilter);
   const { data } = await q;
   const positions = data || [];
-  const el = document.getElementById('pos-tbl');
-  if (positions.length === 0) { el.innerHTML = '<tr><td colspan="9" class="empty-state">Pozitsiya topilmadi</td></tr>'; return; }
+  const el = document.getElementById('pos-list');
+  if (!el) return;
+  if (positions.length === 0) {
+    el.innerHTML = '<div class="empty-state" style="padding:30px">Pozitsiya topilmadi</div>';
+    return;
+  }
   el.innerHTML = positions.map(p => {
     const cur = priceCache[p.ticker] || parseFloat(p.current_price) || parseFloat(p.entry_price);
     const pnl = p.status === 'closed' && p.return_pct != null
       ? parseFloat(p.return_pct).toFixed(1)
       : ((cur - parseFloat(p.entry_price)) / parseFloat(p.entry_price) * 100).toFixed(1);
     const days = Math.floor((Date.now() - new Date(p.opened_at)) / 86400000);
-    const statusB = p.status === 'open' ? '<span class="badge bg">OCHIQ</span>' : '<span class="badge bgr">YOPILDI</span>';
-    return `<tr>
-      <td><div class="tk">${p.ticker}</div></td>
-      <td>$${parseFloat(p.entry_price).toFixed(2)}</td>
-      <td style="color:var(--blue3)">$${cur.toFixed(2)}</td>
-      <td style="color:var(--green3)">$${parseFloat(p.target1 || 0).toFixed(2) || '—'}</td>
-      <td style="color:var(--red3)">$${parseFloat(p.stop_loss).toFixed(2)}</td>
-      <td class="${parseFloat(pnl) >= 0 ? 'pos' : 'neg'}" style="font-weight:700">${parseFloat(pnl) >= 0 ? '+' : ''}${pnl}%</td>
-      <td>${statusB}</td>
-      <td style="color:var(--text3)">${fmtDate(p.opened_at)} (${days}k)</td>
-      <td>${p.status === 'open' ? `<button class="btn btn-ghost btn-sm" onclick="showClosePositionModal('${p.id}','${p.ticker}',${p.entry_price})">Yopish</button>` : `<span style="color:var(--text3);font-size:10px;font-family:var(--mono)">${p.exit_type || '—'}</span>`}</td>
-    </tr>`;
+    const isSelected = p.id === selectedPositionId;
+    const pnlColor = parseFloat(pnl) >= 0 ? 'var(--green3)' : 'var(--red3)';
+    return `<div class="inbox-item${isSelected ? ' selected' : ''}" onclick="selectPosition('${p.id}', ${JSON.stringify(p).replace(/"/g, '&quot;')})">
+      <div class="ii-top">
+        <div class="ii-ticker">${p.ticker}</div>
+        <div style="font-size:13px;font-weight:800;font-family:var(--mono);color:${pnlColor}">${parseFloat(pnl) >= 0 ? '+' : ''}${pnl}%</div>
+      </div>
+      <div class="ii-meta">
+        <span>${p.sector || p.signals?.sector || 'Other'}</span>
+        <span>${p.status === 'open' ? '🟢 Ochiq' : '⚫ Yopildi'}</span>
+      </div>
+      <div style="font-size:10px;color:var(--text3);font-family:var(--mono);margin-top:4px">
+        Kirish: $${parseFloat(p.entry_price).toFixed(2)} · ${days} kun · ${fmtDate(p.opened_at)}
+      </div>
+    </div>`;
   }).join('');
+
+  // Birinchisini avtomatik tanlash
+  if (positions.length > 0 && !selectedPositionId) selectPosition(positions[0].id, positions[0]);
+}
+
+function selectPosition(id, p) {
+  selectedPositionId = id;
+  // Active class
+  document.querySelectorAll('#pos-list .inbox-item').forEach(el => el.classList.remove('selected'));
+  const clicked = document.querySelector(`#pos-list .inbox-item[onclick*="${id}"]`);
+  if (clicked) clicked.classList.add('selected');
+
+  const cur = priceCache[p.ticker] || parseFloat(p.current_price) || parseFloat(p.entry_price);
+  const pnl = p.status === 'closed' && p.return_pct != null
+    ? parseFloat(p.return_pct).toFixed(1)
+    : ((cur - parseFloat(p.entry_price)) / parseFloat(p.entry_price) * 100).toFixed(1);
+  const pnlColor = parseFloat(pnl) >= 0 ? 'var(--green3)' : 'var(--red3)';
+  const days = Math.floor((Date.now() - new Date(p.opened_at)) / 86400000);
+
+  // Target progress hisoblash
+  const t1 = parseFloat(p.target1 || 0);
+  const stop = parseFloat(p.stop_loss);
+  const entry = parseFloat(p.entry_price);
+  const t1Pct = t1 > 0 ? (((t1 - entry) / entry) * 100).toFixed(1) : null;
+  const stopPct = (((stop - entry) / entry) * 100).toFixed(1);
+  const t2 = parseFloat(p.target2 || 0);
+  const t2Pct = t2 > 0 ? (((t2 - entry) / entry) * 100).toFixed(1) : null;
+
+  // Progress bar: stop dan target1 gacha
+  let progressPct = 0;
+  if (t1 > 0 && cur > stop) {
+    progressPct = Math.min(100, Math.max(0, ((cur - stop) / (t1 - stop)) * 100));
+  }
+
+  const isOpen = p.status === 'open';
+
+  document.getElementById('pos-detail-panel').innerHTML = `
+    <div class="dp-ticker">${p.ticker} <span style="font-size:14px;font-weight:400;color:${pnlColor}">${parseFloat(pnl) >= 0 ? '+' : ''}${pnl}%</span></div>
+    <div class="dp-sub">${p.sector || p.signals?.sector || 'Other'} · ${p.signals?.strategy_name || 'Manual'} · ${days} kun · ${isOpen ? '🟢 Ochiq' : '⚫ Yopildi'}</div>
+
+    <div class="price-grid">
+      <div class="price-box"><div class="price-lbl">KIRISH</div><div class="price-val" style="color:var(--green3)">$${entry.toFixed(2)}</div></div>
+      <div class="price-box"><div class="price-lbl">JORIY${cur === entry ? ' (eski)' : ''}</div><div class="price-val" style="color:var(--blue3)">$${cur.toFixed(2)}</div></div>
+      <div class="price-box"><div class="price-lbl">TARGET 1${t1Pct ? ' +' + t1Pct + '%' : ''}</div><div class="price-val" style="color:var(--green3)">${t1 > 0 ? '$' + t1.toFixed(2) : '—'}</div></div>
+      <div class="price-box"><div class="price-lbl">STOP ${stopPct}%</div><div class="price-val" style="color:var(--red3)">$${stop.toFixed(2)}</div></div>
+      ${t2 > 0 ? `<div class="price-box"><div class="price-lbl">TARGET 2${t2Pct ? ' +' + t2Pct + '%' : ''}</div><div class="price-val">$${t2.toFixed(2)}</div></div>` : ''}
+      <div class="price-box"><div class="price-lbl">PNL</div><div class="price-val" style="color:${pnlColor};font-size:18px">${parseFloat(pnl) >= 0 ? '+' : ''}${pnl}%</div></div>
+    </div>
+
+    ${t1 > 0 ? `
+    <div style="margin-bottom:14px">
+      <div style="display:flex;justify-content:space-between;font-size:9px;color:var(--text3);font-family:var(--mono);margin-bottom:5px">
+        <span>STOP $${stop.toFixed(2)}</span>
+        <span style="color:var(--blue3)">Joriy: $${cur.toFixed(2)}</span>
+        <span>TARGET $${t1.toFixed(2)}</span>
+      </div>
+      <div style="height:6px;background:var(--surface2);border-radius:3px;overflow:hidden">
+        <div style="height:100%;width:${progressPct}%;background:${progressPct > 66 ? 'var(--green2)' : progressPct > 33 ? 'var(--yellow2)' : 'var(--blue2)'};border-radius:3px;transition:width .3s"></div>
+      </div>
+      <div style="font-size:9px;color:var(--text3);font-family:var(--mono);margin-top:3px;text-align:center">${progressPct.toFixed(0)}% target ga yaqinlashdi</div>
+    </div>` : ''}
+
+    ${p.signals?.note ? `<div style="font-size:11px;color:var(--text2);padding:8px 10px;background:var(--surface2);border-radius:7px;margin-bottom:12px;border-left:3px solid var(--blue2)">💬 ${p.signals.note}</div>` : ''}
+    ${p.status === 'closed' ? `
+      <div style="padding:10px;background:var(--surface2);border-radius:8px;margin-bottom:12px">
+        <div style="font-size:9px;color:var(--text3);font-family:var(--mono);text-transform:uppercase;margin-bottom:6px">Yopilish ma'lumoti</div>
+        <div style="display:flex;gap:16px">
+          <div><div style="font-size:9px;color:var(--text3)">Chiqish narxi</div><div style="font-family:var(--mono);font-weight:700">$${parseFloat(p.exit_price||0).toFixed(2)}</div></div>
+          <div><div style="font-size:9px;color:var(--text3)">Sabab</div><div style="font-family:var(--mono);font-weight:700">${p.exit_type || '—'}</div></div>
+          <div><div style="font-size:9px;color:var(--text3)">Yopilgan</div><div style="font-family:var(--mono)">${fmtDate(p.closed_at)}</div></div>
+        </div>
+      </div>` : ''}
+    <div class="dp-divider"></div>
+    ${isOpen ? `<div class="action-btns">
+      <button class="btn btn-red" onclick="showClosePositionModal('${p.id}','${p.ticker}',${entry})">📤 Yopish</button>
+    </div>` : `<div style="font-size:11px;color:var(--text3);font-family:var(--mono);text-align:center;padding:8px">Pozitsiya yopilgan · ${fmtDate(p.closed_at)}</div>`}
+    <div style="font-size:9px;color:var(--text3);font-family:var(--mono);margin-top:10px">Ochilgan: ${fmtDate(p.opened_at)}</div>
+  `;
 }
 
 function setPositionFilter(f, btn) {
