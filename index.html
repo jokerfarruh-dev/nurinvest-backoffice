@@ -2912,7 +2912,7 @@ async function submitAddAnalyst() {
   }
 
   btn.disabled = true;
-  btn.textContent = 'Yaratilmoqda...';
+  btn.innerHTML = '<div class="spin" style="width:12px;height:12px;border-width:2px;display:inline-block"></div> Yaratilmoqda...';
 
   try {
     const { data: { session } } = await sb.auth.getSession();
@@ -2934,14 +2934,18 @@ async function submitAddAnalyst() {
       body: JSON.stringify({ name, email, password, role })
     });
 
-    const result = await res.json();
+    let result;
+    try { result = await res.json(); } 
+    catch(e) { result = { error: 'Server javob bermadi (status: ' + res.status + ')' }; }
 
     if (!res.ok || result.error) {
-      errEl.textContent = result.error || 'Xato yuz berdi';
+      errEl.textContent = '❌ ' + (result.error || 'Xato yuz berdi (status: ' + res.status + ')');
       errEl.style.display = 'block';
+      btn.disabled = false; btn.textContent = '✅ Qo\'shish';
     } else {
       okEl.textContent = `✅ ${name} (${email}) muvaffaqiyatli qo\'shildi!`;
       okEl.style.display = 'block';
+      btn.disabled = true;
       setTimeout(() => {
         closeModal('modal-add-analyst');
         loadAdminPanel();
@@ -2949,12 +2953,10 @@ async function submitAddAnalyst() {
       }, 1500);
     }
   } catch(e) {
-    errEl.textContent = 'Tarmoq xatosi: ' + e.message;
+    errEl.textContent = '❌ Tarmoq xatosi: ' + e.message;
     errEl.style.display = 'block';
+    btn.disabled = false; btn.textContent = '✅ Qo\'shish';
   }
-
-  btn.disabled = false;
-  btn.textContent = '✅ Qo\'shish';
 }
 
 function setupRealtime() {
