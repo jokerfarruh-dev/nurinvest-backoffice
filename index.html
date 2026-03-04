@@ -663,7 +663,20 @@ tbody td{padding:11px 13px;font-size:12px;font-family:var(--mono);}
       </div>
     </div>
 
-    <!-- ADD ANALYST MODAL -->
+    <!-- ADD CRITERIA MODAL -->
+<div class="modal-overlay" id="modal-add-criteria">
+  <div class="modal-box" style="max-width:520px;max-height:80vh;overflow-y:auto">
+    <div class="modal-title">📊 Texnik Mezon Qo'shish</div>
+    <div id="ind-modal-list"></div>
+    <div id="ind-config-area"></div>
+    <div class="modal-actions" style="margin-top:14px">
+      <button class="btn btn-ghost" onclick="closeModal('modal-add-criteria')">Bekor</button>
+      <button class="btn btn-primary" id="ind-add-btn" onclick="confirmAddIndicator()" disabled>+ Qo'shish</button>
+    </div>
+  </div>
+</div>
+
+<!-- ADD ANALYST MODAL -->
 <div class="modal-overlay" id="modal-add-analyst">
   <div class="modal-box">
     <div class="modal-title">👤 Yangi Tahlilchi Qo'shish</div>
@@ -2201,11 +2214,152 @@ function removeCriteria(cat, idx) {
   renderAllCriteria(); // barcha kategoriyalarni qayta hisoblash
 }
 
+// Texnik indikatorlar ro'yxati — backend da hisoblangan
+// ⚠ MEMO: Yangi indikator qo'shganda calculate-indicators Edge Function ga ham qo'shish kerak
+const TECHNICAL_INDICATORS = [
+  { group: 'RSI', items: [
+    { id: 'rsi', label: 'RSI', defaultPeriod: 14, conditions: ['>', '<', '>=', '<='], defaultCond: '>', defaultVal: 50, hint: 'RSI(14) > 50 - momentum kuchli' },
+  ]},
+  { group: 'Moving Averages', items: [
+    { id: 'sma', label: 'SMA (oddiy ortacha)', defaultPeriod: 200, conditions: ['narx >', 'narx <'], defaultCond: 'narx >', defaultVal: null, hint: 'Narx > SMA(200) - uzoq muddatli trend' },
+    { id: 'ema', label: 'EMA (eksponensial)', defaultPeriod: 20, conditions: ['narx >', 'narx <'], defaultCond: 'narx >', defaultVal: null, hint: 'Narx > EMA(20) - qisqa muddatli trend' },
+  ]},
+  { group: 'MACD', items: [
+    { id: 'macd_bullish', label: 'MACD Bullish Cross', defaultPeriod: 0, conditions: ['aktiv'], defaultCond: 'aktiv', defaultVal: null, hint: 'MACD signal chizigini yuqoriga kesib otdi' },
+    { id: 'macd_above', label: 'MACD > 0 (musbat)', defaultPeriod: 0, conditions: ['aktiv'], defaultCond: 'aktiv', defaultVal: null, hint: 'MACD musbat zonada' },
+  ]},
+  { group: 'Bollinger Bands', items: [
+    { id: 'bbands_above', label: 'Narx > BB Orta chiziq', defaultPeriod: 20, conditions: ['aktiv'], defaultCond: 'aktiv', defaultVal: null, hint: 'Narx Bollinger orta chizigidan yuqori' },
+    { id: 'bbands_squeeze', label: 'BB Siqilish (volatillik past)', defaultPeriod: 20, conditions: ['aktiv'], defaultCond: 'aktiv', defaultVal: null, hint: 'Breakout kutilmoqda' },
+  ]},
+  { group: 'Stochastic', items: [
+    { id: 'stoch', label: 'Stochastic %K', defaultPeriod: 0, conditions: ['>', '<'], defaultCond: '>', defaultVal: 50, hint: 'Stoch > 50 - momentum yuqorida' },
+  ]},
+  { group: 'ADX', items: [
+    { id: 'adx', label: 'ADX (trend kuchi)', defaultPeriod: 14, conditions: ['>', '<'], defaultCond: '>', defaultVal: 25, hint: 'ADX > 25 - kuchli trend mavjud' },
+  ]},
+  { group: 'Hajm', items: [
+    { id: 'vol_above', label: 'Hajm > 30D ortacha', defaultPeriod: 0, conditions: ['aktiv'], defaultCond: 'aktiv', defaultVal: null, hint: 'Bugungi hajm ortachadan yuqori' },
+    { id: 'vol_spike', label: 'Hajm 2x ortachadan', defaultPeriod: 0, conditions: ['aktiv'], defaultCond: 'aktiv', defaultVal: null, hint: 'Kuchli hajm osishi' },
+  ]},
+];
+
+let addCriteriaCat = 'technical';
+
 function addCriteria(cat) {
-  const label = prompt('Mezon nomi:');
-  if (!label) return;
-  criteria[cat].push({ id: label.toLowerCase().replace(/\s+/g, '_') + '_' + Date.now(), label, enabled: true });
-  renderAllCriteria(); // barcha qayta hisoblash
+  addCriteriaCat = cat;
+  if (cat !== 'technical') {
+    // Moliyaviy, cashflow, growth — hozircha oddiy prompt
+    // ⚠ MEMO: Real fundamental API ulanganda bu ham modal bo'ladi
+    const label = prompt('Mezon nomi (masalan: Revenue > 15%):');
+    if (!label) return;
+    criteria[cat].push({ id: label.toLowerCase().replace(/\s+/g, '_') + '_' + Date.now(), label, enabled: true, weight: 10, realData: false, description: 'Simulatsiya' });
+    renderAllCriteria();
+    return;
+  }
+  // Texnik — modal ochiladi
+  renderIndicatorModal();
+  document.getElementById('modal-add-criteria').classList.add('open');
+}
+
+function renderIndicatorModal() {
+  const container = document.getElementById('ind-modal-list');
+  container.innerHTML = TECHNICAL_INDICATORS.map(group => `
+    <div style="margin-bottom:14px">
+      <div style="font-size:9px;font-weight:700;color:var(--text3);font-family:var(--mono);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px">${group.group}</div>
+      ${group.items.map(ind => `
+        <div class="ind-option" onclick="selectIndicator('${ind.id}')" id="ind-opt-${ind.id}"
+          style="padding:8px 10px;border-radius:7px;border:1px solid var(--border1);margin-bottom:5px;cursor:pointer;transition:all .15s">
+          <div style="font-size:12px;font-weight:600;color:var(--text1)">${ind.label}</div>
+          <div style="font-size:10px;color:var(--text3);margin-top:2px">${ind.hint}</div>
+        </div>
+      `).join('')}
+    </div>
+  `).join('');
+  document.getElementById('ind-config-area').innerHTML = '';
+  document.getElementById('ind-add-btn').disabled = true;
+}
+
+let selectedIndicator = null;
+
+function selectIndicator(id) {
+  selectedIndicator = null;
+  document.querySelectorAll('.ind-option').forEach(el => {
+    el.style.borderColor = 'var(--border1)';
+    el.style.background = '';
+  });
+  const el = document.getElementById('ind-opt-' + id);
+  if (el) { el.style.borderColor = 'var(--blue2)'; el.style.background = 'rgba(59,130,246,.08)'; }
+
+  const allInds = TECHNICAL_INDICATORS.flatMap(g => g.items);
+  const ind = allInds.find(i => i.id === id);
+  if (!ind) return;
+  selectedIndicator = ind;
+
+  const configArea = document.getElementById('ind-config-area');
+  const needsPeriod = ind.defaultPeriod > 0;
+  const needsValue = ind.conditions[0] !== 'aktiv' && ind.defaultVal !== null;
+
+  configArea.innerHTML = `
+    <div style="border-top:1px solid var(--border1);margin-top:12px;padding-top:12px">
+      <div style="font-size:11px;font-weight:700;color:var(--text1);margin-bottom:10px">⚙️ Sozlash: ${ind.label}</div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap">
+        ${needsPeriod ? `
+        <div>
+          <div style="font-size:9px;color:var(--text3);font-family:var(--mono);margin-bottom:4px">PERIOD</div>
+          <input id="ind-period" type="number" value="${ind.defaultPeriod}" min="2" max="500"
+            style="width:70px;padding:5px 8px;background:var(--surface2);border:1px solid var(--border1);border-radius:5px;color:var(--text1);font-family:var(--mono);font-size:12px">
+        </div>` : ''}
+        ${ind.conditions[0] !== 'aktiv' ? `
+        <div>
+          <div style="font-size:9px;color:var(--text3);font-family:var(--mono);margin-bottom:4px">SHART</div>
+          <select id="ind-cond" style="padding:5px 8px;background:var(--surface2);border:1px solid var(--border1);border-radius:5px;color:var(--text1);font-size:12px">
+            ${ind.conditions.map(c => `<option value="${c}" ${c===ind.defaultCond?'selected':''}>${c}</option>`).join('')}
+          </select>
+        </div>
+        ${needsValue ? `
+        <div>
+          <div style="font-size:9px;color:var(--text3);font-family:var(--mono);margin-bottom:4px">QIYMAT</div>
+          <input id="ind-value" type="number" value="${ind.defaultVal||''}" step="0.1"
+            style="width:80px;padding:5px 8px;background:var(--surface2);border:1px solid var(--border1);border-radius:5px;color:var(--text1);font-family:var(--mono);font-size:12px">
+        </div>` : ''}` : `<div style="font-size:11px;color:var(--green3);padding:5px 0">✅ Shart avtomatik — ${ind.hint}</div>`}
+      </div>
+    </div>
+  `;
+  document.getElementById('ind-add-btn').disabled = false;
+}
+
+function confirmAddIndicator() {
+  if (!selectedIndicator) return;
+  const ind = selectedIndicator;
+  const period = document.getElementById('ind-period') ? parseInt(document.getElementById('ind-period').value)||ind.defaultPeriod : ind.defaultPeriod;
+  const cond = document.getElementById('ind-cond') ? document.getElementById('ind-cond').value : ind.defaultCond;
+  const val = document.getElementById('ind-value') ? parseFloat(document.getElementById('ind-value').value) : ind.defaultVal;
+
+  // Label yaratamiz
+  let label = ind.label;
+  if (period > 0) label += `(${period})`;
+  if (cond !== 'aktiv' && cond !== 'narx >') label += ` ${cond} ${val||''}`;
+  else if (cond === 'narx >') label = `Narx > ${ind.label}${period > 0 ? '('+period+')' : ''}`;
+  else if (cond === 'narx <') label = `Narx < ${ind.label}${period > 0 ? '('+period+')' : ''}`;
+
+  const newCrit = {
+    id: ind.id + '_' + period + '_' + Date.now(),
+    label,
+    enabled: true,
+    weight: 14,
+    realData: true,
+    indicator: ind.id,
+    period,
+    condition: cond,
+    value: val,
+    description: ind.hint
+  };
+
+  criteria.technical.push(newCrit);
+  renderAllCriteria();
+  closeModal('modal-add-criteria');
+  toast(`✅ "${label}" mezoni qo'shildi`);
 }
 
 function toggleBlock(hdr) {
