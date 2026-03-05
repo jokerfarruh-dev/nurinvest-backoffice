@@ -2143,8 +2143,21 @@ function selectStrategy(s) {
   activeStrategy = s;
   document.getElementById('threshold-slider').value = s.threshold || 80;
   document.getElementById('thresh-val').textContent = (s.threshold || 80) + '%';
-  criteria = s.criteria ? (typeof s.criteria === 'string' ? JSON.parse(s.criteria) : s.criteria) : JSON.parse(JSON.stringify(DEFAULT_CRITERIA));
-  if (!criteria.technical) criteria = JSON.parse(JSON.stringify(DEFAULT_CRITERIA));
+  const rawCriteria = s.criteria ? (typeof s.criteria === 'string' ? JSON.parse(s.criteria) : s.criteria) : {};
+  // Eski strategiyalarda 'financial','cashflow','growth' bo'lishi mumkin — normalize qilamiz
+  criteria = {
+    technical: rawCriteria.technical || rawCriteria.technical === [] ? (rawCriteria.technical || []) : (DEFAULT_CRITERIA.technical || []),
+    fundamental: rawCriteria.fundamental || []
+  };
+  // Eski formatdagi mezonlarni fundamental ga ko'chirish
+  if (rawCriteria.financial || rawCriteria.cashflow || rawCriteria.growth) {
+    const old = [
+      ...(rawCriteria.financial || []),
+      ...(rawCriteria.cashflow || []),
+      ...(rawCriteria.growth || [])
+    ];
+    criteria.fundamental = [...criteria.fundamental, ...old];
+  }
   renderAllCriteria();
 }
 
@@ -2522,9 +2535,20 @@ async function saveStrategy() {
 async function saveCurrentStrategy() {
   if (!activeStrategy) { toast('Strategiya tanlanmagan', true); return; }
   const threshold = parseInt(document.getElementById('threshold-slider').value);
-  await sb.from('strategies').update({ criteria, threshold, updated_at: new Date().toISOString() }).eq('id', activeStrategy.id);
-  toast('✅ Strategiya yangilandi');
-  loadStrategies();
+  const { error } = await sb.from('strategies')
+    .update({ criteria, threshold, updated_at: new Date().toISOString() })
+    .eq('id', activeStrategy.id);
+  if (error) { toast('❌ Saqlashda xato: ' + error.message, true); return; }
+  // activeStrategy ni yangilaymiz — loadStrategies chaqirmaymiz
+  // (loadStrategies Supabase dan eski cache qaytarishi mumkin)
+  activeStrategy.criteria = criteria;
+  activeStrategy.threshold = threshold;
+  // strategies array ham yangilaymiz
+  const idx = strategies.findIndex(s => s.id === activeStrategy.id);
+  if (idx >= 0) { strategies[idx].criteria = criteria; strategies[idx].threshold = threshold; }
+  renderStratList();
+  renderAllCriteria();
+  toast('✅ Strategiya saqlandi — ' + Object.values(criteria).flat().filter(c => c.enabled).length + ' ta mezon aktiv');
 }
 
 async function selectAndActivate(id) {
@@ -2600,9 +2624,10 @@ async function runScan() {
   let realPrices = {};
   let indicatorCache = {}; // ticker -> {rsi_14, sma_200, sma_50, ema_20, macd, ...}
   try {
-    const [mktRes, indRes] = await Promise.all([
+    const [mktRes, indRes, fundRes] = await Promise.all([
       sb.from('market_data').select('*'),
-      sb.from('indicator_values').select('*')
+      sb.from('indicator_values').select('*'),
+      sb.from('fundamental_data').select('*').order('updated_at', { ascending: false })
     ]);
     if (mktRes.data) {
       mktRes.data.forEach(row => {
@@ -2619,17 +2644,22 @@ async function runScan() {
     }
     if (indRes.data) {
       indRes.data.forEach(row => {
-        // values JSONB + eski ustunlar birlashtiramiz
         indicatorCache[row.ticker] = {
-          rsi_14: row.rsi_14,
-          sma_200: row.sma_200,
-          sma_50: row.sma_50,
-          ema_20: row.ema_20,
-          macd_value: row.macd_value,
-          macd_signal: row.macd_signal,
-          macd_hist: row.macd_hist,
-          ...(row.values || {}) // JSONB dan qo'shimcha indikatorlar
+          rsi_14: row.rsi_14, sma_200: row.sma_200, sma_50: row.sma_50,
+          ema_20: row.ema_20, macd_value: row.macd_value,
+          macd_signal: row.macd_signal, macd_hist: row.macd_hist,
+          ...(row.values || {})
         };
+      });
+    }
+    // ⚠ MEMO: fundamental_data hozir bo'sh — FMP API ulanganda to'ldiriladi
+    // Har ticker uchun eng oxirgi kvartal ma'lumoti olinadi
+    const fundamentalCache = {};
+    if (fundRes.data) {
+      fundRes.data.forEach(row => {
+        if (!fundamentalCache[row.ticker]) {
+          fundamentalCache[row.ticker] = row; // birinchisi eng yangi (order by updated_at desc)
+        }
       });
     }
   } catch(e) {
@@ -2762,9 +2792,70 @@ async function runScan() {
         note = hasRealData ? `${changeP.toFixed(2)}%` : '~SIM';
 
       } else {
-        // ⚠ MEMO: Moliyaviy mezonlar (P/E, Revenue, FCF) — fundamental API kerak
-        // Hozircha simulatsiya
-        pass = Math.random() > 0.50; isReal = false; note = '~SIM';
+        // Fundamental mezonlar — fundamental_data jadvalidan o'qiladi
+        // ⚠ MEMO: fundamental_data bo'sh bo'lsa simulatsiya ishlaydi
+        // FMP API ulanganda fetch-fundamentals to'ldirib qo'yadi
+        const fd = fundamentalCache[ticker] || {};
+        const hasFund = Object.keys(fd).length > 0;
+        const fundId = c.fundamentalId || id;
+        const threshold = c.value;
+
+        if (hasFund) {
+          // Narx & Bozor
+          if (fundId === 'market_cap_gt') { pass = fd.market_cap > (threshold * 1e9); isReal = true; note = `$${(fd.market_cap/1e9).toFixed(1)}B`; }
+          else if (fundId === 'market_cap_lt') { pass = fd.market_cap < (threshold * 1e9); isReal = true; note = `$${(fd.market_cap/1e9).toFixed(1)}B`; }
+          else if (fundId === 'beta_lt') { pass = fd.beta < threshold; isReal = true; note = `β=${fd.beta?.toFixed(2)}`; }
+          else if (fundId === 'beta_gt') { pass = fd.beta > threshold; isReal = true; note = `β=${fd.beta?.toFixed(2)}`; }
+          else if (fundId === 'volume_gt') { pass = fd.avg_volume > (threshold * 1e6); isReal = true; note = `${(fd.avg_volume/1e6).toFixed(1)}M`; }
+          else if (fundId === 'week52_near_high') { pass = fd.week_52_high > 0 && price >= fd.week_52_high * (threshold/100); isReal = true; note = fd.week_52_high > 0 ? `${((price/fd.week_52_high)*100).toFixed(0)}%` : '-'; }
+          // Baholash
+          else if (fundId === 'pe_lt') { pass = fd.pe_ratio > 0 && fd.pe_ratio < threshold; isReal = true; note = `P/E=${fd.pe_ratio?.toFixed(1)}`; }
+          else if (fundId === 'pe_gt') { pass = fd.pe_ratio > threshold; isReal = true; note = `P/E=${fd.pe_ratio?.toFixed(1)}`; }
+          else if (fundId === 'fwd_pe_lt') { pass = fd.forward_pe > 0 && fd.forward_pe < threshold; isReal = true; note = `fP/E=${fd.forward_pe?.toFixed(1)}`; }
+          else if (fundId === 'peg_lt') { pass = fd.peg_ratio > 0 && fd.peg_ratio < threshold; isReal = true; note = `PEG=${fd.peg_ratio?.toFixed(2)}`; }
+          else if (fundId === 'ps_lt') { pass = fd.ps_ratio > 0 && fd.ps_ratio < threshold; isReal = true; note = `P/S=${fd.ps_ratio?.toFixed(1)}`; }
+          else if (fundId === 'pb_lt') { pass = fd.pb_ratio > 0 && fd.pb_ratio < threshold; isReal = true; note = `P/B=${fd.pb_ratio?.toFixed(1)}`; }
+          else if (fundId === 'ev_ebitda_lt') { pass = fd.ev_ebitda > 0 && fd.ev_ebitda < threshold; isReal = true; note = `EV/E=${fd.ev_ebitda?.toFixed(1)}`; }
+          else if (fundId === 'pfcf_lt') { pass = fd.price_to_fcf > 0 && fd.price_to_fcf < threshold; isReal = true; note = `P/FCF=${fd.price_to_fcf?.toFixed(1)}`; }
+          // Daromadlilik
+          else if (fundId === 'gross_margin_gt') { pass = (fd.gross_margin*100) > threshold; isReal = true; note = `GM=${(fd.gross_margin*100).toFixed(1)}%`; }
+          else if (fundId === 'op_margin_gt') { pass = (fd.operating_margin*100) > threshold; isReal = true; note = `OM=${(fd.operating_margin*100).toFixed(1)}%`; }
+          else if (fundId === 'net_margin_gt') { pass = (fd.net_margin*100) > threshold; isReal = true; note = `NM=${(fd.net_margin*100).toFixed(1)}%`; }
+          else if (fundId === 'roe_gt') { pass = (fd.roe*100) > threshold; isReal = true; note = `ROE=${(fd.roe*100).toFixed(1)}%`; }
+          else if (fundId === 'roa_gt') { pass = (fd.roa*100) > threshold; isReal = true; note = `ROA=${(fd.roa*100).toFixed(1)}%`; }
+          else if (fundId === 'roic_gt') { pass = (fd.roic*100) > threshold; isReal = true; note = `ROIC=${(fd.roic*100).toFixed(1)}%`; }
+          else if (fundId === 'eps_gt') { pass = fd.eps_ttm > threshold; isReal = true; note = `EPS=$${fd.eps_ttm?.toFixed(2)}`; }
+          // O'sish
+          else if (fundId === 'rev_growth_gt') { pass = (fd.revenue_growth_yoy*100) > threshold; isReal = true; note = `RevG=${(fd.revenue_growth_yoy*100).toFixed(1)}%`; }
+          else if (fundId === 'eps_growth_gt') { pass = (fd.eps_growth_yoy*100) > threshold; isReal = true; note = `EPSG=${(fd.eps_growth_yoy*100).toFixed(1)}%`; }
+          else if (fundId === 'rev_growth_qoq') { pass = (fd.revenue_growth_qoq*100) > threshold; isReal = true; note = `RevQoQ=${(fd.revenue_growth_qoq*100).toFixed(1)}%`; }
+          else if (fundId === 'eps_growth_qoq') { pass = (fd.eps_growth_qoq*100) > threshold; isReal = true; note = `EPSQoQ=${(fd.eps_growth_qoq*100).toFixed(1)}%`; }
+          else if (fundId === 'rev_3yr') { pass = (fd.revenue_cagr_3y*100) > threshold; isReal = true; note = `3YCAGR=${(fd.revenue_cagr_3y*100).toFixed(1)}%`; }
+          else if (fundId === 'eps_3yr') { pass = (fd.eps_cagr_3y*100) > threshold; isReal = true; note = `3YEPS=${(fd.eps_cagr_3y*100).toFixed(1)}%`; }
+          // Moliyaviy Holat
+          else if (fundId === 'debt_eq_lt') { pass = fd.debt_to_equity < threshold; isReal = true; note = `D/E=${fd.debt_to_equity?.toFixed(2)}`; }
+          else if (fundId === 'current_ratio_gt') { pass = fd.current_ratio > threshold; isReal = true; note = `CR=${fd.current_ratio?.toFixed(2)}`; }
+          else if (fundId === 'quick_ratio_gt') { pass = fd.quick_ratio > threshold; isReal = true; note = `QR=${fd.quick_ratio?.toFixed(2)}`; }
+          else if (fundId === 'interest_coverage_gt') { pass = fd.interest_coverage > threshold; isReal = true; note = `IC=${fd.interest_coverage?.toFixed(1)}`; }
+          else if (fundId === 'net_cash_gt') { pass = fd.net_cash > (threshold * 1e9); isReal = true; note = `NC=$${(fd.net_cash/1e9).toFixed(1)}B`; }
+          else if (fundId === 'altman_z_gt') { pass = fd.altman_z_score > threshold; isReal = true; note = `Z=${fd.altman_z_score?.toFixed(2)}`; }
+          // Pul Oqimi
+          else if (fundId === 'fcf_gt') { pass = fd.free_cash_flow > (threshold * 1e6); isReal = true; note = `FCF=$${(fd.free_cash_flow/1e6).toFixed(0)}M`; }
+          else if (fundId === 'fcf_margin_gt') { pass = (fd.fcf_margin*100) > threshold; isReal = true; note = `FCFm=${(fd.fcf_margin*100).toFixed(1)}%`; }
+          else if (fundId === 'fcf_yield_gt') { pass = (fd.fcf_yield*100) > threshold; isReal = true; note = `FCFy=${(fd.fcf_yield*100).toFixed(1)}%`; }
+          else if (fundId === 'ocf_gt') { pass = fd.operating_cash_flow > (threshold * 1e6); isReal = true; note = `OCF=$${(fd.operating_cash_flow/1e6).toFixed(0)}M`; }
+          else if (fundId === 'capex_rev_lt') { pass = (fd.capex_to_revenue*100) < threshold; isReal = true; note = `Cx=${(fd.capex_to_revenue*100).toFixed(1)}%`; }
+          else if (fundId === 'ocf_income_gt') { pass = fd.ocf_to_income > threshold; isReal = true; note = `OCF/NI=${fd.ocf_to_income?.toFixed(2)}`; }
+          // Dividendlar
+          else if (fundId === 'div_yield_gt') { pass = (fd.dividend_yield*100) > threshold; isReal = true; note = `Div=${(fd.dividend_yield*100).toFixed(1)}%`; }
+          else if (fundId === 'div_yield_lt') { pass = (fd.dividend_yield*100) < threshold; isReal = true; note = `Div=${(fd.dividend_yield*100).toFixed(1)}%`; }
+          else if (fundId === 'payout_lt') { pass = (fd.payout_ratio*100) < threshold; isReal = true; note = `Pay=${(fd.payout_ratio*100).toFixed(0)}%`; }
+          else if (fundId === 'div_growth_gt') { pass = (fd.dividend_growth_5y*100) > threshold; isReal = true; note = `DivG=${(fd.dividend_growth_5y*100).toFixed(1)}%`; }
+          else { pass = Math.random() > 0.5; isReal = false; note = '~SIM'; }
+        } else {
+          // fundamental_data bo'sh — simulatsiya
+          pass = Math.random() > 0.50; isReal = false; note = '~SIM';
+        }
       }
 
       if (pass) passed++;
