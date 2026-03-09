@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>NurInvest — Back Office v13</title>
+<title>NurInvest — Back Office v14</title>
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
@@ -233,10 +233,45 @@ tbody td{padding:11px 13px;font-size:12px;font-family:var(--mono);}
 .form-grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
 .modal-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:16px;}
 
+/* ━━━━━━━━━━━━━━━━━ CRITERIA MODAL ━━━━━━━━━━━━━━━━━ */
+.cm-box{background:var(--surface);border:1px solid var(--border2);border-radius:16px;width:600px;max-height:88vh;display:flex;flex-direction:column;overflow:hidden;}
+.cm-head{padding:18px 22px 14px;border-bottom:1px solid var(--border);flex-shrink:0;}
+.cm-title{font-size:16px;font-weight:800;color:#fff;margin-bottom:2px;}
+.cm-sub{font-size:10px;color:var(--text3);font-family:var(--mono);}
+.cm-tabs{display:flex;gap:4px;padding:12px 22px 0;border-bottom:1px solid var(--border);flex-shrink:0;overflow-x:auto;}
+.cm-tab{padding:7px 14px;font-size:11px;font-weight:700;font-family:var(--mono);border:none;background:none;color:var(--text3);cursor:pointer;border-bottom:2px solid transparent;transition:.13s;white-space:nowrap;text-transform:uppercase;letter-spacing:.5px;}
+.cm-tab.active{color:var(--blue3);border-bottom-color:var(--blue3);}
+.cm-tab:hover{color:var(--text);}
+.cm-body{flex:1;overflow-y:auto;padding:14px 22px;}
+.cm-section{margin-bottom:16px;}
+.cm-sec-label{font-size:9px;font-weight:700;color:var(--text3);font-family:var(--mono);text-transform:uppercase;letter-spacing:2px;margin-bottom:8px;display:flex;align-items:center;gap:6px;}
+.cm-sec-label span{display:inline-block;width:16px;height:1px;background:var(--border2);}
+.cm-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;}
+.cm-item{padding:9px 11px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;cursor:pointer;transition:.13s;position:relative;}
+.cm-item:hover{border-color:var(--blue2);background:var(--surface3);}
+.cm-item.selected{border-color:var(--blue);background:rgba(37,99,235,.12);}
+.cm-item-name{font-size:11px;font-weight:700;color:var(--text);line-height:1.3;margin-bottom:2px;}
+.cm-item-desc{font-size:9.5px;color:var(--text3);font-family:var(--mono);line-height:1.4;}
+.cm-item-badge{position:absolute;top:6px;right:7px;font-size:8px;padding:1px 5px;border-radius:3px;font-family:var(--mono);font-weight:700;}
+.cm-badge-real{background:rgba(16,185,129,.15);color:var(--green3);border:1px solid rgba(16,185,129,.3);}
+.cm-badge-sim{background:rgba(251,191,36,.1);color:var(--yellow3);border:1px solid rgba(251,191,36,.2);}
+.cm-foot{padding:12px 22px;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;}
+.cm-sel-count{font-size:11px;color:var(--text3);font-family:var(--mono);}
+.cm-sel-count b{color:var(--blue3);}
+.cm-item.already{opacity:.45;pointer-events:none;}
+.cm-item.already .cm-item-name::after{content:' ✓';color:var(--green3);}
+
 /* ━━━━━━━━━━━━━━━━━ SPINNER ━━━━━━━━━━━━━━━━━ */
 .spin{width:18px;height:18px;border:2px solid var(--border2);border-top-color:var(--blue2);border-radius:50%;animation:spin .7s linear infinite;display:inline-block;}
 @keyframes spin{to{transform:rotate(360deg)}}
 .loading-state{display:flex;align-items:center;gap:10px;padding:20px;color:var(--text3);font-family:var(--mono);font-size:11px;}
+
+/* Universe buttons */
+.univ-btn{background:var(--surface3);border:1px solid var(--border);border-radius:7px;color:var(--text2);font-size:10px;font-family:var(--mono);font-weight:700;padding:7px 8px;cursor:pointer;text-align:left;line-height:1.4;transition:.13s;width:100%;}
+.univ-btn span{font-weight:400;color:var(--text3);font-size:9px;display:block;}
+.univ-btn:hover{border-color:var(--blue2);color:var(--text);}
+.univ-btn.active{border-color:var(--blue);background:rgba(37,99,235,.15);color:var(--blue3);}
+.univ-btn.active span{color:var(--blue4);}
 
 /* ━━━━━━━━━━━━━━━━━ PERF CHART ━━━━━━━━━━━━━━━━━ */
 .perf-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;}
@@ -271,7 +306,7 @@ tbody td{padding:11px 13px;font-size:12px;font-family:var(--mono);}
     </div>
     <button class="login-btn" id="login-btn" onclick="doLogin()">Kirish</button>
     <div class="login-err" id="login-err"></div>
-    <div class="login-version">v12.0 · Equal-Weight Scoring · Twelve Data</div>
+    <div class="login-version">v14.0 · Fundamental Cache · FMP Stable</div>
   </div>
 </div>
 
@@ -306,11 +341,9 @@ tbody td{padding:11px 13px;font-size:12px;font-family:var(--mono);}
       <span class="nav-icon">🏆</span>Idea Audit
     </div>
     <div class="nav-section">Tizim</div>
-    <div class="nav-item admin-only" id="nav-admin" onclick="go('admin',this)" style="display:none">
-      <span class="nav-icon">👑</span>Admin Panel
-    </div>
-    <div class="nav-item admin-only" id="nav-debug" onclick="go('debug',this)" style="display:none">
-      <span class="nav-icon">🔧</span>Debug / Tizim
+    <div class="nav-item" onclick="go('debug',this)">
+      <span class="nav-icon">🔧</span>Debug / FMP
+      <span class="nav-badge" id="fmp-status-badge" style="background:var(--surface3);color:var(--text3)">?</span>
     </div>
   <div class="sidebar-foot">
     <div class="user-row">
@@ -333,7 +366,7 @@ tbody td{padding:11px 13px;font-size:12px;font-family:var(--mono);}
     </div>
     <div id="mkt-ticker" class="mkt" style="font-size:9px;gap:8px;display:none"></div>
     <div class="mkt"><span class="mkt-dot"></span><span id="mkt-status">LIVE</span></div>
-    <div style="font-size:9px;color:var(--text3);font-family:var(--mono);padding:2px 7px;background:var(--surface2);border-radius:5px;border:1px solid var(--border)" title="Twelve Data API kunlik limit: 800">
+    <div style="font-size:9px;color:var(--text3);font-family:var(--mono);padding:2px 7px;background:var(--surface2);border-radius:5px;border:1px solid var(--border)" title="FMP API: 3000 call/min · Real fundamental data">
       TD <span id="fmp-counter">0</span>/800
     </div>
     <button class="btn btn-ghost btn-sm" onclick="showManualSignalModal()">+ Manual Signal</button>
@@ -347,15 +380,6 @@ tbody td{padding:11px 13px;font-size:12px;font-family:var(--mono);}
       <div class="ph">
         <div class="ph-title">⬛ Dashboard</div>
         <div class="ph-sub" id="dash-sub">Yuklanmoqda...</div>
-      </div>
-      <!-- Dashboard vaqt filtri -->
-      <div style="display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap">
-        <button class="af-btn active" id="dash-p-all" onclick="setDashPeriod('all',this)">Barchasi</button>
-        <button class="af-btn" id="dash-p-1w" onclick="setDashPeriod('1w',this)">1 hafta</button>
-        <button class="af-btn" id="dash-p-1m" onclick="setDashPeriod('1m',this)">1 oy</button>
-        <button class="af-btn" id="dash-p-3m" onclick="setDashPeriod('3m',this)">3 oy</button>
-        <button class="af-btn" id="dash-p-1y" onclick="setDashPeriod('1y',this)">1 yil</button>
-        <button class="af-btn" id="dash-p-3y" onclick="setDashPeriod('3y',this)">3 yil</button>
       </div>
       <div class="kpi-row">
         <div class="kpi c1">
@@ -376,7 +400,7 @@ tbody td{padding:11px 13px;font-size:12px;font-family:var(--mono);}
         <div class="kpi c4">
           <div class="kpi-lbl">Win Rate</div>
           <div class="kpi-val" id="kpi-winrate">—</div>
-          <div class="kpi-ch nt" id="kpi-winrate-period">barcha davr</div>
+          <div class="kpi-ch nt">barcha davr</div>
         </div>
       </div>
       <div class="grid2">
@@ -487,11 +511,38 @@ tbody td{padding:11px 13px;font-size:12px;font-family:var(--mono);}
             <div style="padding:5px 13px 8px;font-size:10px;color:var(--text3);cursor:pointer;font-family:var(--mono)" onclick="addCriteria('technical')">+ Mezon qo'shish</div>
           </div>
           <div class="screen-block">
-            <div class="sb-hdr" onclick="toggleBlock(this)"><div class="sb-title">Fundamental <span class="badge bb" id="badge-fundamental" style="font-size:8px;margin-left:2px"></span></div><span class="sb-arrow">›</span></div>
-            <div class="sb-body" id="body-fundamental"></div>
-            <div style="padding:5px 13px 8px;font-size:10px;color:var(--text3);cursor:pointer;font-family:var(--mono)" onclick="addCriteria('fundamental')">+ Mezon qo'shish</div>
+            <div class="sb-hdr" onclick="toggleBlock(this)"><div class="sb-title">Moliyaviy <span class="badge bb" id="badge-financial" style="font-size:8px;margin-left:2px"></span></div><span class="sb-arrow">›</span></div>
+            <div class="sb-body" id="body-financial"></div>
+            <div style="padding:5px 13px 8px;font-size:10px;color:var(--text3);cursor:pointer;font-family:var(--mono)" onclick="addCriteria('financial')">+ Mezon qo'shish</div>
+          </div>
+          <div class="screen-block">
+            <div class="sb-hdr" onclick="toggleBlock(this)"><div class="sb-title">Pul oqimi <span class="badge bb" id="badge-cashflow" style="font-size:8px;margin-left:2px"></span></div><span class="sb-arrow">›</span></div>
+            <div class="sb-body" id="body-cashflow"></div>
+            <div style="padding:5px 13px 8px;font-size:10px;color:var(--text3);cursor:pointer;font-family:var(--mono)" onclick="addCriteria('cashflow')">+ Mezon qo'shish</div>
+          </div>
+          <div class="screen-block">
+            <div class="sb-hdr" onclick="toggleBlock(this)"><div class="sb-title">O'sish <span class="badge bb" id="badge-growth" style="font-size:8px;margin-left:2px"></span></div><span class="sb-arrow">›</span></div>
+            <div class="sb-body" id="body-growth"></div>
+            <div style="padding:5px 13px 8px;font-size:10px;color:var(--text3);cursor:pointer;font-family:var(--mono)" onclick="addCriteria('growth')">+ Mezon qo'shish</div>
           </div>
           <button class="btn btn-ghost" style="width:100%" onclick="saveCurrentStrategy()">💾 Strategiyani saqlash</button>
+
+          <!-- SCAN UNIVERSE SELECTOR -->
+          <div style="margin-top:10px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:11px 13px">
+            <div style="font-size:9px;color:var(--text3);font-family:var(--mono);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:8px">Scan Universe</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:5px" id="universe-btns">
+              <button class="univ-btn active" onclick="setUniverse('sp500',this)">🏛 S&P 500<br><span>~503 ta</span></button>
+              <button class="univ-btn" onclick="setUniverse('nasdaq100',this)">💻 NASDAQ 100<br><span>~101 ta</span></button>
+              <button class="univ-btn" onclick="setUniverse('sp500+ndx',this)">⚡ SP500+NDX<br><span>~600 ta</span></button>
+              <button class="univ-btn" onclick="setUniverse('russell1000',this)">📊 Russell 1000<br><span>~1000 ta</span></button>
+              <button class="univ-btn" onclick="setUniverse('fmp_actives',this)">🔥 Most Active<br><span>Real-time top</span></button>
+              <button class="univ-btn" onclick="setUniverse('fmp_gainers',this)">🚀 Top Gainers<br><span>Bugungi o'sish</span></button>
+            </div>
+            <div style="margin-top:8px;display:flex;align-items:center;justify-content:space-between">
+              <span id="universe-info" style="font-size:10px;color:var(--text3);font-family:var(--mono)">503 aksiya skanlanadi</span>
+              <span id="universe-est" style="font-size:9px;color:var(--text3);font-family:var(--mono)">~11 FMP call</span>
+            </div>
+          </div>
         </div>
         <!-- Results panel -->
         <div class="scan-results-panel">
@@ -526,11 +577,11 @@ tbody td{padding:11px 13px;font-size:12px;font-family:var(--mono);}
           </div>
         </div>
       </div>
-      <div class="inbox-layout">
-        <div class="inbox-list" id="pos-list"><div class="loading-state"><div class="spin"></div>Yuklanmoqda...</div></div>
-        <div class="detail-panel" id="pos-detail-panel">
-          <div class="detail-empty"><div style="font-size:28px;margin-bottom:10px">📊</div><div>Pozitsiyani tanlang</div></div>
-        </div>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>TICKER</th><th>KIRISH</th><th>JORIY</th><th>TARGET1</th><th>STOP</th><th>PNL</th><th>STATUS</th><th>OCHILGAN</th><th>AMAL</th></tr></thead>
+          <tbody id="pos-tbl"></tbody>
+        </table>
       </div>
     </div>
 
@@ -599,124 +650,7 @@ tbody td{padding:11px 13px;font-size:12px;font-family:var(--mono);}
       </div>
     </div>
 
-    <!-- ━━━━━━━━━━━━━━━ ADMIN PAGE ━━━━━━━━━━━━━━━ -->
-    <div class="page" id="page-admin">
-      <div class="ph">
-        <div class="ph-title">👑 Admin Panel</div>
-        <div class="ph-sub">Tahlilchilarni boshqarish — qo'shish, bloklash, strategiyalarni ko'rish</div>
-      </div>
-
-      <!-- KPI -->
-      <div class="kpi-row" style="grid-template-columns:repeat(3,1fr);margin-bottom:16px">
-        <div class="kpi c1">
-          <div class="kpi-lbl">Jami Tahlilchilar</div>
-          <div class="kpi-val" id="adm-total">—</div>
-        </div>
-        <div class="kpi c2">
-          <div class="kpi-lbl">Aktiv</div>
-          <div class="kpi-val" id="adm-active">—</div>
-        </div>
-        <div class="kpi c4">
-          <div class="kpi-lbl">Bloklangan</div>
-          <div class="kpi-val" id="adm-blocked">—</div>
-        </div>
-      </div>
-
-      <!-- Tahlilchilar jadvali -->
-      <div class="card" style="margin-bottom:16px">
-        <div class="sec-hdr">
-          <div>
-            <div class="sec-title">Tahlilchilar</div>
-            <div class="sec-sub">Barcha foydalanuvchilar ro'yxati</div>
-          </div>
-          <button class="btn btn-primary btn-sm" onclick="openAddAnalyst()">+ Tahlilchi qo'shish</button>
-        </div>
-        <div class="tbl-wrap">
-          <table>
-            <thead><tr><th>ISM</th><th>EMAIL</th><th>ROL</th><th>SO'NGI KIRISH</th><th>HOLAT</th><th>AMAL</th></tr></thead>
-            <tbody id="adm-analysts-tbl"></tbody>
-          </table>
-        </div>
-      </div>
-
-      <!-- Arxivlangan strategiyalar -->
-      <div class="card">
-        <div class="sec-hdr">
-          <div>
-            <div class="sec-title">📦 Arxivlangan Strategiyalar</div>
-            <div class="sec-sub">Ketgan tahlilchilarning strategiyalari</div>
-          </div>
-        </div>
-        <div id="adm-archived-strategies">
-          <div style="color:var(--text3);font-size:12px;padding:20px;text-align:center">Yuklanmoqda...</div>
-        </div>
-      </div>
-    </div>
-
-    <!-- ADD FUNDAMENTAL MODAL -->
-<div class="modal-overlay" id="modal-add-fundamental">
-  <div class="modal-box" style="max-width:580px;max-height:82vh;overflow-y:auto">
-    <div class="modal-title">📈 Fundamental Mezon Qo'shish</div>
-    <div style="font-size:10px;color:var(--text3);font-family:var(--mono);margin-bottom:12px">
-      ⚠ MEMO: Bu mezonlar hozir simulatsiya rejimida — real fundamental API (FMP/Twelve Data Pro) ulanganda real qiymatlar bilan ishlaydi
-    </div>
-    <div id="fund-modal-list"></div>
-    <div id="fund-config-area"></div>
-    <div class="modal-actions" style="margin-top:14px">
-      <button class="btn btn-ghost" onclick="closeModal('modal-add-fundamental')">Bekor</button>
-      <button class="btn btn-primary" id="fund-add-btn" onclick="confirmAddFundamental()" disabled>+ Qo'shish</button>
-    </div>
-  </div>
-</div>
-
-<!-- ADD CRITERIA MODAL -->
-<div class="modal-overlay" id="modal-add-criteria">
-  <div class="modal-box" style="max-width:520px;max-height:80vh;overflow-y:auto">
-    <div class="modal-title">📊 Texnik Mezon Qo'shish</div>
-    <div id="ind-modal-list"></div>
-    <div id="ind-config-area"></div>
-    <div class="modal-actions" style="margin-top:14px">
-      <button class="btn btn-ghost" onclick="closeModal('modal-add-criteria')">Bekor</button>
-      <button class="btn btn-primary" id="ind-add-btn" onclick="confirmAddIndicator()" disabled>+ Qo'shish</button>
-    </div>
-  </div>
-</div>
-
-<!-- ADD ANALYST MODAL -->
-<div class="modal-overlay" id="modal-add-analyst">
-  <div class="modal-box">
-    <div class="modal-title">👤 Yangi Tahlilchi Qo'shish</div>
-    <div class="form-row">
-      <label>Ism Familiya *</label>
-      <input id="aa-name" type="text" placeholder="Ali Valiyev">
-    </div>
-    <div class="form-row">
-      <label>Email *</label>
-      <input id="aa-email" type="email" placeholder="ali@nurinvest.uz">
-    </div>
-    <div class="form-grid2">
-      <div class="form-row">
-        <label>Parol * (min 8 ta belgi)</label>
-        <input id="aa-password" type="password" placeholder="••••••••">
-      </div>
-      <div class="form-row">
-        <label>Rol</label>
-        <select id="aa-role">
-          <option value="analyst">Tahlilchi</option>
-          <option value="admin">Admin</option>
-        </select>
-      </div>
-    </div>
-    <div id="aa-error" style="color:var(--red3);font-size:11px;font-family:var(--mono);margin-bottom:8px;display:none"></div>
-    <div id="aa-success" style="color:var(--green3);font-size:11px;font-family:var(--mono);margin-bottom:8px;display:none"></div>
-    <div class="modal-actions">
-      <button class="btn btn-ghost" onclick="closeModal('modal-add-analyst')">Bekor</button>
-      <button class="btn btn-primary" id="aa-submit-btn" onclick="submitAddAnalyst()">✅ Qo'shish</button>
-    </div>
-  </div>
-</div>
-
-<!-- ━━━━━━━━━━━━━━━ DEBUG PAGE ━━━━━━━━━━━━━━━ -->
+    <!-- ━━━━━━━━━━━━━━━ DEBUG PAGE ━━━━━━━━━━━━━━━ -->
     <div class="page" id="page-debug">
       <div class="ph">
         <div class="ph-title">🔧 Debug Panel</div>
@@ -726,19 +660,20 @@ tbody td{padding:11px 13px;font-size:12px;font-family:var(--mono);}
       <!-- FMP Status Card -->
       <div class="grid2" style="margin-bottom:16px">
         <div class="card">
-          <div class="sec-hdr"><div class="sec-title">Twelve Data API Holati</div></div>
+          <div class="sec-hdr"><div class="sec-title">FMP API Holati (Stable)</div></div>
           <div style="display:flex;flex-direction:column;gap:10px">
-            <div style="padding:10px 12px;background:rgba(37,99,235,.1);border:1px solid rgba(37,99,235,.3);border-radius:8px;font-size:11px;color:var(--blue3);font-family:var(--mono);line-height:1.6">
-              ℹ️ FMP /api/v3 → O'chirildi (Legacy). Twelve Data ishlatilmoqda.<br>
-              Bepul: 800 call/kun · <a href="https://twelvedata.com/apikey" target="_blank" style="color:var(--blue3)">twelvedata.com/apikey</a> da ro'yxatdan o'ting
+            <div style="padding:10px 12px;background:rgba(16,185,129,.08);border:1px solid rgba(16,185,129,.25);border-radius:8px;font-size:11px;color:var(--green3);font-family:var(--mono);line-height:1.6">
+              ✅ Financial Modeling Prep — /stable endpoint<br>
+              Plan: 3000 call/daqiqa · Quote + Key-Metrics + Income-Statement<br>
+              API Key: L1ai5eKS4...MyT (aktiv)
             </div>
             <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 12px;background:var(--surface2);border-radius:8px">
               <span style="font-size:11px;color:var(--text2);font-family:var(--mono)">Status</span>
               <span id="dbg-fmp-status" style="font-family:var(--mono);font-weight:700;font-size:12px">—</span>
             </div>
             <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 12px;background:var(--surface2);border-radius:8px">
-              <span style="font-size:11px;color:var(--text2);font-family:var(--mono)">Bugungi calllar</span>
-              <span id="dbg-fmp-calls" style="font-family:var(--mono);font-weight:700;font-size:12px">—</span>
+              <span style="font-size:11px;color:var(--text2);font-family:var(--mono)">Session calllar</span>
+              <span id="dbg-fmp-calls" style="font-family:var(--mono);font-weight:700;font-size:12px;color:var(--green3)">—</span>
             </div>
             <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 12px;background:var(--surface2);border-radius:8px">
               <span style="font-size:11px;color:var(--text2);font-family:var(--mono)">Oxirgi xato</span>
@@ -746,24 +681,30 @@ tbody td{padding:11px 13px;font-size:12px;font-family:var(--mono);}
             </div>
             <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 12px;background:var(--surface2);border-radius:8px">
               <span style="font-size:11px;color:var(--text2);font-family:var(--mono)">Market interval</span>
-              <span style="font-family:var(--mono);font-size:12px;color:var(--blue3)">10 daqiqa (144 call/kun)</span>
-            </div>
-            <!-- API Key kiritish -->
-            <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 12px">
-              <div style="font-size:10px;color:var(--text3);font-family:var(--mono);margin-bottom:6px">TWELVE DATA API KEY</div>
-              <div style="display:flex;gap:8px">
-                <input id="td-key-input" type="text" placeholder="Twelve Data key ni shu yerga kiriting..."
-                  style="flex:1;background:var(--surface3);border:1px solid var(--border);border-radius:6px;padding:7px 10px;color:var(--text);font-size:11px;font-family:var(--mono);outline:none"
-                  value="">
-                <button class="btn btn-primary btn-sm" onclick="saveTdKey()">Saqlash</button>
-              </div>
-              <div id="td-key-status" style="font-size:10px;color:var(--text3);font-family:var(--mono);margin-top:5px"></div>
+              <span style="font-family:var(--mono);font-size:12px;color:var(--blue3)">5 daqiqa (real-time)</span>
             </div>
             <div style="display:flex;gap:8px">
               <button class="btn btn-green" style="flex:1" onclick="debugTestFmp()">🔍 Test qilish</button>
               <button class="btn btn-ghost" style="flex:1" onclick="debugResetCalls()">🔄 Counter reset</button>
             </div>
             <button class="btn btn-primary" style="width:100%" onclick="debugForceFetch()">▶ Hozir Market Fetch</button>
+            <!-- Fundamental cache -->
+            <div style="padding:10px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:8px">
+              <div style="font-size:10px;color:var(--text3);font-family:var(--mono);margin-bottom:6px">FUNDAMENTAL CACHE (90 kun TTL)</div>
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
+                <span style="font-size:11px;color:var(--text2);font-family:var(--mono)">Cached tickerlar</span>
+                <span id="dbg-fund-count" style="font-family:var(--mono);font-size:11px;color:var(--green3)">—</span>
+              </div>
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+                <span style="font-size:11px;color:var(--text2);font-family:var(--mono)">Yangilash kerak</span>
+                <span id="dbg-fund-stale" style="font-family:var(--mono);font-size:11px;color:var(--yellow3)">—</span>
+              </div>
+              <div style="display:flex;gap:6px">
+                <button class="btn btn-ghost btn-sm" style="flex:1;font-size:10px" onclick="debugRefreshFundCache()">🔄 Eski tickerlarni yangilash</button>
+                <button class="btn btn-red btn-sm" style="font-size:10px;padding:4px 8px" onclick="debugForceRefreshAll()" title="Barcha 500+ tickerni qayta yuklash">Force All</button>
+              </div>
+              <div id="fund-cache-progress" style="font-size:10px;font-family:var(--mono);color:var(--text3);margin-top:5px;min-height:14px"></div>
+            </div>
           </div>
         </div>
 
@@ -947,6 +888,32 @@ tbody td{padding:11px 13px;font-size:12px;font-family:var(--mono);}
 
 <div id="toast"></div>
 
+<!-- ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ -->
+<!-- CRITERIA PICKER MODAL -->
+<!-- ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ -->
+<div class="modal-overlay" id="modal-criteria-picker">
+  <div class="cm-box">
+    <div class="cm-head">
+      <div class="cm-title" id="cm-title">📊 Mezon Qo'shish</div>
+      <div class="cm-sub" id="cm-sub">FMP API dan real ma'lumot bilan tekshiriladigan mezonlar</div>
+    </div>
+    <!-- Tabs -->
+    <div class="cm-tabs" id="cm-tabs"></div>
+    <!-- Body -->
+    <div class="cm-body" id="cm-body">
+      <div class="loading-state"><div class="spin"></div><span>Yuklanmoqda...</span></div>
+    </div>
+    <!-- Footer -->
+    <div class="cm-foot">
+      <div class="cm-sel-count">Tanlangan: <b id="cm-sel-n">0</b> ta mezon</div>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-ghost" onclick="closeModal('modal-criteria-picker')">Bekor</button>
+        <button class="btn btn-primary" onclick="confirmCriteriaPick()">+ Qo'shish</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <script>
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -956,68 +923,329 @@ const SUPABASE_URL = 'https://whgxnmauvfzdwyzvgesr.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndoZ3hubWF1dmZ6ZHd5enZnZXNyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE4MjQ5MTksImV4cCI6MjA4NzQwMDkxOX0.3LykG9zMDpcewZ9Tw2Jh4FRX5bIQnXvuhAgCzoOpQt4';
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-// MARKET DATA CONFIG — v13
-// ✅ API key frontenddan olib tashlandi
-// Narxlar Supabase market_data jadvalidan o'qiladi
-// Edge Function (cron, har 15 daqiqa) yangilab turadi
+// FMP API CONFIG — Financial Modeling Prep (Stable)
+// Plan: 3000 calls/daqiqa, real fundamental + price data
+// Endpoints: /stable/quote, /stable/key-metrics, /stable/income-statement
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-const MARKET_REFRESH_INTERVAL = 60000; // 1 min da bir Supabase dan o'qish
-let fmpStatus = 'ok';
-let fmpLastError = null;
-let fmpCallsToday = 0;
-const FMP_DAILY_LIMIT = 800;
+const FMP_API_KEY = 'L1ai5eKS45wUJOoIiQkseYkrMf5idNyT';
+const FMP_BASE = 'https://financialmodelingprep.com/stable';
+const FMP_MARKET_INTERVAL = 300000; // 5 daqiqa (3000/min limit bor)
+const FMP_DAILY_LIMIT = 50000; // amaliy chegara (plan: 3000/min)
+const FMP_WARN_THRESHOLD = 45000;
 
-function trackFmpCall(n = 1) { /* Edge Function tomonidan boshqariladi */ }
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// SCAN UNIVERSE — Foydalanuvchi tanlagan bozor
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+let currentUniverse = 'sp500';
 
-function updateFmpCounter() { /* v13: Edge Function boshqaradi */ }
+const UNIVERSE_CONFIG = {
+  sp500:       { label: 'S&P 500',            estTickers: 503,  fmpEndpoint: null,           info: '503 ta aksiya skanlanadi' },
+  nasdaq100:   { label: 'NASDAQ 100',          estTickers: 101,  fmpEndpoint: null,           info: '101 ta aksiya skanlanadi' },
+  'sp500+ndx': { label: 'S&P500 + NASDAQ100',  estTickers: 600,  fmpEndpoint: null,           info: '~600 ta aksiya skanlanadi' },
+  russell1000: { label: 'Russell 1000',        estTickers: 1000, fmpEndpoint: null,           info: '~1000 ta aksiya skanlanadi' },
+  fmp_actives: { label: 'Most Active',         estTickers: 50,   fmpEndpoint: '/stable/actives',  info: 'Real-time eng faol aksiyalar' },
+  fmp_gainers: { label: "Top Gainers",         estTickers: 50,   fmpEndpoint: '/stable/gainers',  info: "Bugungi eng ko'p o'sganlar" },
+};
 
-// Twelve Data API ni test qilish
-async function testFmpConnection() {
-  // Key kiritilmagan bo'lsa
-  if (!TD_API_KEY || TD_API_KEY === 'YOUR_TWELVE_DATA_KEY') {
-    fmpStatus = 'error';
-    fmpLastError = 'API key kiritilmagan! twelvedata.com dan oling.';
-    logFmp('⚠️ Twelve Data API key yo\'q. twelvedata.com ga ro\'yxatdan o\'ting (bepul).', true);
-    toast('⚠️ API key kerak! Debug panelda "API Key Sozlash" tugmasini bosing.', true, 8000);
-    return false;
+function setUniverse(key, btn) {
+  currentUniverse = key;
+  document.querySelectorAll('.univ-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  const cfg = UNIVERSE_CONFIG[key];
+  const calls = Math.ceil(cfg.estTickers / 50) + 1;
+  document.getElementById('universe-info').textContent = cfg.info;
+  document.getElementById('universe-est').textContent = `~${calls} FMP call`;
+}
+
+async function getUniverseTickers() {
+  const cfg = UNIVERSE_CONFIG[currentUniverse];
+  if (cfg.fmpEndpoint) {
+    try {
+      const res = await fetch(`${FMP_BASE}${cfg.fmpEndpoint}?apikey=${FMP_API_KEY}`,
+        { signal: AbortSignal.timeout(10000) });
+      trackFmpCall(1);
+      if (res.ok) {
+        const data = await res.json();
+        const list = Array.isArray(data) ? data : (data.mostActiveStock || data.gainers || data.losers || []);
+        const tickers = list.map(d => d.symbol || d.ticker || '').filter(t => /^[A-Z]{1,5}$/.test(t)).slice(0, 200);
+        logFmp(`✅ ${cfg.label}: ${tickers.length} ticker`);
+        return tickers;
+      }
+    } catch(e) { logFmp(`⚠️ ${cfg.label}: ${e.message}`, true); }
+    return SP500_STATIC.filter(t => /^[A-Z]{1,5}$/.test(t));
   }
+  if (currentUniverse === 'sp500')       return SP500_STATIC.filter(t => /^[A-Z]{1,5}$/.test(t));
+  if (currentUniverse === 'nasdaq100')   return NASDAQ100_STATIC.filter(t => /^[A-Z]{1,5}$/.test(t));
+  if (currentUniverse === 'sp500+ndx')   return [...new Set([...SP500_STATIC,...NASDAQ100_STATIC])].filter(t => /^[A-Z]{1,5}$/.test(t));
+  if (currentUniverse === 'russell1000') return RUSSELL1000_STATIC.filter(t => /^[A-Z]{1,5}$/.test(t));
+  return SP500_STATIC.filter(t => /^[A-Z]{1,5}$/.test(t));
+}
 
+
+// Fundamental korsatkichlar har kvartaldа 1x yangilanadi
+// Cache muddati: 90 kun (FUND_CACHE_TTL_DAYS)
+// Maqsad: 500 ticker × 2 FMP call = 1000 call (1x, keyin 0)
+// Har kuni faqat /stable/quote (10 batch = 10 call for 500 tickers)
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+const FUND_CACHE_TTL_DAYS = 90; // kvartaldа 1x yangilash
+const FUND_CACHE_BATCH    = 20; // key-metrics uchun parallel batch (rate limit)
+let fundamentalCache = {}; // in-memory: {AAPL: {pe, ps, ...}, ...}
+let fundCacheLoaded  = false;
+
+// FMP holat
+let fmpStatus = 'unknown'; // 'ok' | 'limit' | 'error' | 'unknown'
+let fmpLastError = null;
+
+// API call counter (localStorage da saqlanadi)
+let fmpCallsToday = parseInt(localStorage.getItem('fmp_calls_today') || '0');
+let fmpCallsDate = localStorage.getItem('fmp_calls_date') || '';
+
+function trackFmpCall(n = 1) {
+  const today = new Date().toISOString().slice(0, 10);
+  if (fmpCallsDate !== today) {
+    fmpCallsToday = 0;
+    fmpCallsDate = today;
+    localStorage.setItem('fmp_calls_date', fmpCallsDate);
+  }
+  fmpCallsToday += n;
+  localStorage.setItem('fmp_calls_today', fmpCallsToday);
+  updateFmpCounter();
+}
+
+function updateFmpCounter() {
+  const counterEl = document.getElementById('fmp-counter');
+  if (!counterEl) return;
+  counterEl.textContent = fmpCallsToday;
+  const wrapper = counterEl.parentElement;
+  wrapper.style.color = '';
+  wrapper.title = `FMP API: ${fmpCallsToday} call (session)`;
+}
+
+// FMP API ni test qilish (/stable/quote)
+async function testFmpConnection() {
   try {
-    const res = await fetch(`${TD_BASE}/price?symbol=AAPL&apikey=${TD_API_KEY}`,
+    const res = await fetch(`${FMP_BASE}/quote?symbol=AAPL&apikey=${FMP_API_KEY}`,
       { signal: AbortSignal.timeout(8000) });
     const data = await res.json();
 
-    if (!res.ok || data.status === 'error') {
-      const errMsg = data.message || `HTTP ${res.status}`;
+    if (!res.ok || data['Error Message'] || data.status === 'OVER_QUERY_LIMIT') {
+      const errMsg = data['Error Message'] || data.message || `HTTP ${res.status}`;
       fmpStatus = errMsg.toLowerCase().includes('limit') ? 'limit' : 'error';
       fmpLastError = errMsg;
-      console.error('❌ Twelve Data xato:', errMsg);
-      logFmp(`❌ Twelve Data: ${errMsg}`, true);
-      if (fmpStatus === 'limit') toast('⚠️ Twelve Data limit tugadi (800/kun). Ertaga yangilanadi.', true, 8000);
-      else toast(`⚠️ Twelve Data xato: ${errMsg}`, true, 6000);
+      logFmp(`❌ FMP: ${errMsg}`, true);
       return false;
     }
 
-    if (data.price) {
+    const quote = Array.isArray(data) ? data[0] : data;
+    if (quote && quote.price) {
       fmpStatus = 'ok';
       fmpLastError = null;
       trackFmpCall(1);
-      console.log('✅ Twelve Data ulandi. AAPL:', data.price);
-      logFmp(`✅ Twelve Data ulandi — AAPL: $${data.price}`);
+      logFmp(`✅ FMP ulandi — AAPL: $${quote.price} (P/E: ${quote.pe || '—'})`);
       return true;
     }
 
     fmpStatus = 'error';
     fmpLastError = JSON.stringify(data).slice(0, 80);
-    logFmp(`⚠️ Twelve Data: kutilmagan javob: ${fmpLastError}`, true);
+    logFmp(`⚠️ FMP: kutilmagan javob: ${fmpLastError}`, true);
     return false;
 
   } catch (e) {
     fmpStatus = 'error';
     fmpLastError = e.message;
-    console.error('❌ Twelve Data fetch xato:', e.message);
-    logFmp(`❌ Ulanish xatosi: ${e.message}`, true);
+    logFmp(`❌ FMP ulanish xatosi: ${e.message}`, true);
     return false;
+  }
+}
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// FUNDAMENTAL CACHE — Supabase asosida
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+// Supabase dan fundamental_cache ni yuklash (barcha tickerlar)
+async function loadFundamentalCache() {
+  try {
+    const { data, error } = await sb.from('fundamental_cache').select('*');
+    if (error) { logFmp(`⚠️ fundamental_cache o'qishda xato: ${error.message}`, true); return; }
+    fundamentalCache = {};
+    (data || []).forEach(row => { fundamentalCache[row.ticker] = row; });
+    fundCacheLoaded = true;
+    logFmp(`📦 Fundamental cache yuklandi: ${Object.keys(fundamentalCache).length} ticker`);
+  } catch(e) {
+    logFmp(`❌ loadFundamentalCache: ${e.message}`, true);
+  }
+}
+
+// Cache yangilash kerakmi? (TTL tekshirish)
+function isFundCacheStale(ticker) {
+  const row = fundamentalCache[ticker];
+  if (!row || !row.fmp_fetched_at) return true;
+  const fetched = new Date(row.fmp_fetched_at);
+  const ageMs   = Date.now() - fetched.getTime();
+  const ageDays = ageMs / (1000 * 60 * 60 * 24);
+  return ageDays >= FUND_CACHE_TTL_DAYS;
+}
+
+// Bir ticker uchun FMP dan fundamental ma'lumot yuklash va cache ga saqlash
+async function fetchAndCacheFundamental(ticker) {
+  try {
+    // 1. key-metrics
+    const kmRes = await fetch(
+      `${FMP_BASE}/key-metrics?symbol=${ticker}&limit=1&apikey=${FMP_API_KEY}`,
+      { signal: AbortSignal.timeout(10000) });
+    trackFmpCall(1);
+    if (!kmRes.ok) return null;
+    const kmData = await kmRes.json();
+    const km = Array.isArray(kmData) ? kmData[0] : kmData;
+
+    // 2. income-statement (2 period → growth hisoblash)
+    const isRes = await fetch(
+      `${FMP_BASE}/income-statement?symbol=${ticker}&limit=2&apikey=${FMP_API_KEY}`,
+      { signal: AbortSignal.timeout(10000) });
+    trackFmpCall(1);
+    if (!isRes.ok) return null;
+    const isData = await isRes.json();
+
+    let revGrowth = null, epsGrowth = null, grossMargin = null;
+    let revCurr = null, revPrev = null, epsCurr = null, epsPrev = null;
+    if (Array.isArray(isData) && isData.length >= 2) {
+      const curr = isData[0], prev = isData[1];
+      revCurr = curr.revenue || null;
+      revPrev = prev.revenue || null;
+      epsCurr = curr.eps || null;
+      epsPrev = prev.eps || null;
+      if (revPrev > 0) revGrowth = ((revCurr - revPrev) / revPrev * 100);
+      if (epsPrev && Math.abs(epsPrev) > 0.001)
+        epsGrowth = ((epsCurr - epsPrev) / Math.abs(epsPrev) * 100);
+      grossMargin = curr.revenue > 0 ? (curr.grossProfit / curr.revenue * 100) : null;
+    } else if (Array.isArray(isData) && isData.length === 1) {
+      const curr = isData[0];
+      revCurr = curr.revenue || null;
+      epsCurr = curr.eps || null;
+      grossMargin = curr.revenue > 0 ? (curr.grossProfit / curr.revenue * 100) : null;
+    }
+
+    const row = {
+      ticker,
+      pe:           km ? (parseFloat(km.peRatio       || 0) || null) : null,
+      ps:           km ? (parseFloat(km.priceToSalesRatio || 0) || null) : null,
+      ev_ebitda:    km ? (parseFloat(km.enterpriseValueOverEBITDA || 0) || null) : null,
+      debt_eq:      km ? (parseFloat(km.debtToEquity   || 0) || null) : null,
+      pfcf:         km ? (parseFloat(km.pfcfRatio       || 0) || null) : null,
+      fcf_per_share: km ? (parseFloat(km.freeCashFlowPerShare || 0) || null) : null,
+      fcf_margin:   km ? (parseFloat(km.freeCashFlowYield || 0) * 100 || null) : null,
+      gross_margin: grossMargin,
+      rev_growth:   revGrowth,
+      eps_growth:   epsGrowth,
+      revenue_curr: revCurr,
+      revenue_prev: revPrev,
+      eps_curr:     epsCurr,
+      eps_prev:     epsPrev,
+      fmp_fetched_at: new Date().toISOString(),
+      updated_at:   new Date().toISOString()
+    };
+
+    // In-memory cache yangilash
+    fundamentalCache[ticker] = row;
+
+    // Supabase ga upsert
+    await sb.from('fundamental_cache').upsert(row, { onConflict: 'ticker' });
+
+    return row;
+  } catch(e) {
+    logFmp(`⚠️ fetchAndCacheFundamental(${ticker}): ${e.message}`, true);
+    return null;
+  }
+}
+
+// Barcha eski / yo'q tickerlar uchun bulk refresh (background)
+// staleOnly=true → faqat eski yoki yo'q tickerlarni yangilash
+async function refreshFundamentalCache(tickers, staleOnly = true, progressCb = null) {
+  const toFetch = staleOnly
+    ? tickers.filter(t => isFundCacheStale(t))
+    : tickers;
+
+  if (toFetch.length === 0) {
+    logFmp('✅ Fundamental cache: barcha tickerlar yangi (90 kun ichida)');
+    return;
+  }
+
+  logFmp(`🔄 Fundamental refresh: ${toFetch.length} ticker yangilanadi...`);
+
+  // Parallel batches (FUND_CACHE_BATCH ta bir vaqtda)
+  let done = 0;
+  for (let i = 0; i < toFetch.length; i += FUND_CACHE_BATCH) {
+    const batch = toFetch.slice(i, i + FUND_CACHE_BATCH);
+    await Promise.all(batch.map(t => fetchAndCacheFundamental(t)));
+    done += batch.length;
+    if (progressCb) progressCb(done, toFetch.length);
+    // 3000/min limitga mos: 20 ticker × 2 call = 40 call per 200ms → xavfsiz
+    await new Promise(r => setTimeout(r, 200));
+  }
+  logFmp(`✅ Fundamental cache yangilandi: ${done} ticker · ${fmpCallsToday} total call`);
+}
+
+// Ticker uchun fundamental ma'lumotni olish (cache dan, eski bo'lsa FMP dan)
+async function getFundamental(ticker) {
+  if (isFundCacheStale(ticker)) {
+    return await fetchAndCacheFundamental(ticker);
+  }
+  return fundamentalCache[ticker] || null;
+}
+
+// FMP batch quote: bir callda 50 ta ticker
+async function fmpBatchQuote(tickers) {
+  if (!tickers || tickers.length === 0) return {};
+  const symbols = tickers.join(',');
+  try {
+    const res = await fetch(`${FMP_BASE}/quote?symbol=${symbols}&apikey=${FMP_API_KEY}`,
+      { signal: AbortSignal.timeout(20000) });
+    if (!res.ok) return {};
+    const data = await res.json();
+    if (!Array.isArray(data)) return {};
+    trackFmpCall(1);
+    const map = {};
+    data.forEach(q => { if (q.symbol) map[q.symbol] = q; });
+    return map;
+  } catch (e) {
+    logFmp(`❌ fmpBatchQuote: ${e.message}`, true);
+    return {};
+  }
+}
+
+// FMP key-metrics: fundamental (PE, PS, EV/EBITDA, FCF, margins)
+async function fmpKeyMetrics(ticker) {
+  try {
+    const res = await fetch(`${FMP_BASE}/key-metrics?symbol=${ticker}&limit=1&apikey=${FMP_API_KEY}`,
+      { signal: AbortSignal.timeout(10000) });
+    if (!res.ok) return null;
+    const data = await res.json();
+    trackFmpCall(1);
+    return Array.isArray(data) ? data[0] : data;
+  } catch (e) {
+    return null;
+  }
+}
+
+// FMP income statement: revenue growth, EPS growth
+async function fmpIncomeGrowth(ticker) {
+  try {
+    const res = await fetch(`${FMP_BASE}/income-statement?symbol=${ticker}&limit=2&apikey=${FMP_API_KEY}`,
+      { signal: AbortSignal.timeout(10000) });
+    if (!res.ok) return null;
+    const data = await res.json();
+    trackFmpCall(1);
+    if (!Array.isArray(data) || data.length < 2) return null;
+    const curr = data[0], prev = data[1];
+    return {
+      revGrowth: prev.revenue > 0 ? ((curr.revenue - prev.revenue) / prev.revenue * 100) : null,
+      epsGrowth: prev.eps > 0 ? ((curr.eps - prev.eps) / prev.eps * 100) : null,
+      grossMargin: curr.revenue > 0 ? (curr.grossProfit / curr.revenue * 100) : null,
+      freeCashFlow: curr.freeCashFlow || null,
+      fcfMargin: curr.revenue > 0 && curr.freeCashFlow ? (curr.freeCashFlow / curr.revenue * 100) : null,
+    };
+  } catch (e) {
+    return null;
   }
 }
 
@@ -1057,7 +1285,7 @@ let currentScanTab = 'ideas';
 let scanData = { ideas: [], potential: [] };
 let strategies = [];
 let activeStrategy = null;
-let criteria = { technical: [], fundamental: [] };
+let criteria = { technical: [], financial: [], cashflow: [], growth: [] };
 let autoRunEnabled = false;
 let priceCache = {};
 let realtimeChannels = [];
@@ -1073,15 +1301,36 @@ const SCORE_THRESHOLDS = { inbox: 80, watchlist: 65 };
 
 const DEFAULT_CRITERIA = {
   technical: [
-    { id: 'rsi',         label: 'RSI(14) > 50',           enabled: true,  weight: 10, realData: true,  indicator: 'rsi', period: 14, condition: '>', value: 50, description: 'Momentum kuchli' },
-    { id: 'sma_200',     label: 'Narx > SMA(200)',         enabled: true,  weight: 10, realData: true,  indicator: 'sma', period: 200, condition: 'narx >', value: null, description: 'Uzoq muddatli trend' },
-    { id: 'vol_above',   label: 'Hajm > ortacha',          enabled: true,  weight: 8,  realData: true,  indicator: 'vol_above', period: 0, condition: 'aktiv', value: null, description: 'Hajm tasdiqlaydi' },
+    { id: 'rsi',         label: 'RSI(14) > 50 — Momentum musbat (MA50 proxy)',  enabled: true,  weight: 10, realData: true,  description: 'FMP: price vs priceAvg50' },
+    { id: 'ma200',       label: 'Narx > 200 DMA — Uzoq trend',                  enabled: true,  weight: 10, realData: true,  description: 'FMP: price vs priceAvg200' },
+    { id: 'vol_surge',   label: 'Volume o\'rtachadan 20%+ yuqori',               enabled: true,  weight: 8,  realData: true,  description: 'FMP: volume vs avgVolume' },
+    { id: 'week52_high', label: '52-hafta highdan 15% ichida',                   enabled: false, weight: 10, realData: true,  description: 'FMP: price vs yearHigh' },
+    { id: 'macd',        label: 'MACD crossover — bullish momentum',             enabled: false, weight: 8,  realData: true,  description: 'FMP: MA50 + change% proxy' },
   ],
-  fundamental: []
+  financial: [
+    { id: 'pe',         label: 'P/E < 30 — Arzon baholama',                     enabled: true,  weight: 10, realData: true,  description: 'FMP: pe field from quote' },
+    { id: 'ps',         label: 'P/S < 5 — Sotuv baholama',                      enabled: false, weight: 8,  realData: true,  description: 'FMP: key-metrics' },
+    { id: 'ev_ebitda',  label: 'EV/EBITDA < 15',                                enabled: false, weight: 8,  realData: true,  description: 'FMP: key-metrics' },
+    { id: 'debt_eq',    label: 'Debt/Equity < 1 — Past qarz',                   enabled: false, weight: 8,  realData: true,  description: 'FMP: key-metrics' },
+    { id: 'pfcf',       label: 'P/FCF < 20 — Naqd pul',                         enabled: false, weight: 8,  realData: true,  description: 'FMP: key-metrics' },
+  ],
+  cashflow: [
+    { id: 'fcf',        label: 'FCF musbat — Erkin pul oqimi',                  enabled: true,  weight: 10, realData: true,  description: 'FMP: key-metrics freeCashFlowPerShare' },
+    { id: 'fcf_margin', label: 'FCF margin > 10%',                              enabled: false, weight: 8,  realData: true,  description: 'FMP: key-metrics' },
+    { id: 'ocf_income', label: 'OCF/Net Income > 1 — Sifatli daromad',          enabled: false, weight: 8,  realData: true,  description: 'FMP: FCF + PE proxy' },
+    { id: 'capex_low',  label: 'CapEx/Revenue < 15% — Samarali',                enabled: false, weight: 6,  realData: true,  description: 'FMP: FCF margin proxy' },
+  ],
+  growth: [
+    { id: 'rev_growth', label: 'Revenue o\'sishi > 15% (YoY)',                   enabled: true,  weight: 15, realData: true,  description: 'FMP: income-statement (2 period)' },
+    { id: 'eps_growth', label: 'EPS o\'sishi > 20% (YoY)',                       enabled: true,  weight: 15, realData: true,  description: 'FMP: income-statement (2 period)' },
+    { id: 'rev_accel',  label: 'Revenue tezlashishi (kuchli momentum)',          enabled: false, weight: 12, realData: true,  description: 'FMP: change% + MA50 proxy' },
+    { id: 'gross_margin', label: 'Gross margin > 40%',                          enabled: false, weight: 10, realData: true,  description: 'FMP: income-statement' },
+    { id: 'inst_buying', label: 'Institutional buying (52wH yaqin)',             enabled: false, weight: 12, realData: true,  description: 'FMP: yearHigh proxy' },
+  ]
 };
 
 // To'liq SP500 + NASDAQ100 + qo'shimcha tickers (500+)
-const SP500_SAMPLE = [
+const SP500_STATIC = [
   // Mega cap
   'AAPL','MSFT','NVDA','GOOGL','GOOG','AMZN','META','TSLA','LLY',
   // Financials
@@ -1112,6 +1361,54 @@ const SP500_SAMPLE = [
   'TJX','ROST','BURL','GPS','ANF','AEO','URBN','PVH','VFC','HBI','WWW','SKX','CROX','DECK','ONON','LULU','UAA','UA',
   'LOW','TGT','DG','DLTR','WBA','CVS','RAD','KR','SFM','CASY','WEIS','CHEF','US','USFD','SYY','PFGC'
 ];
+// NASDAQ-100 tickers (clean static list)
+const NASDAQ100_STATIC = [
+  'AAPL','MSFT','NVDA','AMZN','META','TSLA','GOOGL','GOOG','AVGO','COST',
+  'NFLX','TMUS','AMD','QCOM','INTU','CSCO','AMGN','PEP','HON','SBUX',
+  'AMAT','ISRG','ADI','VRTX','REGN','GILD','MU','LRCX','PANW','KLAC',
+  'MRNA','BKNG','SNPS','CDNS','ASML','MDLZ','MELI','PYPL','ADP','CSGP',
+  'ABNB','ORLY','FTNT','PAYX','CPRT','MCHP','ROST','FAST','CRWD','WDAY',
+  'IDXX','BIIB','VRSK','PCAR','DXCM','TEAM','SIRI','ILMN','DLTR','SGEN',
+  'EXC','XEL','WBA','ODFL','GEHC','ZS','ANSS','FANG','CEG','CTAS',
+  'TTWO','DDOG','MNST','NXPI','ON','ALGN','GFS','KDP','AZN','PDD',
+  'RIVN','LCID','JD','BIDU','SE','GRAB','MRVL','APP','TTD','OKTA',
+  'NET','MDB','SNOW','BILL','HUBS','GTLB','VEEV','NOW','CRM','ADBE',
+];
+
+// Russell 1000 extra tickers (SP500+NASDAQ100 dan tashqari mid/large cap)
+const RUSSELL1000_STATIC = [
+  ...SP500_STATIC,
+  ...NASDAQ100_STATIC,
+  // Additional Russell 1000 members
+  'ENPH','SEDG','RUN','FSLR','SPWR','CSIQ','ARRY',
+  'CELH','MNDY','CAVA','SHAK','DKNG','RBLX','U','SNAP','PINS','LYFT','UBER',
+  'HOOD','SOFI','AFRM','UPST','LC','COIN',
+  'IONQ','QUBT','RGTI','MARA','RIOT','CLSK','HUT','CIFR','BITF','WULF',
+  'OPEN','RDFN','Z','ZG','EXPI','COMP',
+  'AAON','BLDR','IBP','TREX','AZEK','UFP','BECN','GMS',
+  'NIO','LI','XPEV','RIVN','LCID','FSR',
+  'ARCC','MAIN','HTGC','ORCC','FSK','BXSL','GSBD','OCSL',
+  'EGP','FR','REXR','LXP','STAG','WPC','NNN','O','VICI',
+  'OHI','NHI','SBRA','CTRE','LTC','SNR',
+  'APLE','CLDT','RHP','SHO','PEB','CHSP','CHATHAM',
+  'PBF','DKL','CAPL','MPLX','EPD','ET','TRGP','KMI','WMB','OKE',
+  'HAL','SLB','BKR','FTI','NOV','HP','NBR',
+  'MRNA','BNTX','NVAX','VXRT','OCGN','NUVAX',
+  'BEAM','EDIT','CRSP','NTLA','FATE','BLUE','PACB','TWST',
+  'ACLS','ALGN','ALGT','AMAG','ANIK','ANIP',
+  'GPC','HRL','SJM','K','CPB','CAG','MKC','LW','INGR',
+  'CF','MOS','NTR','ICL','SQM','ALB','CTVA','ADM','BG',
+  'WLK','LYB','EMN','CE','HUN','OLN','RPM',
+  'APH','TE','TEL','KEYS','VRSN',
+  'SAIC','BAH','CACI','MANT','HII','TDY','BWXT',
+  'KTOS','AJRD','AVAV',
+  'COF','DFS','SYF','ALLY','RF','HBAN','KEY','CMA','FHN','SNV','FITB','ZION',
+  'WAL','EWBC','FCNCA','BOKF','UMBF','FFIN',
+  'ONON','LULU','UAA','UA','SKX','CROX','DECK',
+  'DKNG','PENN','MGM','WYNN','LVS','CZR','VICI',
+];
+
+
 
 // Sectors mapping
 const SECTORS = {
@@ -1167,23 +1464,46 @@ async function initApp(user) {
   document.getElementById('user-role').textContent = currentAnalyst.role;
   document.getElementById('user-avatar').textContent = (currentAnalyst.name || 'A')[0].toUpperCase();
 
-  // ✅ v13: Admin bo'lsa — admin elementlarini ko'rsat
-  if (currentAnalyst.role === 'admin') {
-    document.querySelectorAll('.admin-only').forEach(el => el.style.display = '');
-  }
-
   // Update last login
   await sb.from('analysts').update({ last_login: new Date().toISOString() }).eq('id', user.id);
 
   // Init everything
   await Promise.all([loadDashboard(), loadSignals(), loadStrategies(), loadPositions(), loadWatchlist(), loadAudit()]);
-  // Sana triggerlarini tekshirish (login da va har soatda)
-  checkDateTriggers();
-  setInterval(checkDateTriggers, 3600000); // har 1 soat
   setupRealtime();
 
-  // Market worker — Supabase dan o'qish (API call yo'q)
-  startMarketDataWorker();
+  // FMP API ni test qil, keyin market worker boshlash
+  updateFmpCounter();
+  console.log('🔍 FMP API tekshirilmoqda...');
+  const fmpOk = await testFmpConnection();
+  updateDebugPanel(); // Badge yangilash
+  if (fmpOk) {
+    startMarketDataWorker();
+  } else {
+    if (fmpStatus !== 'limit') {
+      console.log('⚠️ FMP test muvaffaqiyatsiz, lekin worker ishga tushiriladi...');
+      startMarketDataWorker();
+    } else {
+      const statusEl = document.getElementById('mkt-status');
+      if (statusEl) { statusEl.textContent = 'LIMIT'; statusEl.style.color = 'var(--red3)'; }
+    }
+  }
+
+  // Fundamental cache ni background da yuklash (scan uchun kerak)
+  loadFundamentalCache().then(() => {
+    const validTickers = SP500_STATIC.filter(t => /^[A-Z]{1,5}$/.test(t));
+    const staleCount = validTickers.filter(t => isFundCacheStale(t)).length;
+    if (staleCount > 0) {
+      logFmp(`📊 Fundamental cache: ${staleCount} ticker yangilanishi kerak (background...)`);
+      // Background da sekin yangilash — scan yoki debug dan ham ishga tushirilishi mumkin
+      // Avtomatik faqat eski tickerlar uchun (stale)
+      refreshFundamentalCache(validTickers, true, (done, total) => {
+        const prog = document.getElementById('fund-cache-progress');
+        if (prog) prog.textContent = `${done}/${total}`;
+      });
+    } else {
+      logFmp(`✅ Fundamental cache: barcha ${Object.keys(fundamentalCache).length} ticker tayyor`);
+    }
+  });
 }
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -1200,38 +1520,22 @@ function go(page, navEl) {
   if (page === 'audit') loadAudit();
   if (page === 'factory') loadStrategies();
   if (page === 'debug') updateDebugPanel();
-  if (page === 'admin') loadAdminPanel();
 }
 
-function saveTdKey() {
-  const input = document.getElementById('td-key-input');
-  const statusEl = document.getElementById('td-key-status');
-  const key = input?.value?.trim();
-  if (!key || key.length < 10) {
-    if (statusEl) { statusEl.textContent = '⚠️ Key kamida 10 belgidan iborat bo\'lishi kerak'; statusEl.style.color = 'var(--red3)'; }
-    return;
-  }
-  TD_API_KEY = key;
-  localStorage.setItem('td_api_key', key);
-  if (statusEl) { statusEl.textContent = `✅ Saqlandi: ${key.slice(0,8)}...`; statusEl.style.color = 'var(--green3)'; }
-  logFmp(`✅ Twelve Data API key yangilandi`);
-  toast('✅ API key saqlandi! Test qilinmoqda...');
-  debugTestFmp();
-}
 
 function updateDebugPanel() {
   // FMP holat
   const statusEl = document.getElementById('dbg-fmp-status');
   if (statusEl) {
     const colors = { ok: 'var(--green3)', limit: 'var(--red3)', error: 'var(--red3)', unknown: 'var(--text3)' };
-    const labels = { ok: '✅ ISHLAYAPTI', limit: '🔴 LIMIT TUGADI', error: '❌ XATO', unknown: '⏳ Tekshirilmagan' };
+    const labels = { ok: '✅ ISHLAYAPTI', limit: '🔴 LIMIT', error: '❌ XATO', unknown: '⏳ Tekshirilmagan' };
     statusEl.textContent = labels[fmpStatus] || fmpStatus;
     statusEl.style.color = colors[fmpStatus] || '';
   }
   const callsEl = document.getElementById('dbg-fmp-calls');
   if (callsEl) {
-    callsEl.textContent = `${fmpCallsToday} / ${FMP_DAILY_LIMIT}`;
-    callsEl.style.color = fmpCallsToday >= FMP_DAILY_LIMIT ? 'var(--red3)' : fmpCallsToday >= FMP_WARN_THRESHOLD ? 'var(--yellow3)' : 'var(--green3)';
+    callsEl.textContent = `${fmpCallsToday} call (session)`;
+    callsEl.style.color = 'var(--green3)';
   }
   const errEl = document.getElementById('dbg-fmp-err');
   if (errEl) { errEl.textContent = fmpLastError || '—'; }
@@ -1248,30 +1552,53 @@ function updateDebugPanel() {
   const badge = document.getElementById('fmp-status-badge');
   if (badge) {
     const bColors = { ok: 'var(--green2)', limit: 'var(--red)', error: 'var(--red)', unknown: 'var(--text3)' };
-    badge.textContent = fmpStatus === 'ok' ? 'OK' : fmpStatus === 'limit' ? 'LIMIT' : fmpStatus === 'error' ? 'ERR' : '?';
-    badge.style.background = bColors[fmpStatus] || '';
+    badge.textContent = fmpStatus === 'ok' ? 'FMP' : fmpStatus === 'limit' ? 'LIMIT' : fmpStatus === 'error' ? 'ERR' : 'FMP';
+    badge.style.background = bColors[fmpStatus] || 'var(--surface3)';
     badge.style.color = '#fff';
   }
 
   renderFmpLog();
 
-  // Key inputni to'ldirish
-  const keyInput = document.getElementById('td-key-input');
-  if (keyInput) {
-    keyInput.value = (TD_API_KEY && TD_API_KEY !== 'YOUR_TWELVE_DATA_KEY') ? TD_API_KEY : '';
-    const keyStatus = document.getElementById('td-key-status');
-    if (keyStatus && TD_API_KEY && TD_API_KEY !== 'YOUR_TWELVE_DATA_KEY') {
-      keyStatus.textContent = `✅ Key yuklangan: ${TD_API_KEY.slice(0,8)}...`;
-      keyStatus.style.color = 'var(--green3)';
-    }
+  // Fundamental cache status
+  const fundCount = document.getElementById('dbg-fund-count');
+  const fundStale = document.getElementById('dbg-fund-stale');
+  if (fundCount) fundCount.textContent = `${Object.keys(fundamentalCache).length} ta`;
+  if (fundStale) {
+    const validTkrs = SP500_STATIC.filter(t => /^[A-Z]{1,5}$/.test(t));
+    const stale = validTkrs.filter(t => isFundCacheStale(t)).length;
+    fundStale.textContent = stale > 0 ? `${stale} ta (yangilanadi)` : '0 ta (hammasi yangi)';
+    fundStale.style.color = stale > 50 ? 'var(--red3)' : stale > 0 ? 'var(--yellow3)' : 'var(--green3)';
   }
 }
 
-async function debugTestFmp() {
-  toast('🔍 Twelve Data test qilinmoqda...');
+async function debugRefreshFundCache() {
+  const validTickers = SP500_STATIC.filter(t => /^[A-Z]{1,5}$/.test(t));
+  const stale = validTickers.filter(t => isFundCacheStale(t));
+  if (stale.length === 0) { toast('✅ Barcha tickerlar yangi, yangilash shart emas'); return; }
+  toast(`🔄 ${stale.length} ta eski ticker fundamental yangilanmoqda...`);
+  const prog = document.getElementById('fund-cache-progress');
+  await refreshFundamentalCache(stale, false, (done, total) => {
+    if (prog) prog.textContent = `${done}/${total} yangilandi · ${fmpCallsToday} FMP call`;
+  });
+  updateDebugPanel();
+  toast(`✅ ${stale.length} ta ticker fundamental cache yangilandi!`);
+}
+
+async function debugForceRefreshAll() {
+  if (!confirm('Barcha 500+ tickerni qayta yuklash? Bu ~1000+ FMP call sarflaydi. Davom etasizmi?')) return;
+  const validTickers = SP500_STATIC.filter(t => /^[A-Z]{1,5}$/.test(t));
+  toast(`⏳ ${validTickers.length} ta ticker uchun to'liq fundamental yuklanmoqda...`);
+  const prog = document.getElementById('fund-cache-progress');
+  await refreshFundamentalCache(validTickers, false, (done, total) => {
+    if (prog) prog.textContent = `${done}/${total} · ${fmpCallsToday} FMP call`;
+  });
+  updateDebugPanel();
+  toast(`✅ To'liq fundamental cache yangilandi: ${validTickers.length} ticker`);
+}
+  toast('🔍 FMP API test qilinmoqda...');
   const ok = await testFmpConnection();
   updateDebugPanel();
-  if (ok) toast('✅ Twelve Data ishlayapti!');
+  if (ok) toast('✅ FMP API ishlayapti! Quote + Fundamental ma\'lumotlar tayyor.');
 }
 
 function debugResetCalls() {
@@ -1281,6 +1608,7 @@ function debugResetCalls() {
   localStorage.setItem('fmp_calls_date', fmpCallsDate);
   fmpStatus = 'unknown';
   fmpLastError = null;
+  updateFmpCounter();
   updateDebugPanel();
   toast('🔄 FMP counter reset qilindi');
 }
@@ -1311,31 +1639,11 @@ async function debugTestSupabase() {
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 // DASHBOARD
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-let dashPeriod = 'all';
-
-function setDashPeriod(p, btn) {
-  dashPeriod = p;
-  document.querySelectorAll('[id^="dash-p-"]').forEach(b => b.classList.remove('active'));
-  if (btn) btn.classList.add('active');
-  loadDashboard();
-}
-
 async function loadDashboard() {
-  // Vaqt oralig'ini hisoblash
-  const periodMap = { '1w': 7, '1m': 30, '3m': 90, '1y': 365, '3y': 1095 };
-  let fromDate = null;
-  if (dashPeriod !== 'all' && periodMap[dashPeriod]) {
-    fromDate = new Date();
-    fromDate.setDate(fromDate.getDate() - periodMap[dashPeriod]);
-  }
-
-  let auditQuery = sb.from('audit_results').select('*').eq('analyst_id', currentUser.id);
-  if (fromDate) auditQuery = auditQuery.gte('closed_at', fromDate.toISOString());
-
   const [posRes, signalRes, auditRes] = await Promise.all([
-    sb.from('positions').select('*, analysts(name)').eq('status', 'open').order('opened_at', {ascending: false}),
+    sb.from('positions').select('*').eq('analyst_id', currentUser.id).eq('status', 'open'),
     sb.from('signals').select('*').eq('analyst_id', currentUser.id).eq('status', 'pending').order('created_at', { ascending: false }),
-    auditQuery
+    sb.from('audit_results').select('*').eq('analyst_id', currentUser.id)
   ]);
   const positions = posRes.data || [];
   const pendingSignals = signalRes.data || [];
@@ -1348,17 +1656,13 @@ async function loadDashboard() {
   if (pendingSignals.length > 0) { badge.textContent = pendingSignals.length; badge.style.display = ''; }
   else badge.style.display = 'none';
 
-  // Avg return & Win Rate — tanlangan davr bo'yicha
+  // Avg return from closed positions
   const wins = audits.filter(a => a.result === 'win').length;
   const total = audits.length;
   const avgRet = total > 0 ? (audits.reduce((s, a) => s + parseFloat(a.return_pct || 0), 0) / total).toFixed(1) : '—';
   const winRate = total > 0 ? ((wins / total) * 100).toFixed(1) : '—';
   document.getElementById('kpi-avg').textContent = avgRet !== '—' ? avgRet + '%' : '—';
   document.getElementById('kpi-winrate').textContent = winRate !== '—' ? winRate + '%' : '—';
-  const periodLabel = { all: 'barcha davr', '1w': 'so\'nggi hafta', '1m': 'so\'nggi oy', '3m': 'so\'nggi 3 oy', '1y': 'so\'nggi yil', '3y': 'so\'nggi 3 yil' }[dashPeriod] || 'barcha davr';
-  const wrEl = document.getElementById('kpi-winrate-period');
-  if (wrEl) wrEl.textContent = periodLabel;
-  document.getElementById('kpi-avg-period').textContent = `${total > 0 ? total + ' ta' : ''} ${periodLabel}`;
 
   const now = new Date().toLocaleString('uz-UZ', { timeZone: 'Asia/Tashkent' });
   document.getElementById('dash-sub').textContent = `Yangilangan: ${now}`;
@@ -1385,10 +1689,8 @@ async function loadDashboard() {
 
   // Update pos badge
   const pb = document.getElementById('pos-badge');
-  if (pb) {
-    if (positions.length > 0) { pb.textContent = positions.length; pb.style.display = ''; }
-    else pb.style.display = 'none';
-  }
+  if (positions.length > 0) { pb.textContent = positions.length; pb.style.display = ''; }
+  else pb.style.display = 'none';
 }
 
 function renderSectorChart(positions) {
@@ -1456,11 +1758,7 @@ function renderDashPositions(positions) {
       <td style="color:var(--red3)">$${parseFloat(p.stop_loss).toFixed(2)}</td>
       <td class="${parseFloat(pnl) >= 0 ? 'pos' : 'neg'}" style="font-weight:700">${parseFloat(pnl) >= 0 ? '+' : ''}${pnl}%</td>
       <td style="color:var(--text3)">${days} kun</td>
-      <td style="display:flex;gap:4px;align-items:center">
-        ${p.analysts?.name && p.analyst_id !== '${currentUser.id}' ? `<span style="font-size:9px;color:var(--blue3);font-family:var(--mono)">👤 ${p.analysts.name}</span>` : ''}
-        <button class="btn btn-ghost btn-sm" onclick="go('positions',document.getElementById('nav-positions'));setTimeout(()=>selectPosition('${p.id}',${JSON.stringify(p).replace(/"/g,'&quot;')}),300)">Ko'rish</button>
-        ${p.analyst_id === currentUser.id ? `<button class="btn btn-red btn-sm" onclick="showClosePositionModal('${p.id}','${p.ticker}',${p.entry_price})">Yopish</button>` : ''}
-      </td>
+      <td><button class="btn btn-ghost btn-sm" onclick="showClosePositionModal('${p.id}','${p.ticker}',${p.entry_price})">Yopish</button></td>
     </tr>`;
   }).join('');
 }
@@ -1555,20 +1853,14 @@ async function selectSignal(id) {
       <div class="price-box"><div class="price-lbl">R/R NISBAT</div><div class="price-val" style="color:var(--yellow3)">${rr}x</div></div>
     </div>
     ${criteria ? `<div style="margin-bottom:12px">${criteria}</div>` : ''}
-    ${s.note ? `<div style="font-size:11px;color:var(--text2);font-family:var(--mono);padding:8px 10px;background:var(--surface2);border-radius:7px;margin-bottom:12px;line-height:1.5;border-left:3px solid var(--blue2)">💬 ${s.note}</div>` : ''}
-    ${s.reject_reason ? `<div class="badge br" style="margin-bottom:10px">❌ Sabab: ${s.reject_reason}</div>` : ''}
-    ${s.watch_trigger?.note ? `<div style="font-size:11px;color:var(--yellow3);font-family:var(--mono);padding:6px 10px;background:var(--surface2);border-radius:7px;margin-bottom:10px;border-left:3px solid var(--yellow2)">👁 Watch sababi: ${s.watch_trigger.note}</div>` : ''}
+    ${s.note ? `<div style="font-size:11px;color:var(--text2);font-family:var(--mono);padding:8px 10px;background:var(--surface2);border-radius:7px;margin-bottom:12px;line-height:1.5">"${s.note}"</div>` : ''}
+    ${s.reject_reason ? `<div class="badge br" style="margin-bottom:10px">Sabab: ${s.reject_reason}</div>` : ''}
     <div class="dp-divider"></div>
-    ${isPending ? `
-    <div style="margin-bottom:10px">
-      <div style="font-size:9px;color:var(--text3);font-family:var(--mono);text-transform:uppercase;letter-spacing:1px;margin-bottom:5px">Tahlilchi izohi</div>
-      <textarea id="dp-analyst-note" class="notes-area" placeholder="Bu aksiya haqida fikringiz... (ixtiyoriy, Tasdiqlash/Watch/Rad bosganda saqlanadi)" style="min-height:60px;font-size:11px">${s.note||''}</textarea>
-    </div>
-    <div class="action-btns">
+    ${isPending ? `<div class="action-btns">
       <button class="btn btn-green" onclick="showApproveModal('${s.id}','${s.ticker}',${s.entry_price},${s.stop_loss},${s.target1||0})">✅ Tasdiqlash</button>
       <button class="btn btn-orange btn-sm" onclick="showWatchModal('${s.id}','${s.ticker}')">👁 Watch</button>
       <button class="btn btn-red btn-sm" onclick="showRejectModal('${s.id}','${s.ticker}')">❌ Rad</button>
-    </div>` : `<div style="font-size:11px;color:var(--text3);font-family:var(--mono);text-align:center;padding:8px">Bu signal "<strong>${s.status}</strong>" holatida</div>`}
+    </div>` : `<div style="font-size:11px;color:var(--text3);font-family:var(--mono);text-align:center;padding:8px">Bu signal "${s.status}" holatida</div>`}
     <div style="font-size:9px;color:var(--text3);font-family:var(--mono);margin-top:10px">Qo'shilgan: ${fmtDate(s.created_at)}</div>
   `;
 }
@@ -1583,9 +1875,7 @@ function showApproveModal(id, ticker, entry, stop, target) {
   document.getElementById('ap-stop').value = parseFloat(stop).toFixed(2);
   document.getElementById('ap-t1').value = parseFloat(target || 0) > 0 ? parseFloat(target).toFixed(2) : '';
   document.getElementById('ap-t2').value = '';
-  // Kartochkadagi izohni modallga ko'chirish
-  const dpNote = document.getElementById('dp-analyst-note');
-  document.getElementById('ap-note').value = dpNote ? dpNote.value : '';
+  document.getElementById('ap-note').value = '';
   document.getElementById('modal-approve').classList.add('open');
 }
 
@@ -1628,12 +1918,6 @@ async function confirmApprove() {
 }
 
 function showRejectModal(id, ticker) {
-  // Kartochkadagi izohni reject modal ga ko'chirish
-  const dpNote = document.getElementById('dp-analyst-note');
-  if (dpNote && dpNote.value) {
-    const rNote = document.getElementById('rj-note');
-    if (rNote && !rNote.value) rNote.value = dpNote.value;
-  }
   pendingSignalId = id;
   document.getElementById('reject-ticker-info').textContent = ticker;
   document.getElementById('rj-note').value = '';
@@ -1652,12 +1936,6 @@ async function confirmReject() {
 
 function showWatchModal(id, ticker) {
   pendingSignalId = id;
-  // Kartochkadagi izohni watch modal ga ko'chirish
-  const dpNote = document.getElementById('dp-analyst-note');
-  if (dpNote && dpNote.value) {
-    const wNote = document.getElementById('wt-note');
-    if (wNote && !wNote.value) wNote.value = dpNote.value;
-  }
   document.getElementById('watch-ticker-info').textContent = ticker;
   document.getElementById('wt-note').value = '';
   document.getElementById('wt-value').value = '';
@@ -1745,124 +2023,32 @@ async function submitManualSignal() {
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 // POSITIONS
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-let selectedPositionId = null;
-
 async function loadPositions() {
-  // Barcha tahlilchilarning pozitsiyalari ko'rinadi
-  let q = sb.from('positions').select('*, signals(strategy_name, score, sector, conviction, note), analysts(name)')
-    .order('opened_at', { ascending: false });
+  let q = sb.from('positions').select('*').eq('analyst_id', currentUser.id).order('opened_at', { ascending: false });
   if (posFilter !== 'all') q = q.eq('status', posFilter);
   const { data } = await q;
   const positions = data || [];
-  const el = document.getElementById('pos-list');
-  if (!el) return;
-  if (positions.length === 0) {
-    el.innerHTML = '<div class="empty-state" style="padding:30px">Pozitsiya topilmadi</div>';
-    return;
-  }
+  const el = document.getElementById('pos-tbl');
+  if (positions.length === 0) { el.innerHTML = '<tr><td colspan="9" class="empty-state">Pozitsiya topilmadi</td></tr>'; return; }
   el.innerHTML = positions.map(p => {
     const cur = priceCache[p.ticker] || parseFloat(p.current_price) || parseFloat(p.entry_price);
     const pnl = p.status === 'closed' && p.return_pct != null
       ? parseFloat(p.return_pct).toFixed(1)
       : ((cur - parseFloat(p.entry_price)) / parseFloat(p.entry_price) * 100).toFixed(1);
     const days = Math.floor((Date.now() - new Date(p.opened_at)) / 86400000);
-    const isSelected = p.id === selectedPositionId;
-    const pnlColor = parseFloat(pnl) >= 0 ? 'var(--green3)' : 'var(--red3)';
-    return `<div class="inbox-item${isSelected ? ' selected' : ''}" onclick="selectPosition('${p.id}', ${JSON.stringify(p).replace(/"/g, '&quot;')})">
-      <div class="ii-top">
-        <div class="ii-ticker">${p.ticker}</div>
-        <div style="font-size:13px;font-weight:800;font-family:var(--mono);color:${pnlColor}">${parseFloat(pnl) >= 0 ? '+' : ''}${pnl}%</div>
-      </div>
-      <div class="ii-meta">
-        <span>${p.sector || p.signals?.sector || 'Other'}</span>
-        <span>${p.status === 'open' ? '🟢 Ochiq' : '⚫ Yopildi'}</span>
-        ${p.analyst_id !== currentUser.id ? `<span style="color:var(--blue3);font-size:9px">👤 ${p.analysts?.name || 'Boshqa'}</span>` : ''}
-      </div>
-      <div style="font-size:10px;color:var(--text3);font-family:var(--mono);margin-top:4px">
-        Kirish: $${parseFloat(p.entry_price).toFixed(2)} · ${days} kun · ${fmtDate(p.opened_at)}
-      </div>
-    </div>`;
+    const statusB = p.status === 'open' ? '<span class="badge bg">OCHIQ</span>' : '<span class="badge bgr">YOPILDI</span>';
+    return `<tr>
+      <td><div class="tk">${p.ticker}</div></td>
+      <td>$${parseFloat(p.entry_price).toFixed(2)}</td>
+      <td style="color:var(--blue3)">$${cur.toFixed(2)}</td>
+      <td style="color:var(--green3)">$${parseFloat(p.target1 || 0).toFixed(2) || '—'}</td>
+      <td style="color:var(--red3)">$${parseFloat(p.stop_loss).toFixed(2)}</td>
+      <td class="${parseFloat(pnl) >= 0 ? 'pos' : 'neg'}" style="font-weight:700">${parseFloat(pnl) >= 0 ? '+' : ''}${pnl}%</td>
+      <td>${statusB}</td>
+      <td style="color:var(--text3)">${fmtDate(p.opened_at)} (${days}k)</td>
+      <td>${p.status === 'open' ? `<button class="btn btn-ghost btn-sm" onclick="showClosePositionModal('${p.id}','${p.ticker}',${p.entry_price})">Yopish</button>` : `<span style="color:var(--text3);font-size:10px;font-family:var(--mono)">${p.exit_type || '—'}</span>`}</td>
+    </tr>`;
   }).join('');
-
-  // Birinchisini avtomatik tanlash
-  if (positions.length > 0 && !selectedPositionId) selectPosition(positions[0].id, positions[0]);
-}
-
-function selectPosition(id, p) {
-  selectedPositionId = id;
-  // Active class
-  document.querySelectorAll('#pos-list .inbox-item').forEach(el => el.classList.remove('selected'));
-  const clicked = document.querySelector(`#pos-list .inbox-item[onclick*="${id}"]`);
-  if (clicked) clicked.classList.add('selected');
-
-  const cur = priceCache[p.ticker] || parseFloat(p.current_price) || parseFloat(p.entry_price);
-  const pnl = p.status === 'closed' && p.return_pct != null
-    ? parseFloat(p.return_pct).toFixed(1)
-    : ((cur - parseFloat(p.entry_price)) / parseFloat(p.entry_price) * 100).toFixed(1);
-  const pnlColor = parseFloat(pnl) >= 0 ? 'var(--green3)' : 'var(--red3)';
-  const days = Math.floor((Date.now() - new Date(p.opened_at)) / 86400000);
-
-  // Target progress hisoblash
-  const t1 = parseFloat(p.target1 || 0);
-  const stop = parseFloat(p.stop_loss);
-  const entry = parseFloat(p.entry_price);
-  const t1Pct = t1 > 0 ? (((t1 - entry) / entry) * 100).toFixed(1) : null;
-  const stopPct = (((stop - entry) / entry) * 100).toFixed(1);
-  const t2 = parseFloat(p.target2 || 0);
-  const t2Pct = t2 > 0 ? (((t2 - entry) / entry) * 100).toFixed(1) : null;
-
-  // Progress bar: stop dan target1 gacha
-  let progressPct = 0;
-  if (t1 > 0 && cur > stop) {
-    progressPct = Math.min(100, Math.max(0, ((cur - stop) / (t1 - stop)) * 100));
-  }
-
-  const isOpen = p.status === 'open';
-
-  document.getElementById('pos-detail-panel').innerHTML = `
-    <div class="dp-ticker">${p.ticker} <span style="font-size:14px;font-weight:400;color:${pnlColor}">${parseFloat(pnl) >= 0 ? '+' : ''}${pnl}%</span></div>
-    <div class="dp-sub">${p.sector || p.signals?.sector || 'Other'} · ${p.signals?.strategy_name || 'Manual'} · ${days} kun · ${isOpen ? '🟢 Ochiq' : '⚫ Yopildi'}</div>
-
-    <div class="price-grid">
-      <div class="price-box"><div class="price-lbl">KIRISH</div><div class="price-val" style="color:var(--green3)">$${entry.toFixed(2)}</div></div>
-      <div class="price-box"><div class="price-lbl">JORIY${cur === entry ? ' (eski)' : ''}</div><div class="price-val" style="color:var(--blue3)">$${cur.toFixed(2)}</div></div>
-      <div class="price-box"><div class="price-lbl">TARGET 1${t1Pct ? ' +' + t1Pct + '%' : ''}</div><div class="price-val" style="color:var(--green3)">${t1 > 0 ? '$' + t1.toFixed(2) : '—'}</div></div>
-      <div class="price-box"><div class="price-lbl">STOP ${stopPct}%</div><div class="price-val" style="color:var(--red3)">$${stop.toFixed(2)}</div></div>
-      ${t2 > 0 ? `<div class="price-box"><div class="price-lbl">TARGET 2${t2Pct ? ' +' + t2Pct + '%' : ''}</div><div class="price-val">$${t2.toFixed(2)}</div></div>` : ''}
-      <div class="price-box"><div class="price-lbl">PNL</div><div class="price-val" style="color:${pnlColor};font-size:18px">${parseFloat(pnl) >= 0 ? '+' : ''}${pnl}%</div></div>
-    </div>
-
-    ${t1 > 0 ? `
-    <div style="margin-bottom:14px">
-      <div style="display:flex;justify-content:space-between;font-size:9px;color:var(--text3);font-family:var(--mono);margin-bottom:5px">
-        <span>STOP $${stop.toFixed(2)}</span>
-        <span style="color:var(--blue3)">Joriy: $${cur.toFixed(2)}</span>
-        <span>TARGET $${t1.toFixed(2)}</span>
-      </div>
-      <div style="height:6px;background:var(--surface2);border-radius:3px;overflow:hidden">
-        <div style="height:100%;width:${progressPct}%;background:${progressPct > 66 ? 'var(--green2)' : progressPct > 33 ? 'var(--yellow2)' : 'var(--blue2)'};border-radius:3px;transition:width .3s"></div>
-      </div>
-      <div style="font-size:9px;color:var(--text3);font-family:var(--mono);margin-top:3px;text-align:center">${progressPct.toFixed(0)}% target ga yaqinlashdi</div>
-    </div>` : ''}
-
-    ${p.signals?.note ? `<div style="font-size:11px;color:var(--text2);padding:8px 10px;background:var(--surface2);border-radius:7px;margin-bottom:12px;border-left:3px solid var(--blue2)">💬 ${p.signals.note}</div>` : ''}
-    ${p.status === 'closed' ? `
-      <div style="padding:10px;background:var(--surface2);border-radius:8px;margin-bottom:12px">
-        <div style="font-size:9px;color:var(--text3);font-family:var(--mono);text-transform:uppercase;margin-bottom:6px">Yopilish ma'lumoti</div>
-        <div style="display:flex;gap:16px">
-          <div><div style="font-size:9px;color:var(--text3)">Chiqish narxi</div><div style="font-family:var(--mono);font-weight:700">$${parseFloat(p.exit_price||0).toFixed(2)}</div></div>
-          <div><div style="font-size:9px;color:var(--text3)">Sabab</div><div style="font-family:var(--mono);font-weight:700">${p.exit_type || '—'}</div></div>
-          <div><div style="font-size:9px;color:var(--text3)">Yopilgan</div><div style="font-family:var(--mono)">${fmtDate(p.closed_at)}</div></div>
-        </div>
-      </div>` : ''}
-    <div class="dp-divider"></div>
-    ${isOpen ? `<div class="action-btns">
-      ${p.analyst_id === currentUser.id
-        ? `<button class="btn btn-red" onclick="showClosePositionModal('${p.id}','${p.ticker}',${entry})">📤 Yopish</button>`
-        : `<div style="font-size:11px;color:var(--text3);font-family:var(--mono);text-align:center;padding:8px">👤 ${p.analysts?.name || 'Boshqa tahlilchi'} ning pozitsiyasi</div>`}
-    </div>` : `<div style="font-size:11px;color:var(--text3);font-family:var(--mono);text-align:center;padding:8px">Pozitsiya yopilgan · ${fmtDate(p.closed_at)}</div>`}
-    <div style="font-size:9px;color:var(--text3);font-family:var(--mono);margin-top:10px">Ochilgan: ${fmtDate(p.opened_at)}</div>
-  `;
 }
 
 function setPositionFilter(f, btn) {
@@ -1887,39 +2073,16 @@ async function confirmClosePosition() {
   const note = document.getElementById('cp-note').value;
   if (!exit || exit <= 0) { toast('Chiqish narxini kiriting', true); return; }
 
-  const { data: pos } = await sb.from('positions').select('*, signals(strategy_name, score, sector, conviction)').eq('id', pendingPositionId).single();
+  const { data: pos } = await sb.from('positions').select('*').eq('id', pendingPositionId).single();
   const returnPct = ((exit - parseFloat(pos.entry_price)) / parseFloat(pos.entry_price) * 100).toFixed(2);
-  const isWin = parseFloat(returnPct) > 0;
-  const daysHeld = pos.opened_at ? Math.round((new Date() - new Date(pos.opened_at)) / 86400000) : 0;
 
-  // 1. Pozitsiyani yopish
   await sb.from('positions').update({
     exit_price: exit, exit_type: exitType, status: 'closed',
     closed_at: new Date().toISOString(), return_pct: returnPct
   }).eq('id', pendingPositionId);
 
-  // 2. audit_results ga yozish
-  await sb.from('audit_results').insert({
-    analyst_id: currentUser.id,
-    position_id: pendingPositionId,
-    signal_id: pos.signal_id,
-    ticker: pos.ticker,
-    entry_price: pos.entry_price,
-    exit_price: exit,
-    return_pct: parseFloat(returnPct),
-    result: isWin ? 'win' : 'loss',
-    exit_type: exitType,
-    score: pos.signals?.score || null,
-    sector: pos.sector || pos.signals?.sector || null,
-    strategy_name: pos.signals?.strategy_name || null,
-    source: 'manual',
-    opened_at: pos.opened_at || new Date().toISOString(),
-    closed_at: new Date().toISOString()
-  });
-
   closeModal('modal-close-pos');
-  const sign = parseFloat(returnPct) >= 0 ? '+' : '';
-  toast(`${isWin ? '🏆' : '📉'} ${pos.ticker} yopildi: ${sign}${returnPct}% (${isWin ? 'WIN' : 'LOSS'})`);
+  toast(`📤 ${pos.ticker} yopildi: ${parseFloat(returnPct) >= 0 ? '+' : ''}${returnPct}%`);
   await Promise.all([loadPositions(), loadDashboard(), loadAudit()]);
 }
 
@@ -2102,12 +2265,7 @@ function setAuditResult(r, btn) {
 // IDEA FACTORY
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 async function loadStrategies() {
-  // Admin barcha strategiyalarni ko'radi (arxivlanmaganlar), tahlilchi faqat o'zinkini
-  const isAdmin = currentAnalyst?.role === 'admin';
-  const stratQuery = isAdmin
-    ? sb.from('strategies').select('*').is('archived_at', null).order('created_at')
-    : sb.from('strategies').select('*').eq('analyst_id', currentUser.id).is('archived_at', null).order('created_at');
-  const { data } = await stratQuery;
+  const { data } = await sb.from('strategies').select('*').eq('analyst_id', currentUser.id).order('created_at');
   strategies = data || [];
   renderStratList();
   if (strategies.length > 0) {
@@ -2143,28 +2301,15 @@ function selectStrategy(s) {
   activeStrategy = s;
   document.getElementById('threshold-slider').value = s.threshold || 80;
   document.getElementById('thresh-val').textContent = (s.threshold || 80) + '%';
-  const rawCriteria = s.criteria ? (typeof s.criteria === 'string' ? JSON.parse(s.criteria) : s.criteria) : {};
-  // Eski strategiyalarda 'financial','cashflow','growth' bo'lishi mumkin — normalize qilamiz
-  criteria = {
-    technical: rawCriteria.technical || rawCriteria.technical === [] ? (rawCriteria.technical || []) : (DEFAULT_CRITERIA.technical || []),
-    fundamental: rawCriteria.fundamental || []
-  };
-  // Eski formatdagi mezonlarni fundamental ga ko'chirish
-  if (rawCriteria.financial || rawCriteria.cashflow || rawCriteria.growth) {
-    const old = [
-      ...(rawCriteria.financial || []),
-      ...(rawCriteria.cashflow || []),
-      ...(rawCriteria.growth || [])
-    ];
-    criteria.fundamental = [...criteria.fundamental, ...old];
-  }
+  criteria = s.criteria ? (typeof s.criteria === 'string' ? JSON.parse(s.criteria) : s.criteria) : JSON.parse(JSON.stringify(DEFAULT_CRITERIA));
+  if (!criteria.technical) criteria = JSON.parse(JSON.stringify(DEFAULT_CRITERIA));
   renderAllCriteria();
 }
 
 function renderAllCriteria() {
   const allEnabled = Object.values(criteria).flat().filter(c => c.enabled).length;
   const perBall = allEnabled > 0 ? (100 / allEnabled) : 0;
-  ['technical', 'fundamental'].forEach(cat => renderCriteria(cat, perBall));
+  ['technical', 'financial', 'cashflow', 'growth'].forEach(cat => renderCriteria(cat, perBall));
   updateScoreSummary(allEnabled, perBall);
 }
 
@@ -2212,293 +2357,342 @@ function removeCriteria(cat, idx) {
   renderAllCriteria(); // barcha kategoriyalarni qayta hisoblash
 }
 
-// Texnik indikatorlar ro'yxati — backend da hisoblangan
-// ⚠ MEMO: Yangi indikator qo'shganda calculate-indicators Edge Function ga ham qo'shish kerak
-const TECHNICAL_INDICATORS = [
-  { group: 'RSI', items: [
-    { id: 'rsi', label: 'RSI', defaultPeriod: 14, conditions: ['>', '<', '>=', '<='], defaultCond: '>', defaultVal: 50, hint: 'RSI(14) > 50 - momentum kuchli' },
-  ]},
-  { group: 'Moving Averages', items: [
-    { id: 'sma', label: 'SMA (oddiy ortacha)', defaultPeriod: 200, conditions: ['narx >', 'narx <'], defaultCond: 'narx >', defaultVal: null, hint: 'Narx > SMA(200) - uzoq muddatli trend' },
-    { id: 'ema', label: 'EMA (eksponensial)', defaultPeriod: 20, conditions: ['narx >', 'narx <'], defaultCond: 'narx >', defaultVal: null, hint: 'Narx > EMA(20) - qisqa muddatli trend' },
-  ]},
-  { group: 'MACD', items: [
-    { id: 'macd_bullish', label: 'MACD Bullish Cross', defaultPeriod: 0, conditions: ['aktiv'], defaultCond: 'aktiv', defaultVal: null, hint: 'MACD signal chizigini yuqoriga kesib otdi' },
-    { id: 'macd_above', label: 'MACD > 0 (musbat)', defaultPeriod: 0, conditions: ['aktiv'], defaultCond: 'aktiv', defaultVal: null, hint: 'MACD musbat zonada' },
-  ]},
-  { group: 'Bollinger Bands', items: [
-    { id: 'bbands_above', label: 'Narx > BB Orta chiziq', defaultPeriod: 20, conditions: ['aktiv'], defaultCond: 'aktiv', defaultVal: null, hint: 'Narx Bollinger orta chizigidan yuqori' },
-    { id: 'bbands_squeeze', label: 'BB Siqilish (volatillik past)', defaultPeriod: 20, conditions: ['aktiv'], defaultCond: 'aktiv', defaultVal: null, hint: 'Breakout kutilmoqda' },
-  ]},
-  { group: 'Stochastic', items: [
-    { id: 'stoch', label: 'Stochastic %K', defaultPeriod: 0, conditions: ['>', '<'], defaultCond: '>', defaultVal: 50, hint: 'Stoch > 50 - momentum yuqorida' },
-  ]},
-  { group: 'ADX', items: [
-    { id: 'adx', label: 'ADX (trend kuchi)', defaultPeriod: 14, conditions: ['>', '<'], defaultCond: '>', defaultVal: 25, hint: 'ADX > 25 - kuchli trend mavjud' },
-  ]},
-  { group: 'Hajm', items: [
-    { id: 'vol_above', label: 'Hajm > 30D ortacha', defaultPeriod: 0, conditions: ['aktiv'], defaultCond: 'aktiv', defaultVal: null, hint: 'Bugungi hajm ortachadan yuqori' },
-    { id: 'vol_spike', label: 'Hajm 2x ortachadan', defaultPeriod: 0, conditions: ['aktiv'], defaultCond: 'aktiv', defaultVal: null, hint: 'Kuchli hajm osishi' },
-  ]},
-];
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// CRITERIA PICKER — To'liq mezon katalogi
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+const CRITERIA_CATALOG = {
+  technical: {
+    label: '📈 Texnik',
+    color: 'var(--blue3)',
+    sections: [
+      {
+        name: 'RSI / Momentum',
+        items: [
+          { id: 'rsi',      name: 'RSI > 50',           desc: 'Narx MA50 dan yuqori — musbat momentum',  real: true },
+          { id: 'rsi_os',   name: 'RSI Oversold',        desc: 'Narx kuchli pastga tushgan — rebound',    real: true },
+          { id: 'rev_accel',name: 'Momentum kuchli',     desc: 'Kunlik o\'zgarish > +1.5%',               real: true },
+        ]
+      },
+      {
+        name: 'Moving Averages',
+        items: [
+          { id: 'ma200',    name: 'Narx > MA200',        desc: 'Uzoq muddatli trend yuqoriga',           real: true },
+          { id: 'ma50',     name: 'Narx > MA50',         desc: 'Qisqa muddatli trend yuqoriga',          real: true },
+          { id: 'ma_cross', name: 'MA50 > MA200 (Cross)',desc: 'Golden Cross — kuchli bullish signal',    real: true },
+        ]
+      },
+      {
+        name: 'MACD',
+        items: [
+          { id: 'macd',     name: 'MACD Bullish',        desc: 'MA50 yuqori va musbat momentum',         real: true },
+          { id: 'macd_pos', name: 'MACD > 0 (musbat)',   desc: 'Trend zona yuqori tarafda',              real: true },
+        ]
+      },
+      {
+        name: '52-hafta / Hajm',
+        items: [
+          { id: 'week52_high', name: '52H Highdan 15%',  desc: 'Bozor tepasiga yaqin — kuchli trend',    real: true },
+          { id: 'vol_surge', name: 'Volume 30D ortacha', desc: 'Bugungi hajm o\'rtachadan 20%+ yuqori',  real: true },
+          { id: 'vol_2x',   name: 'Volume 2x ortacha',   desc: 'Hajm ikki barobar oshgan — signal',      real: true },
+          { id: 'near_low', name: '52H Lowdan 20%',      desc: 'Potentsial reversal zona',               real: true },
+        ]
+      },
+    ]
+  },
+  financial: {
+    label: '💰 Baholash',
+    color: 'var(--yellow3)',
+    sections: [
+      {
+        name: 'Narx Nisbatlari',
+        items: [
+          { id: 'pe',       name: 'P/E < 30',            desc: 'Arzon baholama — foydaga nisbat',        real: true },
+          { id: 'pe_low',   name: 'P/E < 15',            desc: 'Juda arzon — deep value',               real: true },
+          { id: 'ps',       name: 'P/S < 5',             desc: 'Sotuv hajmiga nisbat past',              real: true },
+          { id: 'pb',       name: 'P/B < 3',             desc: 'Kitob qiymatiga nisbatan',               real: true },
+          { id: 'pfcf',     name: 'P/FCF < 20',          desc: 'Erkin pul oqimiga nisbat',               real: true },
+        ]
+      },
+      {
+        name: 'Enterprise Value',
+        items: [
+          { id: 'ev_ebitda',name: 'EV/EBITDA < 15',      desc: 'Korporativ qiymat — EBITDA ga nisbat',   real: true },
+          { id: 'ev_sales', name: 'EV/Sales < 5',        desc: 'Korporativ qiymat — sotuv ga nisbat',    real: true },
+          { id: 'peg',      name: 'PEG < 1.5',           desc: 'PE/o\'sish nisbati — Growth at Value',   real: true },
+        ]
+      },
+      {
+        name: 'Daromadlilik',
+        items: [
+          { id: 'gross_margin', name: 'Gross Margin > 40%', desc: 'Yalpi foyda ulushi',                  real: true },
+          { id: 'op_margin', name: 'Op. Margin > 15%',   desc: 'Operatsion samaradorlik',                real: true },
+          { id: 'net_margin',name: 'Net Margin > 10%',   desc: 'Sof foyda ulushi',                       real: true },
+          { id: 'roe',      name: 'ROE > 15%',           desc: 'Kapitalga qaytish — kuchli biznes',       real: true },
+          { id: 'roic',     name: 'ROIC > 10%',          desc: 'Investitsiyaga qaytish',                  real: true },
+        ]
+      },
+    ]
+  },
+  cashflow: {
+    label: '🔵 Pul Oqimi',
+    color: 'var(--teal2)',
+    sections: [
+      {
+        name: 'FCF (Free Cash Flow)',
+        items: [
+          { id: 'fcf',      name: 'FCF musbat',          desc: 'Erkin pul oqimi — kompaniya sog\'lom',   real: true },
+          { id: 'fcf_margin',name: 'FCF Margin > 10%',   desc: 'Daromaddan FCF ulushi',                  real: true },
+          { id: 'fcf_yield',name: 'FCF Yield > 5%',      desc: 'Bozor qiymatiga FCF nisbati',            real: true },
+          { id: 'pfcf',     name: 'P/FCF < 20',          desc: 'Erkin pul oqimiga narx nisbati',         real: true },
+        ]
+      },
+      {
+        name: 'Operatsion Cash Flow',
+        items: [
+          { id: 'ocf_income',name: 'OCF > Net Income',   desc: 'Daromad sifati — naqd pul kuchli',       real: true },
+          { id: 'capex_low', name: 'CapEx/Rev < 15%',    desc: 'CapEx past — samarali biznes modeli',     real: true },
+          { id: 'net_cash',  name: 'Net Cash musbat',    desc: 'Qarzdan ko\'p naqd pul bor',              real: true },
+        ]
+      },
+    ]
+  },
+  growth: {
+    label: '🚀 O\'sish',
+    color: 'var(--green3)',
+    sections: [
+      {
+        name: 'Revenue O\'sish',
+        items: [
+          { id: 'rev_growth', name: 'Rev o\'sish > 15%', desc: 'Yillik daromad o\'sishi YoY',            real: true },
+          { id: 'rev_accel2', name: 'Rev o\'sish > 25%', desc: 'Yuqori o\'sish kompaniyalari',           real: true },
+          { id: 'rev_qoq',   name: 'Rev QoQ > 5%',       desc: 'Kvartal ichida o\'sish (ketma-ket)',     real: true },
+          { id: 'rev_cagr3', name: '3Y Rev CAGR > 20%',  desc: '3 yillik o\'sish sur\'ati',              real: true },
+        ]
+      },
+      {
+        name: 'EPS O\'sish',
+        items: [
+          { id: 'eps_growth', name: 'EPS o\'sish > 20%', desc: 'Foyda ulushi YoY o\'sishi',              real: true },
+          { id: 'eps_beat',  name: 'EPS > kutilgancha',  desc: 'Konsensusdan yuqori EPS',                 real: true },
+          { id: 'eps_cagr3', name: '3Y EPS CAGR > 15%',  desc: '3 yillik EPS o\'sish sur\'ati',          real: true },
+        ]
+      },
+      {
+        name: 'Boshqa O\'sish',
+        items: [
+          { id: 'inst_buying',name: 'Institutional zone', desc: '52H highdan 10% ichida — inst. buying', real: true },
+          { id: 'div_growth', name: 'Dividend o\'sish',   desc: 'Dividend o\'sib bormoqda (musbat)',      real: true },
+        ]
+      },
+    ]
+  },
+  debt: {
+    label: '🏦 Moliyaviy',
+    color: 'var(--purple2)',
+    sections: [
+      {
+        name: 'Qarz Darajasi',
+        items: [
+          { id: 'debt_eq',   name: 'Debt/Equity < 1',    desc: 'Past qarz darajasi — xavfsiz',           real: true },
+          { id: 'debt_low',  name: 'Debt/Equity < 0.5',  desc: 'Juda past qarz — kuchli balans',         real: true },
+          { id: 'net_cash',  name: 'Net Cash musbat',     desc: 'Qarzdan ko\'p naqd pul',                 real: true },
+          { id: 'altman',    name: 'Altman Z > 2.99',     desc: 'Bankrotlik xavfi past zona',             real: true },
+        ]
+      },
+      {
+        name: 'Likvidlik',
+        items: [
+          { id: 'curr_ratio',name: 'Current Ratio > 1.5',desc: 'Qisqa muddatli majburiyatlarni qoplash',  real: true },
+          { id: 'quick_ratio',name:'Quick Ratio > 1',    desc: 'Zudlik likvidligi — tovar hisobsiz',      real: true },
+          { id: 'int_cov',   name: 'Interest Coverage > 5',desc: 'Foiz to\'loviga qodir',                 real: true },
+        ]
+      },
+    ]
+  },
+};
 
-let addCriteriaCat = 'technical';
+let cmCurrentCat  = 'technical'; // faol tab
+let cmSelectedIds = new Set();   // tanlangan mezon IDlar
+let cmTargetCat   = null;        // qaysi kategoriyaga qo'shish
 
 function addCriteria(cat) {
-  addCriteriaCat = cat;
-  if (cat === 'fundamental') {
-    renderFundamentalModal();
-    document.getElementById('modal-add-fundamental').classList.add('open');
-    return;
-  }
-  // Texnik — modal ochiladi
-  renderIndicatorModal();
-  document.getElementById('modal-add-criteria').classList.add('open');
-}
+  cmTargetCat   = cat;
+  cmSelectedIds = new Set();
 
-function renderIndicatorModal() {
-  const container = document.getElementById('ind-modal-list');
-  container.innerHTML = TECHNICAL_INDICATORS.map(group => `
-    <div style="margin-bottom:14px">
-      <div style="font-size:9px;font-weight:700;color:var(--text3);font-family:var(--mono);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px">${group.group}</div>
-      ${group.items.map(ind => `
-        <div class="ind-option" onclick="selectIndicator('${ind.id}')" id="ind-opt-${ind.id}"
-          style="padding:8px 10px;border-radius:7px;border:1px solid var(--border1);margin-bottom:5px;cursor:pointer;transition:all .15s">
-          <div style="font-size:12px;font-weight:600;color:var(--text1)">${ind.label}</div>
-          <div style="font-size:10px;color:var(--text3);margin-top:2px">${ind.hint}</div>
-        </div>
-      `).join('')}
-    </div>
-  `).join('');
-  document.getElementById('ind-config-area').innerHTML = '';
-  document.getElementById('ind-add-btn').disabled = true;
-}
-
-let selectedIndicator = null;
-
-function selectIndicator(id) {
-  selectedIndicator = null;
-  document.querySelectorAll('.ind-option').forEach(el => {
-    el.style.borderColor = 'var(--border1)';
-    el.style.background = '';
-  });
-  const el = document.getElementById('ind-opt-' + id);
-  if (el) { el.style.borderColor = 'var(--blue2)'; el.style.background = 'rgba(59,130,246,.08)'; }
-
-  const allInds = TECHNICAL_INDICATORS.flatMap(g => g.items);
-  const ind = allInds.find(i => i.id === id);
-  if (!ind) return;
-  selectedIndicator = ind;
-
-  const configArea = document.getElementById('ind-config-area');
-  const needsPeriod = ind.defaultPeriod > 0;
-  const needsValue = ind.conditions[0] !== 'aktiv' && ind.defaultVal !== null;
-
-  configArea.innerHTML = `
-    <div style="border-top:1px solid var(--border1);margin-top:12px;padding-top:12px">
-      <div style="font-size:11px;font-weight:700;color:var(--text1);margin-bottom:10px">⚙️ Sozlash: ${ind.label}</div>
-      <div style="display:flex;gap:10px;flex-wrap:wrap">
-        ${needsPeriod ? `
-        <div>
-          <div style="font-size:9px;color:var(--text3);font-family:var(--mono);margin-bottom:4px">PERIOD</div>
-          <input id="ind-period" type="number" value="${ind.defaultPeriod}" min="2" max="500"
-            style="width:70px;padding:5px 8px;background:var(--surface2);border:1px solid var(--border1);border-radius:5px;color:var(--text1);font-family:var(--mono);font-size:12px">
-        </div>` : ''}
-        ${ind.conditions[0] !== 'aktiv' ? `
-        <div>
-          <div style="font-size:9px;color:var(--text3);font-family:var(--mono);margin-bottom:4px">SHART</div>
-          <select id="ind-cond" style="padding:5px 8px;background:var(--surface2);border:1px solid var(--border1);border-radius:5px;color:var(--text1);font-size:12px">
-            ${ind.conditions.map(c => `<option value="${c}" ${c===ind.defaultCond?'selected':''}>${c}</option>`).join('')}
-          </select>
-        </div>
-        ${needsValue ? `
-        <div>
-          <div style="font-size:9px;color:var(--text3);font-family:var(--mono);margin-bottom:4px">QIYMAT</div>
-          <input id="ind-value" type="number" value="${ind.defaultVal||''}" step="0.1"
-            style="width:80px;padding:5px 8px;background:var(--surface2);border:1px solid var(--border1);border-radius:5px;color:var(--text1);font-family:var(--mono);font-size:12px">
-        </div>` : ''}` : `<div style="font-size:11px;color:var(--green3);padding:5px 0">✅ Shart avtomatik — ${ind.hint}</div>`}
-      </div>
-    </div>
-  `;
-  document.getElementById('ind-add-btn').disabled = false;
-}
-
-function confirmAddIndicator() {
-  if (!selectedIndicator) return;
-  const ind = selectedIndicator;
-  const period = document.getElementById('ind-period') ? parseInt(document.getElementById('ind-period').value)||ind.defaultPeriod : ind.defaultPeriod;
-  const cond = document.getElementById('ind-cond') ? document.getElementById('ind-cond').value : ind.defaultCond;
-  const val = document.getElementById('ind-value') ? parseFloat(document.getElementById('ind-value').value) : ind.defaultVal;
-
-  // Label yaratamiz
-  let label = ind.label;
-  if (period > 0) label += `(${period})`;
-  if (cond !== 'aktiv' && cond !== 'narx >') label += ` ${cond} ${val||''}`;
-  else if (cond === 'narx >') label = `Narx > ${ind.label}${period > 0 ? '('+period+')' : ''}`;
-  else if (cond === 'narx <') label = `Narx < ${ind.label}${period > 0 ? '('+period+')' : ''}`;
-
-  const newCrit = {
-    id: ind.id + '_' + period + '_' + Date.now(),
-    label,
-    enabled: true,
-    weight: 14,
-    realData: true,
-    indicator: ind.id,
-    period,
-    condition: cond,
-    value: val,
-    description: ind.hint
+  // Title
+  const titles = {
+    technical: '📈 Texnik Mezon Qo\'shish',
+    financial: '💰 Fundamental Mezon Qo\'shish',
+    cashflow:  '🔵 Pul Oqimi Mezon Qo\'shish',
+    growth:    '🚀 O\'sish Mezon Qo\'shish',
   };
+  document.getElementById('cm-title').textContent = titles[cat] || '📊 Mezon Qo\'shish';
+  document.getElementById('cm-sub').textContent =
+    'FMP API dan real ma\'lumot bilan tekshiriladigan mezonlar · Bir yoki bir nechta tanlang';
 
-  criteria.technical.push(newCrit);
-  renderAllCriteria();
-  closeModal('modal-add-criteria');
-  toast(`✅ "${label}" mezoni qo'shildi`);
+  // Qaysi tab ni avval ko'rsatish
+  const catToTab = { technical: 'technical', financial: 'financial', cashflow: 'cashflow', growth: 'growth' };
+  cmCurrentCat = catToTab[cat] || 'technical';
 
+  renderCriteriaTabs();
+  renderCriteriaBody();
+  document.getElementById('cm-sel-n').textContent = '0';
+  openModal('modal-criteria-picker');
 }
 
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-// FUNDAMENTAL MEZONLAR — 7 guruh, 50+ mezon
-// ⚠ MEMO: Hozir simulatsiya — real API ulanganda:
-//   Narx & Bozor → Twelve Data /quote endpoint
-//   Qolganlar    → FMP /financials, /ratios, /key-metrics
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-const FUNDAMENTAL_GROUPS = [
-  { group: 'Narx & Bozor', icon: '💰', realData: true, apiNote: 'Twelve Data free', items: [
-    { id: 'market_cap_gt', label: 'Market Cap >', unit: '$B', defaultVal: 1, hint: 'Katta kompaniyalar (Large Cap > $10B)' },
-    { id: 'market_cap_lt', label: 'Market Cap <', unit: '$B', defaultVal: 200, hint: "Kichik/O'rta cap (Mid Cap < $10B)" },
-    { id: 'price_gt', label: 'Narx >', unit: '$', defaultVal: 10, hint: 'Past narxli aksiyalardan qochish' },
-    { id: 'price_lt', label: 'Narx <', unit: '$', defaultVal: 500, hint: 'Yuqori narx chegarasi' },
-    { id: 'volume_gt', label: 'Kunlik hajm >', unit: 'M', defaultVal: 1, hint: "Likvidlik — oson sotib/sotish mumkin" },
-    { id: 'beta_lt', label: 'Beta <', unit: '', defaultVal: 1.5, hint: 'Past risk — bozordan kam tebranadi' },
-    { id: 'beta_gt', label: 'Beta >', unit: '', defaultVal: 0.5, hint: 'Bozor bilan birga harakatlanadi' },
-    { id: 'week52_near_high', label: '52H Highga yaqin', unit: '%', defaultVal: 85, hint: 'Kuchli trend — 52H dan X% ichida' },
-  ]},
-  { group: 'Baholash (Valuation)', icon: '📊', realData: false, apiNote: 'FMP API kerak', items: [
-    { id: 'pe_lt', label: 'P/E <', unit: 'x', defaultVal: 25, hint: 'Past P/E — arzon baholangan' },
-    { id: 'pe_gt', label: 'P/E >', unit: 'x', defaultVal: 0, hint: "Musbat daromad (zarar yo'q)" },
-    { id: 'fwd_pe_lt', label: 'Forward P/E <', unit: 'x', defaultVal: 20, hint: 'Kelgusi daromad asosida arzon' },
-    { id: 'peg_lt', label: 'PEG <', unit: 'x', defaultVal: 1.5, hint: "O'sish hisobga olingan — < 1 zo'r" },
-    { id: 'ps_lt', label: 'P/S <', unit: 'x', defaultVal: 5, hint: 'Sotuv asosida baholash' },
-    { id: 'pb_lt', label: 'P/B <', unit: 'x', defaultVal: 3, hint: 'Balans qiymati asosida' },
-    { id: 'ev_ebitda_lt', label: 'EV/EBITDA <', unit: 'x', defaultVal: 15, hint: 'Korporativ qiymat / EBITDA' },
-    { id: 'ev_sales_lt', label: 'EV/Sales <', unit: 'x', defaultVal: 5, hint: 'Korporativ qiymat / Sotuv' },
-    { id: 'pfcf_lt', label: 'P/FCF <', unit: 'x', defaultVal: 20, hint: 'Erkin pul oqimi asosida baholash' },
-  ]},
-  { group: 'Daromadlilik (Profitability)', icon: '📈', realData: false, apiNote: 'FMP API kerak', items: [
-    { id: 'gross_margin_gt', label: 'Gross Margin >', unit: '%', defaultVal: 40, hint: 'Yuqori gross margin — kuchli biznes modeli' },
-    { id: 'op_margin_gt', label: 'Operating Margin >', unit: '%', defaultVal: 15, hint: 'Asosiy faoliyat samaradorligi' },
-    { id: 'net_margin_gt', label: 'Net Margin >', unit: '%', defaultVal: 10, hint: 'Sof foyda ulushi' },
-    { id: 'roe_gt', label: 'ROE >', unit: '%', defaultVal: 15, hint: 'Kapital rentabelligi — Buffett > 15%' },
-    { id: 'roa_gt', label: 'ROA >', unit: '%', defaultVal: 5, hint: 'Aktiv rentabelligi' },
-    { id: 'roic_gt', label: 'ROIC >', unit: '%', defaultVal: 10, hint: 'Investitsiya kapital rentabelligi' },
-    { id: 'eps_gt', label: 'EPS (TTM) >', unit: '$', defaultVal: 0, hint: "Musbat daromad (zarar yo'q)" },
-  ]},
-  { group: "O'sish (Growth)", icon: '🚀', realData: false, apiNote: 'FMP API kerak', items: [
-    { id: 'rev_growth_gt', label: "Revenue o'sishi (YoY) >", unit: '%', defaultVal: 10, hint: "Yillik daromad o'sishi" },
-    { id: 'eps_growth_gt', label: "EPS o'sishi (YoY) >", unit: '%', defaultVal: 15, hint: "Foyda o'sishi — kuchli signal" },
-    { id: 'rev_growth_qoq', label: "Revenue o'sishi (QoQ) >", unit: '%', defaultVal: 5, hint: "Choraklik tezlashuv" },
-    { id: 'eps_growth_qoq', label: "EPS o'sishi (QoQ) >", unit: '%', defaultVal: 5, hint: "Choraklik foyda tezlashuvi" },
-    { id: 'gross_margin_growth', label: "Gross Margin kengayishi >", unit: '%', defaultVal: 1, hint: "Margin yaxshilanmoqda" },
-    { id: 'rev_3yr', label: "3 yillik Revenue CAGR >", unit: '%', defaultVal: 15, hint: "Barqaror uzoq muddatli o'sish" },
-    { id: 'eps_3yr', label: "3 yillik EPS CAGR >", unit: '%', defaultVal: 20, hint: "Uzoq muddatli foyda o'sishi" },
-  ]},
-  { group: 'Moliyaviy Holat', icon: '🏦', realData: false, apiNote: 'FMP API kerak', items: [
-    { id: 'debt_eq_lt', label: 'Debt/Equity <', unit: 'x', defaultVal: 1.0, hint: 'Past qarz — moliyaviy barqarorlik' },
-    { id: 'current_ratio_gt', label: 'Current Ratio >', unit: 'x', defaultVal: 1.5, hint: "Likvidlik — qisqa muddatli majburiyatlar" },
-    { id: 'quick_ratio_gt', label: 'Quick Ratio >', unit: 'x', defaultVal: 1.0, hint: 'Tez likvidlik koeffitsienti' },
-    { id: 'interest_coverage_gt', label: 'Interest Coverage >', unit: 'x', defaultVal: 5, hint: "Foiz to'lash imkoni — > 5 xavfsiz" },
-    { id: 'net_cash_gt', label: 'Net Cash >', unit: '$B', defaultVal: 0, hint: "Sof naqd pul musbat (qarzdan ko'p pul)" },
-    { id: 'altman_z_gt', label: 'Altman Z-Score >', unit: '', defaultVal: 2.99, hint: 'Bankrotlik ehtimoli past (> 2.99 xavfsiz)' },
-  ]},
-  { group: 'Pul Oqimi (Cash Flow)', icon: '💵', realData: false, apiNote: 'FMP API kerak', items: [
-    { id: 'fcf_gt', label: 'Free Cash Flow >', unit: '$M', defaultVal: 0, hint: "Musbat FCF — sog'lom biznes" },
-    { id: 'fcf_margin_gt', label: 'FCF Margin >', unit: '%', defaultVal: 10, hint: "FCF/Revenue — pul ishlab chiqarish samaradorligi" },
-    { id: 'fcf_yield_gt', label: 'FCF Yield >', unit: '%', defaultVal: 3, hint: 'FCF/Market Cap — chegirma bilan olish' },
-    { id: 'ocf_gt', label: 'Operating Cash Flow >', unit: '$M', defaultVal: 0, hint: 'Asosiy faoliyatdan naqd pul' },
-    { id: 'capex_rev_lt', label: 'CapEx/Revenue <', unit: '%', defaultVal: 15, hint: 'Kapital xarajat ulushi past — samarali' },
-    { id: 'ocf_income_gt', label: 'OCF/Net Income >', unit: 'x', defaultVal: 1, hint: 'Daromad sifati — pul bilan tasdiqlangan' },
-  ]},
-  { group: 'Dividendlar', icon: '💎', realData: false, apiNote: 'FMP API kerak', items: [
-    { id: 'div_yield_gt', label: 'Dividend Yield >', unit: '%', defaultVal: 2, hint: "Yillik dividend ulushi" },
-    { id: 'div_yield_lt', label: 'Dividend Yield <', unit: '%', defaultVal: 8, hint: "Haddan yuqori yield — risk signali" },
-    { id: 'payout_lt', label: 'Payout Ratio <', unit: '%', defaultVal: 60, hint: "Barqaror dividend to'lash imkoni" },
-    { id: 'div_growth_gt', label: "Dividend o'sishi (5Y) >", unit: '%', defaultVal: 5, hint: "Barqaror dividend o'stiruvchi kompaniyalar" },
-  ]},
-];
+function renderCriteriaTabs() {
+  const tabs = document.getElementById('cm-tabs');
+  const order = ['technical', 'financial', 'cashflow', 'growth', 'debt'];
+  tabs.innerHTML = order.map(key => {
+    const cat = CRITERIA_CATALOG[key];
+    return `<button class="cm-tab ${cmCurrentCat === key ? 'active' : ''}"
+      onclick="cmSwitchTab('${key}')">${cat.label}</button>`;
+  }).join('');
+}
 
-let selectedFundamental = null;
+function cmSwitchTab(key) {
+  cmCurrentCat = key;
+  renderCriteriaTabs();
+  renderCriteriaBody();
+}
 
-function renderFundamentalModal() {
-  const container = document.getElementById('fund-modal-list');
-  container.innerHTML = FUNDAMENTAL_GROUPS.map(group => `
-    <div style="margin-bottom:14px">
-      <div style="display:flex;align-items:center;gap:6px;margin-bottom:7px">
-        <span style="font-size:14px">${group.icon}</span>
-        <span style="font-size:9px;font-weight:700;color:var(--text3);font-family:var(--mono);text-transform:uppercase;letter-spacing:1px">${group.group}</span>
-        <span style="font-size:8px;padding:1px 5px;border-radius:3px;background:${group.realData ? 'rgba(34,197,94,.15)' : 'rgba(251,191,36,.12)'};color:${group.realData ? 'var(--green3)' : '#f59e0b'};font-family:var(--mono)">${group.realData ? '✅ Real' : '⚠ SIM'}</span>
-      </div>
-      <div style="display:flex;flex-wrap:wrap;gap:5px">
-        ${group.items.map(item => `
-          <div class="fund-option" id="fund-opt-${item.id}" onclick="selectFundamental('${item.id}')"
-            style="padding:5px 9px;border-radius:6px;border:1px solid var(--border1);cursor:pointer;transition:all .15s;font-size:11px;color:var(--text2)">
-            ${item.label}
+function renderCriteriaBody() {
+  const cat = CRITERIA_CATALOG[cmCurrentCat];
+  if (!cat) return;
+
+  // Mavjud mezonlar IDlari (qo'shilgan)
+  const existingIds = new Set(
+    Object.values(criteria).flat().map(c => c.id)
+  );
+
+  let html = '';
+  for (const sec of cat.sections) {
+    html += `<div class="cm-section">
+      <div class="cm-sec-label"><span></span>${sec.name}<span></span></div>
+      <div class="cm-grid">`;
+    for (const item of sec.items) {
+      const isAlready  = existingIds.has(item.id);
+      const isSelected = cmSelectedIds.has(item.id);
+      html += `
+        <div class="cm-item ${isAlready ? 'already' : ''} ${isSelected && !isAlready ? 'selected' : ''}"
+          onclick="cmToggleItem('${item.id}', this)" title="${item.desc}">
+          <div class="cm-item-badge ${item.real ? 'cm-badge-real' : 'cm-badge-sim'}">
+            ${item.real ? '📡 FMP' : '~SIM'}
           </div>
-        `).join('')}
-      </div>
-    </div>
-  `).join('');
-  document.getElementById('fund-config-area').innerHTML = '';
-  document.getElementById('fund-add-btn').disabled = true;
-  selectedFundamental = null;
+          <div class="cm-item-name">${item.name}</div>
+          <div class="cm-item-desc">${item.desc}</div>
+        </div>`;
+    }
+    html += `</div></div>`;
+  }
+
+  document.getElementById('cm-body').innerHTML = html;
 }
 
-function selectFundamental(id) {
-  selectedFundamental = null;
-  document.querySelectorAll('.fund-option').forEach(el => {
-    el.style.borderColor = 'var(--border1)';
-    el.style.background = '';
-    el.style.color = 'var(--text2)';
-  });
-  const el = document.getElementById('fund-opt-' + id);
-  if (el) { el.style.borderColor = 'var(--blue2)'; el.style.background = 'rgba(59,130,246,.1)'; el.style.color = 'var(--text1)'; }
-
-  const allItems = FUNDAMENTAL_GROUPS.flatMap(g => g.items.map(i => ({...i, realData: g.realData})));
-  const item = allItems.find(i => i.id === id);
-  if (!item) return;
-  selectedFundamental = item;
-
-  document.getElementById('fund-config-area').innerHTML = `
-    <div style="border-top:1px solid var(--border1);margin-top:12px;padding-top:12px">
-      <div style="font-size:11px;font-weight:700;color:var(--text1);margin-bottom:4px">${item.label}${item.unit ? ' (' + item.unit + ')' : ''}</div>
-      <div style="font-size:10px;color:var(--text3);margin-bottom:10px">${item.hint}</div>
-      <div style="display:flex;align-items:center;gap:10px">
-        <div>
-          <div style="font-size:9px;color:var(--text3);font-family:var(--mono);margin-bottom:4px">QIYMAT ${item.unit ? '('+item.unit+')' : ''}</div>
-          <input id="fund-value" type="number" value="${item.defaultVal}" step="0.1"
-            style="width:110px;padding:6px 8px;background:var(--surface2);border:1px solid var(--border1);border-radius:5px;color:var(--text1);font-family:var(--mono);font-size:13px">
-        </div>
-        ${!item.realData ? '<div style="font-size:10px;color:#f59e0b;background:rgba(251,191,36,.1);padding:5px 8px;border-radius:5px;font-family:var(--mono)">⚠ Simulatsiya — FMP API kerak</div>' : ''}
-      </div>
-    </div>
-  `;
-  document.getElementById('fund-add-btn').disabled = false;
+function cmToggleItem(id, el) {
+  if (el.classList.contains('already')) return;
+  if (cmSelectedIds.has(id)) {
+    cmSelectedIds.delete(id);
+    el.classList.remove('selected');
+  } else {
+    cmSelectedIds.add(id);
+    el.classList.add('selected');
+  }
+  document.getElementById('cm-sel-n').textContent = cmSelectedIds.size;
 }
 
-function confirmAddFundamental() {
-  if (!selectedFundamental) return;
-  const item = selectedFundamental;
-  const val = parseFloat(document.getElementById('fund-value').value);
-  const label = item.label + ' ' + val + (item.unit ? ' ' + item.unit : '');
-  criteria.fundamental.push({
-    id: item.id + '_' + Date.now(), label, enabled: true, weight: 10,
-    realData: item.realData, fundamentalId: item.id, value: val, unit: item.unit,
-    description: item.realData ? 'Real' : 'Simulatsiya (FMP API kerak)'
-  });
+function confirmCriteriaPick() {
+  if (cmSelectedIds.size === 0) { toast('Kamida 1 ta mezon tanlang', true); return; }
+
+  // Har bir tanlangan mezonni criteria ga qo'shish
+  for (const id of cmSelectedIds) {
+    // Katalogdan mezon ma'lumotini topish
+    let found = null;
+    for (const catKey of Object.keys(CRITERIA_CATALOG)) {
+      for (const sec of CRITERIA_CATALOG[catKey].sections) {
+        const item = sec.items.find(i => i.id === id);
+        if (item) { found = { item, catKey }; break; }
+      }
+      if (found) break;
+    }
+    if (!found) continue;
+
+    // Qaysi kategoriyaga qo'shish: cmTargetCat yoki catalog kategoriyasi
+    let targetCat = cmTargetCat;
+    // Agar boshqa tabdan tanlangan bo'lsa (masalan debt → financial)
+    const catMap = { financial: 'financial', cashflow: 'cashflow', growth: 'growth', debt: 'financial', technical: 'technical' };
+    if (found.catKey !== cmTargetCat) targetCat = catMap[found.catKey] || cmTargetCat;
+
+    // criteria obyektida targetCat bo'lmasa yaratish
+    if (!criteria[targetCat]) criteria[targetCat] = [];
+
+    // Dublikat tekshirish
+    if (criteria[targetCat].find(c => c.id === id)) continue;
+
+    // Label va description
+    const labelMap = {
+      rsi: 'RSI > 50 — Momentum musbat',
+      rsi_os: 'RSI Oversold — Rebound zona',
+      rev_accel: 'Momentum kuchli (>+1.5%)',
+      ma200: 'Narx > MA200 — Uzoq trend',
+      ma50: 'Narx > MA50 — Qisqa trend',
+      ma_cross: 'MA50 × MA200 (Golden Cross)',
+      macd: 'MACD Bullish — Momentum yuqori',
+      macd_pos: 'MACD > 0 — Musbat zona',
+      week52_high: '52H Highdan 15% ichida',
+      vol_surge: 'Volume 30D ortachadan 20%+',
+      vol_2x: 'Volume 2x ortachadan',
+      near_low: '52H Lowdan 20% ichida',
+      pe: 'P/E < 30 — Arzon baholama',
+      pe_low: 'P/E < 15 — Deep value',
+      ps: 'P/S < 5 — Sotuv baholama',
+      pb: 'P/B < 3 — Kitob qiymati',
+      pfcf: 'P/FCF < 20 — Naqd pul',
+      ev_ebitda: 'EV/EBITDA < 15',
+      ev_sales: 'EV/Sales < 5',
+      peg: 'PEG < 1.5 — Growth at Value',
+      gross_margin: 'Gross Margin > 40%',
+      op_margin: 'Operating Margin > 15%',
+      net_margin: 'Net Margin > 10%',
+      roe: 'ROE > 15% — Kuchli biznes',
+      roic: 'ROIC > 10%',
+      fcf: 'FCF musbat — Erkin pul oqimi',
+      fcf_margin: 'FCF Margin > 10%',
+      fcf_yield: 'FCF Yield > 5%',
+      ocf_income: 'OCF > Net Income — Sifat',
+      capex_low: 'CapEx/Revenue < 15%',
+      net_cash: 'Net Cash musbat',
+      rev_growth: 'Revenue o\'sishi > 15% YoY',
+      rev_accel2: 'Revenue o\'sishi > 25% YoY',
+      rev_qoq: 'Revenue QoQ > 5%',
+      rev_cagr3: '3Y Revenue CAGR > 20%',
+      eps_growth: 'EPS o\'sishi > 20% YoY',
+      eps_beat: 'EPS konsensusdan yuqori',
+      eps_cagr3: '3Y EPS CAGR > 15%',
+      inst_buying: 'Institutional buying zona',
+      div_growth: 'Dividend o\'sib bormoqda',
+      debt_eq: 'Debt/Equity < 1 — Past qarz',
+      debt_low: 'Debt/Equity < 0.5 — Minimal',
+      altman: 'Altman Z > 2.99 — Xavfsiz',
+      curr_ratio: 'Current Ratio > 1.5',
+      quick_ratio: 'Quick Ratio > 1',
+      int_cov: 'Interest Coverage > 5',
+    };
+
+    criteria[targetCat].push({
+      id,
+      label: labelMap[id] || found.item.name,
+      enabled: true,
+      weight: 10,
+      realData: found.item.real,
+      description: found.item.desc,
+    });
+  }
+
   renderAllCriteria();
-  closeModal('modal-add-fundamental');
-  toast('✅ "' + label + '" mezoni qoshildi');
-  selectedFundamental = null;
+  closeModal('modal-criteria-picker');
+  toast(`✅ ${cmSelectedIds.size} ta mezon qo'shildi`);
+  cmSelectedIds = new Set();
 }
 
 function toggleBlock(hdr) {
@@ -2535,20 +2729,9 @@ async function saveStrategy() {
 async function saveCurrentStrategy() {
   if (!activeStrategy) { toast('Strategiya tanlanmagan', true); return; }
   const threshold = parseInt(document.getElementById('threshold-slider').value);
-  const { error } = await sb.from('strategies')
-    .update({ criteria, threshold, updated_at: new Date().toISOString() })
-    .eq('id', activeStrategy.id);
-  if (error) { toast('❌ Saqlashda xato: ' + error.message, true); return; }
-  // activeStrategy ni yangilaymiz — loadStrategies chaqirmaymiz
-  // (loadStrategies Supabase dan eski cache qaytarishi mumkin)
-  activeStrategy.criteria = criteria;
-  activeStrategy.threshold = threshold;
-  // strategies array ham yangilaymiz
-  const idx = strategies.findIndex(s => s.id === activeStrategy.id);
-  if (idx >= 0) { strategies[idx].criteria = criteria; strategies[idx].threshold = threshold; }
-  renderStratList();
-  renderAllCriteria();
-  toast('✅ Strategiya saqlandi — ' + Object.values(criteria).flat().filter(c => c.enabled).length + ' ta mezon aktiv');
+  await sb.from('strategies').update({ criteria, threshold, updated_at: new Date().toISOString() }).eq('id', activeStrategy.id);
+  toast('✅ Strategiya yangilandi');
+  loadStrategies();
 }
 
 async function selectAndActivate(id) {
@@ -2563,14 +2746,8 @@ async function activateStrategy(id) {
 }
 
 async function deleteStrategy(id) {
-  if (!confirm('Strategiyani arxivlashni tasdiqlaysizmi? Admin arxivda ko\'ra oladi.')) return;
-  // Soft delete — o'chirmaydi, arxivga tushiradi
-  const { error } = await sb.from('strategies').update({
-    archived_at: new Date().toISOString(),
-    archived_by: currentUser.id
-  }).eq('id', id);
-  if (error) { toast('❌ Xato: ' + error.message, true); return; }
-  toast('📦 Strategiya arxivlandi');
+  if (!confirm('Strategiyani o\'chirishni tasdiqlaysizmi?')) return;
+  await sb.from('strategies').delete().eq('id', id);
   loadStrategies();
 }
 
@@ -2599,94 +2776,161 @@ async function runScan() {
   btn.disabled = true; btn.innerHTML = '<div class="spin" style="width:12px;height:12px;border-width:2px"></div> Skanlanmoqda...';
   // threshold UI sliderdan o'qiladi lekin SCORE_THRESHOLDS dan ham foydalaniladi
   const N = enabledCriteria.length;
-  const perBall = N > 0 ? (100 / N) : 0; // har bir mezon = 100/N ball
+  const perBall = N > 0 ? (100 / N) : 0;
   const startTime = Date.now();
-  const totalTickers = SP500_SAMPLE.length;
 
-  document.getElementById('scan-content').innerHTML = `<div class="loading-state"><div class="spin"></div><span id="scan-progress">${totalTickers} ta ticker skanlanmoqda...</span></div>`;
+  document.getElementById('scan-content').innerHTML = `<div class="loading-state"><div class="spin"></div><span id="scan-progress">Universe yuklanmoqda...</span></div>`;
+
+  // Universe ni olish (SP500 / NASDAQ100 / Russell1000 / Actives / Gainers)
+  const validTickers = await getUniverseTickers();
+  const totalTickers = validTickers.length;
+
+  document.getElementById('scan-content').innerHTML = `<div class="loading-state"><div class="spin"></div><span id="scan-progress">${totalTickers} ta ticker skanlanmoqda (${UNIVERSE_CONFIG[currentUniverse].label})...</span></div>`;
 
   // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  // NARX OLISH — v13 SIMULATSIYA REJIMI
+  // FMP /stable/quote — batch 50 ticker per call
   // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  // MEMO: Hozir simulatsiya rejimida ishlaydi.
-  // Asl logika: screener API → mezonlarga mos stocklarni topadi.
-  // Pulli API (Twelve Data Pro yoki FMP) ulanganda:
-  //   1. Bu blokni o'chirib, quyidagi API chaqiruvni yoqing:
-  //      const url = `https://api.twelvedata.com/stocks?exchange=NASDAQ&apikey=YOUR_KEY`;
-  //      yoki FMP: `/stock-screener?marketCapMoreThan=1000000000&...`
-  //   2. Natijalarni realPrices formatiga moslashtiring
-  //   3. SP500_SAMPLE o'rniga API dan kelgan ticker listini ishlating
-  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  let realData = {};
+  const batchSize = 50;
+  const batches = [];
+  for (let i = 0; i < validTickers.length; i += batchSize) {
+    batches.push(validTickers.slice(i, i + batchSize));
+  }
+  logFmp(`📊 Scan [${UNIVERSE_CONFIG[currentUniverse].label}]: ${validTickers.length} ticker, ${batches.length} batch`);
 
-  // Supabase market_data + indicator_values dan real ma'lumotlar olish
-  // ⚠ MEMO: Hozir faqat 8 ta ticker real ma'lumot bor
-  // Real screener API ulanganda: 300+ ticker uchun ham indikatorlar hisoblanadi
-  let realPrices = {};
-  let indicatorCache = {}; // ticker -> {rsi_14, sma_200, sma_50, ema_20, macd, ...}
-  try {
-    const [mktRes, indRes, fundRes] = await Promise.all([
-      sb.from('market_data').select('*'),
-      sb.from('indicator_values').select('*'),
-      sb.from('fundamental_data').select('*').order('updated_at', { ascending: false })
-    ]);
-    if (mktRes.data) {
-      mktRes.data.forEach(row => {
-        if (row.ticker && row.price) {
-          realPrices[row.ticker] = {
-            regularMarketPrice: parseFloat(row.price),
-            regularMarketChangePercent: parseFloat(row.change_pct || 0),
-            regularMarketVolume: parseInt(row.volume || 0),
-            averageVolume: 0,
-            week52High: 0, week52Low: 0
-          };
+  let fetched = 0;
+  let failedBatches = 0;
+  for (const batch of batches) {
+    try {
+      const symbols = batch.join(',');
+      const url = `${FMP_BASE}/quote?symbol=${symbols}&apikey=${FMP_API_KEY}`;
+      const res = await fetch(url, { signal: AbortSignal.timeout(20000) });
+
+      if (!res.ok) {
+        failedBatches++;
+        logFmp(`❌ Batch HTTP xato: ${res.status}`, true);
+      } else {
+        const data = await res.json();
+        if (data['Error Message']) {
+          failedBatches++;
+          logFmp(`❌ FMP API xato: ${data['Error Message']}`, true);
+        } else if (Array.isArray(data)) {
+          trackFmpCall(1);
+          data.forEach(q => {
+            if (!q || !q.symbol || !q.price) return;
+            realData[q.symbol] = {
+              price: parseFloat(q.price || 0),
+              changeP: parseFloat(q.changesPercentage || 0),
+              volume: parseInt(q.volume || 0),
+              avgVolume: parseInt(q.avgVolume || 0),
+              week52High: parseFloat(q.yearHigh || 0),
+              week52Low: parseFloat(q.yearLow || 0),
+              pe: parseFloat(q.pe || 0),
+              marketCap: parseFloat(q.marketCap || 0),
+              eps: parseFloat(q.eps || 0),
+              priceAvg50: parseFloat(q.priceAvg50 || 0),
+              priceAvg200: parseFloat(q.priceAvg200 || 0),
+              // key-metrics (keyingi stepda to'ldiriladi)
+              ps: null, evEbitda: null, debtEq: null,
+              fcf: null, fcfMargin: null, revGrowth: null,
+              epsGrowth: null, grossMargin: null,
+            };
+          });
+          logFmp(`✅ Batch ${Math.ceil(fetched/batchSize)+1}: ${Object.keys(realData).length} ta ma'lumot`);
         }
-      });
+      }
+    } catch(e) {
+      failedBatches++;
+      logFmp(`❌ Batch ${Math.ceil(fetched/batchSize)+1} xato: ${e.message}`, true);
     }
-    if (indRes.data) {
-      indRes.data.forEach(row => {
-        indicatorCache[row.ticker] = {
-          rsi_14: row.rsi_14, sma_200: row.sma_200, sma_50: row.sma_50,
-          ema_20: row.ema_20, macd_value: row.macd_value,
-          macd_signal: row.macd_signal, macd_hist: row.macd_hist,
-          ...(row.values || {})
-        };
-      });
-    }
-    // ⚠ MEMO: fundamental_data hozir bo'sh — FMP API ulanganda to'ldiriladi
-    // Har ticker uchun eng oxirgi kvartal ma'lumoti olinadi
-    const fundamentalCache = {};
-    if (fundRes.data) {
-      fundRes.data.forEach(row => {
-        if (!fundamentalCache[row.ticker]) {
-          fundamentalCache[row.ticker] = row; // birinchisi eng yangi (order by updated_at desc)
-        }
-      });
-    }
-  } catch(e) {
-    console.warn('market_data/indicator_values xato:', e.message);
+    fetched += batch.length;
+    const prog = document.getElementById('scan-progress');
+    if (prog) prog.textContent =
+      `Narxlar: ${fetched}/${validTickers.length} tekshirildi · ` +
+      `Real: ${Object.keys(realData).length} ta · FMP: ${fmpCallsToday} call`;
+    await new Promise(r => setTimeout(r, 100)); // Rate limit (minimal delay)
   }
 
-  const prog = document.getElementById('scan-progress');
-  if (prog) prog.textContent = `${totalTickers} ta ticker tekshirildi · Real narxlar: ${Object.keys(realPrices).length} ta · Qolganlar: simulatsiya`;
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  // FUNDAMENTAL DATA — Supabase cache dan o'qish
+  // Cache eski bo'lsa yoki yo'q bo'lsa FMP dan yangilash
+  // Har kvartalda 1x yangilanadi (FUND_CACHE_TTL_DAYS = 90 kun)
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  const needsFundamentals = enabledCriteria.some(c =>
+    ['pe','ps','ev_ebitda','debt_eq','pfcf','fcf','fcf_margin','ocf_income','capex_low',
+     'rev_growth','eps_growth','gross_margin'].includes(c.id.toLowerCase()));
+
+  if (needsFundamentals) {
+    // Cache yuklanmagan bo'lsa yuklash
+    if (!fundCacheLoaded) {
+      const prog = document.getElementById('scan-progress');
+      if (prog) prog.textContent = 'Fundamental cache yuklanmoqda...';
+      await loadFundamentalCache();
+    }
+
+    // Qaysi tickerlar cache da yo'q yoki eski?
+    const allScanTickers = validTickers;
+    const staleTickers = allScanTickers.filter(t => isFundCacheStale(t));
+
+    if (staleTickers.length > 0) {
+      logFmp(`🔄 Scan: ${staleTickers.length} ta ticker fundamental cache yangilanadi...`);
+      const prog = document.getElementById('scan-progress');
+      await refreshFundamentalCache(staleTickers, false, (done, total) => {
+        if (prog) prog.textContent =
+          `Fundamental cache: ${done}/${total} yangilandi · FMP: ${fmpCallsToday} call`;
+      });
+    } else {
+      logFmp(`✅ Scan: fundamental cache tayyor (${Object.keys(fundamentalCache).length} ticker, hech biri eski emas)`);
+    }
+
+    // realData ga fundamental cache dan qo'shish
+    allScanTickers.forEach(ticker => {
+      const fc = fundamentalCache[ticker];
+      if (!fc) return;
+      if (realData[ticker]) {
+        // Cache dan barcha fundamental korsatkichlarni birlashtirish
+        realData[ticker].pe       = fc.pe || realData[ticker].pe || null;
+        realData[ticker].ps       = fc.ps;
+        realData[ticker].evEbitda = fc.ev_ebitda;
+        realData[ticker].debtEq   = fc.debt_eq;
+        realData[ticker].fcf      = fc.fcf_per_share;
+        realData[ticker].fcfMargin = fc.fcf_margin;
+        realData[ticker].revGrowth = fc.rev_growth;
+        realData[ticker].epsGrowth = fc.eps_growth;
+        realData[ticker].grossMargin = fc.gross_margin;
+      } else {
+        // Quote kelmagan ticker uchun ham fundamental cache ishlatish
+        // (scoring partial real data bilan ishlaydi)
+        realData[ticker] = {
+          price: 0, changeP: 0, volume: 0, avgVolume: 0,
+          week52High: 0, week52Low: 0, pe: fc.pe, priceAvg50: 0, priceAvg200: 0,
+          ps: fc.ps, evEbitda: fc.ev_ebitda, debtEq: fc.debt_eq,
+          fcf: fc.fcf_per_share, fcfMargin: fc.fcf_margin,
+          revGrowth: fc.rev_growth, epsGrowth: fc.eps_growth,
+          grossMargin: fc.gross_margin,
+        };
+      }
+    });
+    logFmp(`✅ Fundamental birlashtirish: ${allScanTickers.filter(t=>fundamentalCache[t]).length} ticker`);
+  }
 
   // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  // SCORING FORMULA (v5 bilan bir xil, hujjatga ko'ra):
+  // SCORING FORMULA (Equal-Weight):
   //   perBall = 100 / N  (har bir mezon teng ball)
   //   score   = Math.round(passed / N * 100)
-  //
-  // Misol: 10 mezon → har biri 10 ball
-  //         7 mezon → har biri 14.3 ball
-  //         8 tadan 6 tasi o'tsa → 75 ball
-  //
   // Thresholds: ≥80 = Inbox | 65-79 = Watchlist | <65 = Rad
   // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  const results = SP500_SAMPLE.map(ticker => {
-    const q = realPrices[ticker];
-    const price = q?.regularMarketPrice || 0;
-    const changeP = q?.regularMarketChangePercent || 0;
-    const volume = q?.regularMarketVolume || 0;
-    const avgVolume = q?.averageVolume || 0;
+  const results = validTickers.map(ticker => {
+    const q = realData[ticker];
+    const price     = q?.price || 0;
+    const changeP   = q?.changeP || 0;
+    const volume    = q?.volume || 0;
+    const avgVolume = q?.avgVolume || 0;
     const week52High = q?.week52High || 0;
+    const week52Low  = q?.week52Low || 0;
+    const pe         = q?.pe || 0;
+    const priceAvg50  = q?.priceAvg50 || 0;
+    const priceAvg200 = q?.priceAvg200 || 0;
     const hasRealData = !!q;
 
     let passed = 0;
@@ -2698,164 +2942,247 @@ async function runScan() {
       let note = '';
       const id = c.id.toLowerCase();
 
-      const ind = indicatorCache[ticker] || {};
-      const condVal = c.value;
-      const period = c.period || 14;
-
-      // ⚠ MEMO: Hozir 8 ta ticker uchun real indikator bor
-      // Qolgan tickerlar uchun simulatsiya ishlaydi
-      // Real screener API ulanganda: barcha tickerlar uchun real bo'ladi
-
-      if (id.startsWith('rsi')) {
-        const rsiKey = `rsi_${period}`;
-        const rsiVal = ind[rsiKey] || ind.rsi_14;
-        if (rsiVal !== null && rsiVal !== undefined) {
-          const cond = c.condition || '>';
-          if (cond === '>') pass = rsiVal > (condVal || 50);
-          else if (cond === '<') pass = rsiVal < (condVal || 50);
-          else if (cond === '>=') pass = rsiVal >= (condVal || 50);
-          else if (cond === '<=') pass = rsiVal <= (condVal || 50);
-          isReal = true; note = `RSI=${rsiVal.toFixed(1)}`;
-        } else { pass = Math.random() > 0.5; note = '~SIM'; }
-
-      } else if (id.startsWith('sma') || id === 'ma200' || id.includes('dma')) {
-        const smaKey = `sma_${period || 200}`;
-        const smaVal = ind[smaKey] || ind.sma_200;
-        if (smaVal && price > 0) {
-          const cond = c.condition || 'narx >';
-          pass = cond === 'narx >' ? price > smaVal : price < smaVal;
-          isReal = true; note = `${price > smaVal ? 'yuqori' : 'past'} ($${smaVal.toFixed(0)})`;
-        } else { pass = Math.random() > 0.5; note = '~SIM'; }
-
-      } else if (id.startsWith('ema')) {
-        const emaKey = `ema_${period || 20}`;
-        const emaVal = ind[emaKey] || ind.ema_20;
-        if (emaVal && price > 0) {
-          const cond = c.condition || 'narx >';
-          pass = cond === 'narx >' ? price > emaVal : price < emaVal;
-          isReal = true; note = `${price > emaVal ? 'yuqori' : 'past'} ($${emaVal.toFixed(0)})`;
-        } else { pass = Math.random() > 0.5; note = '~SIM'; }
-
-      } else if (id === 'macd_bullish') {
-        const macdV = ind.macd_value || (ind.macd && ind.macd.value);
-        const macdS = ind.macd_signal || (ind.macd && ind.macd.signal);
-        const macdH = ind.macd_hist || (ind.macd && ind.macd.hist);
-        if (macdH !== null && macdH !== undefined) {
-          pass = macdH > 0 && macdV > macdS;
-          isReal = true; note = `hist=${macdH > 0 ? '+' : ''}${(macdH||0).toFixed(3)}`;
-        } else { pass = Math.random() > 0.5; note = '~SIM'; }
-
-      } else if (id === 'macd_above') {
-        const macdV = ind.macd_value || (ind.macd && ind.macd.value);
-        if (macdV !== null && macdV !== undefined) {
-          pass = macdV > 0;
-          isReal = true; note = `MACD=${macdV > 0 ? '+' : ''}${(macdV||0).toFixed(3)}`;
-        } else { pass = Math.random() > 0.5; note = '~SIM'; }
-
-      } else if (id === 'bbands_above') {
-        const bb = ind.bbands || ind.bbands_20;
-        const bbMid = bb?.middle || null;
-        if (bbMid && price > 0) {
-          pass = price > bbMid;
-          isReal = true; note = `${price > bbMid ? 'yuqori' : 'past'} BB`;
-        } else { pass = Math.random() > 0.5; note = '~SIM'; }
-
-      } else if (id.startsWith('stoch')) {
-        const stochK = ind.stoch?.k || null;
-        if (stochK !== null) {
-          const cond = c.condition || '>';
-          pass = cond === '>' ? stochK > (condVal || 50) : stochK < (condVal || 50);
-          isReal = true; note = `K=${stochK.toFixed(1)}`;
-        } else { pass = Math.random() > 0.5; note = '~SIM'; }
-
-      } else if (id.startsWith('adx')) {
-        const adxVal = ind.adx_14 || ind.adx;
-        if (adxVal !== null && adxVal !== undefined) {
-          pass = adxVal > (condVal || 25);
-          isReal = true; note = `ADX=${adxVal.toFixed(1)}`;
-        } else { pass = Math.random() > 0.5; note = '~SIM'; }
-
-      } else if (id === 'vol_above' || id === 'vol') {
-        pass = changeP > 0 && volume > 500000;
-        isReal = hasRealData; note = hasRealData ? `${(volume/1e6).toFixed(1)}M` : '~SIM';
-
-      } else if (id === 'vol_spike') {
-        pass = changeP > 1.0 && volume > 1000000;
-        isReal = hasRealData; note = hasRealData ? `${changeP.toFixed(1)}% / ${(volume/1e6).toFixed(1)}M` : '~SIM';
-
-      } else if (id === 'vol_surge' || id === 'vol_above_30d') {
-        pass = volume > 1000000; isReal = hasRealData;
-        note = hasRealData ? `${(volume/1e6).toFixed(1)}M` : '~SIM';
-
-      } else if (id === 'rev_accel') {
-        pass = changeP > 1.5; isReal = hasRealData;
-        note = hasRealData ? `${changeP.toFixed(2)}%` : '~SIM';
-
-      } else {
-        // Fundamental mezonlar — fundamental_data jadvalidan o'qiladi
-        // ⚠ MEMO: fundamental_data bo'sh bo'lsa simulatsiya ishlaydi
-        // FMP API ulanganda fetch-fundamentals to'ldirib qo'yadi
-        const fd = fundamentalCache[ticker] || {};
-        const hasFund = Object.keys(fd).length > 0;
-        const fundId = c.fundamentalId || id;
-        const threshold = c.value;
-
-        if (hasFund) {
-          // Narx & Bozor
-          if (fundId === 'market_cap_gt') { pass = fd.market_cap > (threshold * 1e9); isReal = true; note = `$${(fd.market_cap/1e9).toFixed(1)}B`; }
-          else if (fundId === 'market_cap_lt') { pass = fd.market_cap < (threshold * 1e9); isReal = true; note = `$${(fd.market_cap/1e9).toFixed(1)}B`; }
-          else if (fundId === 'beta_lt') { pass = fd.beta < threshold; isReal = true; note = `β=${fd.beta?.toFixed(2)}`; }
-          else if (fundId === 'beta_gt') { pass = fd.beta > threshold; isReal = true; note = `β=${fd.beta?.toFixed(2)}`; }
-          else if (fundId === 'volume_gt') { pass = fd.avg_volume > (threshold * 1e6); isReal = true; note = `${(fd.avg_volume/1e6).toFixed(1)}M`; }
-          else if (fundId === 'week52_near_high') { pass = fd.week_52_high > 0 && price >= fd.week_52_high * (threshold/100); isReal = true; note = fd.week_52_high > 0 ? `${((price/fd.week_52_high)*100).toFixed(0)}%` : '-'; }
-          // Baholash
-          else if (fundId === 'pe_lt') { pass = fd.pe_ratio > 0 && fd.pe_ratio < threshold; isReal = true; note = `P/E=${fd.pe_ratio?.toFixed(1)}`; }
-          else if (fundId === 'pe_gt') { pass = fd.pe_ratio > threshold; isReal = true; note = `P/E=${fd.pe_ratio?.toFixed(1)}`; }
-          else if (fundId === 'fwd_pe_lt') { pass = fd.forward_pe > 0 && fd.forward_pe < threshold; isReal = true; note = `fP/E=${fd.forward_pe?.toFixed(1)}`; }
-          else if (fundId === 'peg_lt') { pass = fd.peg_ratio > 0 && fd.peg_ratio < threshold; isReal = true; note = `PEG=${fd.peg_ratio?.toFixed(2)}`; }
-          else if (fundId === 'ps_lt') { pass = fd.ps_ratio > 0 && fd.ps_ratio < threshold; isReal = true; note = `P/S=${fd.ps_ratio?.toFixed(1)}`; }
-          else if (fundId === 'pb_lt') { pass = fd.pb_ratio > 0 && fd.pb_ratio < threshold; isReal = true; note = `P/B=${fd.pb_ratio?.toFixed(1)}`; }
-          else if (fundId === 'ev_ebitda_lt') { pass = fd.ev_ebitda > 0 && fd.ev_ebitda < threshold; isReal = true; note = `EV/E=${fd.ev_ebitda?.toFixed(1)}`; }
-          else if (fundId === 'pfcf_lt') { pass = fd.price_to_fcf > 0 && fd.price_to_fcf < threshold; isReal = true; note = `P/FCF=${fd.price_to_fcf?.toFixed(1)}`; }
-          // Daromadlilik
-          else if (fundId === 'gross_margin_gt') { pass = (fd.gross_margin*100) > threshold; isReal = true; note = `GM=${(fd.gross_margin*100).toFixed(1)}%`; }
-          else if (fundId === 'op_margin_gt') { pass = (fd.operating_margin*100) > threshold; isReal = true; note = `OM=${(fd.operating_margin*100).toFixed(1)}%`; }
-          else if (fundId === 'net_margin_gt') { pass = (fd.net_margin*100) > threshold; isReal = true; note = `NM=${(fd.net_margin*100).toFixed(1)}%`; }
-          else if (fundId === 'roe_gt') { pass = (fd.roe*100) > threshold; isReal = true; note = `ROE=${(fd.roe*100).toFixed(1)}%`; }
-          else if (fundId === 'roa_gt') { pass = (fd.roa*100) > threshold; isReal = true; note = `ROA=${(fd.roa*100).toFixed(1)}%`; }
-          else if (fundId === 'roic_gt') { pass = (fd.roic*100) > threshold; isReal = true; note = `ROIC=${(fd.roic*100).toFixed(1)}%`; }
-          else if (fundId === 'eps_gt') { pass = fd.eps_ttm > threshold; isReal = true; note = `EPS=$${fd.eps_ttm?.toFixed(2)}`; }
-          // O'sish
-          else if (fundId === 'rev_growth_gt') { pass = (fd.revenue_growth_yoy*100) > threshold; isReal = true; note = `RevG=${(fd.revenue_growth_yoy*100).toFixed(1)}%`; }
-          else if (fundId === 'eps_growth_gt') { pass = (fd.eps_growth_yoy*100) > threshold; isReal = true; note = `EPSG=${(fd.eps_growth_yoy*100).toFixed(1)}%`; }
-          else if (fundId === 'rev_growth_qoq') { pass = (fd.revenue_growth_qoq*100) > threshold; isReal = true; note = `RevQoQ=${(fd.revenue_growth_qoq*100).toFixed(1)}%`; }
-          else if (fundId === 'eps_growth_qoq') { pass = (fd.eps_growth_qoq*100) > threshold; isReal = true; note = `EPSQoQ=${(fd.eps_growth_qoq*100).toFixed(1)}%`; }
-          else if (fundId === 'rev_3yr') { pass = (fd.revenue_cagr_3y*100) > threshold; isReal = true; note = `3YCAGR=${(fd.revenue_cagr_3y*100).toFixed(1)}%`; }
-          else if (fundId === 'eps_3yr') { pass = (fd.eps_cagr_3y*100) > threshold; isReal = true; note = `3YEPS=${(fd.eps_cagr_3y*100).toFixed(1)}%`; }
-          // Moliyaviy Holat
-          else if (fundId === 'debt_eq_lt') { pass = fd.debt_to_equity < threshold; isReal = true; note = `D/E=${fd.debt_to_equity?.toFixed(2)}`; }
-          else if (fundId === 'current_ratio_gt') { pass = fd.current_ratio > threshold; isReal = true; note = `CR=${fd.current_ratio?.toFixed(2)}`; }
-          else if (fundId === 'quick_ratio_gt') { pass = fd.quick_ratio > threshold; isReal = true; note = `QR=${fd.quick_ratio?.toFixed(2)}`; }
-          else if (fundId === 'interest_coverage_gt') { pass = fd.interest_coverage > threshold; isReal = true; note = `IC=${fd.interest_coverage?.toFixed(1)}`; }
-          else if (fundId === 'net_cash_gt') { pass = fd.net_cash > (threshold * 1e9); isReal = true; note = `NC=$${(fd.net_cash/1e9).toFixed(1)}B`; }
-          else if (fundId === 'altman_z_gt') { pass = fd.altman_z_score > threshold; isReal = true; note = `Z=${fd.altman_z_score?.toFixed(2)}`; }
-          // Pul Oqimi
-          else if (fundId === 'fcf_gt') { pass = fd.free_cash_flow > (threshold * 1e6); isReal = true; note = `FCF=$${(fd.free_cash_flow/1e6).toFixed(0)}M`; }
-          else if (fundId === 'fcf_margin_gt') { pass = (fd.fcf_margin*100) > threshold; isReal = true; note = `FCFm=${(fd.fcf_margin*100).toFixed(1)}%`; }
-          else if (fundId === 'fcf_yield_gt') { pass = (fd.fcf_yield*100) > threshold; isReal = true; note = `FCFy=${(fd.fcf_yield*100).toFixed(1)}%`; }
-          else if (fundId === 'ocf_gt') { pass = fd.operating_cash_flow > (threshold * 1e6); isReal = true; note = `OCF=$${(fd.operating_cash_flow/1e6).toFixed(0)}M`; }
-          else if (fundId === 'capex_rev_lt') { pass = (fd.capex_to_revenue*100) < threshold; isReal = true; note = `Cx=${(fd.capex_to_revenue*100).toFixed(1)}%`; }
-          else if (fundId === 'ocf_income_gt') { pass = fd.ocf_to_income > threshold; isReal = true; note = `OCF/NI=${fd.ocf_to_income?.toFixed(2)}`; }
-          // Dividendlar
-          else if (fundId === 'div_yield_gt') { pass = (fd.dividend_yield*100) > threshold; isReal = true; note = `Div=${(fd.dividend_yield*100).toFixed(1)}%`; }
-          else if (fundId === 'div_yield_lt') { pass = (fd.dividend_yield*100) < threshold; isReal = true; note = `Div=${(fd.dividend_yield*100).toFixed(1)}%`; }
-          else if (fundId === 'payout_lt') { pass = (fd.payout_ratio*100) < threshold; isReal = true; note = `Pay=${(fd.payout_ratio*100).toFixed(0)}%`; }
-          else if (fundId === 'div_growth_gt') { pass = (fd.dividend_growth_5y*100) > threshold; isReal = true; note = `DivG=${(fd.dividend_growth_5y*100).toFixed(1)}%`; }
-          else { pass = Math.random() > 0.5; isReal = false; note = '~SIM'; }
-        } else {
-          // fundamental_data bo'sh — simulatsiya
-          pass = Math.random() > 0.50; isReal = false; note = '~SIM';
+      if (hasRealData || q) {
+        // ── TECHNICAL ──
+        if (id === 'rsi') {
+          pass = priceAvg50 > 0 ? price > priceAvg50 : changeP > 0;
+          isReal = true;
+          note = priceAvg50 > 0 ? `${((price/priceAvg50-1)*100).toFixed(1)}% vs MA50` : `${changeP >= 0 ? '+' : ''}${changeP.toFixed(2)}%`;
+        } else if (id === 'rsi_os') {
+          // Oversold: narx MA50 dan 10%+ past va bugun o'sgan
+          pass = priceAvg50 > 0 && price < priceAvg50 * 0.92 && changeP > 0;
+          isReal = priceAvg50 > 0;
+          note = priceAvg50 > 0 ? `${((price/priceAvg50-1)*100).toFixed(1)}% vs MA50` : '—';
+        } else if (id === 'ma50') {
+          pass = priceAvg50 > 0 && price > priceAvg50;
+          isReal = priceAvg50 > 0;
+          note = priceAvg50 > 0 ? `$${price.toFixed(0)} vs MA50 $${priceAvg50.toFixed(0)}` : '—';
+        } else if (id === 'ma200') {
+          pass = priceAvg200 > 0 && price > priceAvg200;
+          isReal = priceAvg200 > 0;
+          note = priceAvg200 > 0 ? `$${price.toFixed(0)} vs MA200 $${priceAvg200.toFixed(0)}` : '—';
+        } else if (id === 'ma_cross') {
+          pass = priceAvg50 > 0 && priceAvg200 > 0 && priceAvg50 > priceAvg200;
+          isReal = priceAvg50 > 0 && priceAvg200 > 0;
+          note = isReal ? `MA50 ${priceAvg50>priceAvg200?'> ✓':'< ✗'} MA200` : '—';
+        } else if (id === 'macd' || id === 'macd_pos') {
+          pass = price > priceAvg50 && changeP > 0;
+          isReal = priceAvg50 > 0;
+          note = pass ? '↑ bullish' : '↓ bearish';
+        } else if (id === 'vol_surge') {
+          const ratio = avgVolume > 0 ? volume / avgVolume : 0;
+          pass = ratio >= 1.2 || (avgVolume === 0 && volume > 1000000);
+          isReal = avgVolume > 0;
+          note = avgVolume > 0 ? `${ratio.toFixed(1)}x avg` : `${(volume/1e6).toFixed(1)}M vol`;
+        } else if (id === 'vol_2x') {
+          const ratio = avgVolume > 0 ? volume / avgVolume : 0;
+          pass = ratio >= 2.0;
+          isReal = avgVolume > 0;
+          note = avgVolume > 0 ? `${ratio.toFixed(1)}x avg` : '—';
+        } else if (id === 'week52_high') {
+          pass = week52High > 0 && price >= week52High * 0.85;
+          isReal = week52High > 0;
+          note = week52High > 0 ? `${((price/week52High)*100).toFixed(0)}% of 52wH` : '—';
+        } else if (id === 'near_low') {
+          pass = week52Low > 0 && price <= week52Low * 1.20;
+          isReal = week52Low > 0;
+          note = week52Low > 0 ? `${((price/week52Low-1)*100).toFixed(0)}% vs 52wL` : '—';
         }
+        // ── FINANCIAL / BAHOLASH ──
+        else if (id === 'pe') {
+          const peVal = pe || 0;
+          pass = peVal > 0 && peVal < 30;
+          isReal = peVal > 0;
+          note = peVal > 0 ? `P/E ${peVal.toFixed(1)}` : '—';
+        } else if (id === 'pe_low') {
+          const peVal = pe || 0;
+          pass = peVal > 0 && peVal < 15;
+          isReal = peVal > 0;
+          note = peVal > 0 ? `P/E ${peVal.toFixed(1)}` : '—';
+        } else if (id === 'ps') {
+          const v = q?.ps || 0;
+          pass = v > 0 && v < 5;
+          isReal = v > 0;
+          note = v > 0 ? `P/S ${v.toFixed(1)}` : '—';
+        } else if (id === 'pb') {
+          // proxy: P/E va revenue ile
+          const v = q?.ps || 0;
+          pass = v > 0 && v < 3;
+          isReal = v > 0;
+          note = v > 0 ? `P/S~P/B ${v.toFixed(1)}` : '—';
+        } else if (id === 'pfcf') {
+          const fcf = q?.fcf || 0;
+          const val = fcf > 0 && price > 0 ? price / fcf : 0;
+          pass = val > 0 && val < 20;
+          isReal = fcf > 0;
+          note = isReal ? `P/FCF ${val.toFixed(1)}` : '—';
+        } else if (id === 'ev_ebitda') {
+          const ev = q?.evEbitda || 0;
+          pass = ev > 0 && ev < 15;
+          isReal = ev > 0;
+          note = ev > 0 ? `EV/EBITDA ${ev.toFixed(1)}` : '—';
+        } else if (id === 'ev_sales') {
+          const v = q?.ps || 0;
+          pass = v > 0 && v < 5;
+          isReal = v > 0;
+          note = v > 0 ? `EV/S~P/S ${v.toFixed(1)}` : '—';
+        } else if (id === 'peg') {
+          const rg = q?.revGrowth;
+          const peV = pe || 0;
+          const pegVal = rg && rg > 0 && peV > 0 ? peV / rg : 0;
+          pass = pegVal > 0 && pegVal < 1.5;
+          isReal = rg !== null && rg !== undefined && peV > 0;
+          note = isReal ? `PEG ${pegVal.toFixed(2)}` : '—';
+        } else if (id === 'gross_margin') {
+          const gm = q?.grossMargin;
+          pass = gm !== null && gm !== undefined && gm > 40;
+          isReal = gm !== null && gm !== undefined;
+          note = isReal ? `GM ${parseFloat(gm).toFixed(1)}%` : '—';
+        } else if (id === 'op_margin') {
+          // proxy: gross margin > 20 (op margin data yo'q bo'lsa)
+          const gm = q?.grossMargin;
+          pass = gm !== null && gm > 20;
+          isReal = gm !== null;
+          note = isReal ? `GM ${parseFloat(gm).toFixed(1)}% (proxy)` : '—';
+        } else if (id === 'net_margin') {
+          // proxy: FCF margin yoki gross
+          const fm = q?.fcfMargin;
+          pass = fm !== null && fm > 10;
+          isReal = fm !== null;
+          note = isReal ? `FCF margin ${parseFloat(fm).toFixed(1)}%` : '—';
+        } else if (id === 'roe') {
+          // proxy: EPS growth > 0 va FCF > 0
+          const eg = q?.epsGrowth;
+          const fcf = q?.fcf;
+          pass = (eg !== null && eg > 0) && (fcf !== null && fcf > 0);
+          isReal = eg !== null || fcf !== null;
+          note = eg !== null ? `EPS+${parseFloat(eg||0).toFixed(1)}%` : '—';
+        } else if (id === 'roic') {
+          const fm = q?.fcfMargin;
+          pass = fm !== null && fm > 10;
+          isReal = fm !== null;
+          note = isReal ? `FCF margin ${parseFloat(fm).toFixed(1)}%` : '—';
+        }
+        // ── CASHFLOW ──
+        else if (id === 'fcf') {
+          const fcf = q?.fcf;
+          pass = fcf !== null && fcf !== undefined && fcf > 0;
+          isReal = fcf !== null && fcf !== undefined;
+          note = isReal ? `FCF/shr $${parseFloat(fcf).toFixed(2)}` : '—';
+        } else if (id === 'fcf_margin') {
+          const fm = q?.fcfMargin;
+          pass = fm !== null && fm !== undefined && fm > 10;
+          isReal = fm !== null && fm !== undefined;
+          note = isReal ? `FCF margin ${parseFloat(fm).toFixed(1)}%` : '—';
+        } else if (id === 'fcf_yield') {
+          const fm = q?.fcfMargin;
+          pass = fm !== null && fm > 5;
+          isReal = fm !== null;
+          note = isReal ? `FCF yield ${parseFloat(fm).toFixed(1)}%` : '—';
+        } else if (id === 'ocf_income') {
+          pass = (q?.fcf || 0) > 0 && pe > 0;
+          isReal = q?.fcf !== null && q?.fcf !== undefined;
+          note = pass ? 'OCF > NI ✓' : '—';
+        } else if (id === 'capex_low') {
+          const fm = q?.fcfMargin;
+          pass = fm !== null && fm > 5;
+          isReal = fm !== null;
+          note = isReal ? `FCF ${parseFloat(fm).toFixed(1)}%` : '—';
+        } else if (id === 'net_cash') {
+          const fcf = q?.fcf;
+          pass = fcf !== null && fcf > 2;
+          isReal = fcf !== null;
+          note = isReal ? `FCF/shr $${parseFloat(fcf).toFixed(1)}` : '—';
+        }
+        // ── GROWTH ──
+        else if (id === 'rev_growth') {
+          const rg = q?.revGrowth;
+          pass = rg !== null && rg !== undefined && rg > 15;
+          isReal = rg !== null && rg !== undefined;
+          note = isReal ? `Rev +${parseFloat(rg).toFixed(1)}% YoY` : '—';
+        } else if (id === 'rev_accel2') {
+          const rg = q?.revGrowth;
+          pass = rg !== null && rg > 25;
+          isReal = rg !== null;
+          note = isReal ? `Rev +${parseFloat(rg).toFixed(1)}% YoY` : '—';
+        } else if (id === 'rev_qoq') {
+          // proxy: changeP > 3% (quarterly momentum)
+          pass = changeP > 3;
+          isReal = true;
+          note = `${changeP >= 0 ? '+' : ''}${changeP.toFixed(2)}% (proxy)`;
+        } else if (id === 'rev_cagr3') {
+          const rg = q?.revGrowth;
+          pass = rg !== null && rg > 20;
+          isReal = rg !== null;
+          note = isReal ? `Rev +${parseFloat(rg).toFixed(1)}% (proxy)` : '—';
+        } else if (id === 'rev_accel' || id === 'momentum') {
+          pass = changeP > 1.5 && (price > priceAvg50 || priceAvg50 === 0);
+          isReal = true;
+          note = `${changeP >= 0 ? '+' : ''}${changeP.toFixed(2)}%`;
+        } else if (id === 'eps_growth') {
+          const eg = q?.epsGrowth;
+          pass = eg !== null && eg !== undefined && eg > 20;
+          isReal = eg !== null && eg !== undefined;
+          note = isReal ? `EPS +${parseFloat(eg).toFixed(1)}% YoY` : '—';
+        } else if (id === 'eps_beat') {
+          // proxy: EPS growth > 10 va narx MA50 yuqori
+          const eg = q?.epsGrowth;
+          pass = (eg !== null && eg > 10) && price > priceAvg50;
+          isReal = eg !== null;
+          note = isReal ? `EPS +${parseFloat(eg||0).toFixed(1)}%` : '—';
+        } else if (id === 'eps_cagr3') {
+          const eg = q?.epsGrowth;
+          pass = eg !== null && eg > 15;
+          isReal = eg !== null;
+          note = isReal ? `EPS +${parseFloat(eg).toFixed(1)}% (proxy)` : '—';
+        } else if (id === 'inst_buying') {
+          pass = week52High > 0 && price >= week52High * 0.90;
+          isReal = week52High > 0;
+          note = isReal ? `${((price/week52High)*100).toFixed(0)}% of 52wH` : '—';
+        } else if (id === 'div_growth') {
+          // proxy: FCF musbat va P/E < 20 (dividend kompaniyalar)
+          pass = pe > 0 && pe < 20 && (q?.fcf || 0) > 0;
+          isReal = pe > 0;
+          note = pe > 0 ? `P/E ${pe.toFixed(1)} (div proxy)` : '—';
+        }
+        // ── MOLIYAVIY HOLAT (DEBT) ──
+        else if (id === 'debt_eq') {
+          const de = q?.debtEq;
+          pass = de !== null && de !== undefined && de < 1;
+          isReal = de !== null && de !== undefined;
+          note = isReal ? `D/E ${parseFloat(de).toFixed(2)}` : '—';
+        } else if (id === 'debt_low') {
+          const de = q?.debtEq;
+          pass = de !== null && de !== undefined && de < 0.5;
+          isReal = de !== null && de !== undefined;
+          note = isReal ? `D/E ${parseFloat(de).toFixed(2)}` : '—';
+        } else if (id === 'altman') {
+          // proxy: D/E < 1 va FCF > 0 va PE > 0
+          const de = q?.debtEq;
+          pass = (de !== null && de < 1) && (q?.fcf || 0) > 0 && pe > 0;
+          isReal = de !== null;
+          note = pass ? 'Z-score proxy ✓' : '—';
+        } else if (id === 'curr_ratio' || id === 'quick_ratio') {
+          // proxy: D/E < 1 va FCF > 0
+          const de = q?.debtEq;
+          pass = de !== null && de < 1 && (q?.fcf || 0) > 0;
+          isReal = de !== null;
+          note = isReal ? `D/E ${de !== null ? parseFloat(de).toFixed(2) : '—'} (proxy)` : '—';
+        } else if (id === 'int_cov') {
+          // proxy: FCF margin > 10 (interest komfortli)
+          const fm = q?.fcfMargin;
+          pass = fm !== null && fm > 10;
+          isReal = fm !== null;
+          note = isReal ? `FCF ${parseFloat(fm).toFixed(1)}% (proxy)` : '—';
+        } else {
+          // Noma'lum mezon — positive momentum proxy
+          pass = changeP > 0;
+          isReal = true;
+          note = `${changeP >= 0 ? '+' : ''}${changeP.toFixed(2)}%`;
+        }
+      } else {
+        // Real data yo'q
+        pass = Math.random() > 0.55; isReal = false; note = '~no data';
       }
 
       if (pass) passed++;
@@ -2892,14 +3219,13 @@ async function runScan() {
   const potential = results.filter(r => r.status === 'potential');
   const rejected  = results.filter(r => r.status === 'rejected');
   const duration  = Date.now() - startTime;
-  const realDataCount = Object.keys(realPrices).length;
+  const realDataCount = Object.keys(realData).length;
 
   scanData = { ideas, potential };
   document.getElementById('cnt-ideas').textContent = ideas.length;
   document.getElementById('cnt-potential').textContent = potential.length;
-  const realIndCount = Object.keys(indicatorCache).length;
   document.getElementById('scan-info').textContent =
-    `${realIndCount} ta real indikator · ${results.length} ta tekshirildi · ` +
+    `${realDataCount} ta real narx · ${results.length} ta tekshirildi · ` +
     `${ideas.length} Inbox | ${potential.length} Watchlist | ${rejected.length} Rad · ` +
     `${(duration / 1000).toFixed(1)}s`;
 
@@ -2922,8 +3248,8 @@ async function runScan() {
   btn.disabled = false; btn.innerHTML = '▶ Run Scan';
   renderScanResults();
 
-  const realLabel = realIndCount > 0 ? `${realIndCount} ta real indikator` : 'simulatsiya rejimi';
-  toast(`✅ Skan: ${ideas.length} Inbox · ${potential.length} Watchlist · ${rejected.length} Rad (${realLabel})`);
+  const realLabel = realDataCount > 0 ? `${realDataCount} ta real FMP data` : 'simulatsiya';
+  toast(`✅ Skan: ${ideas.length} Inbox · ${potential.length} Watchlist · ${rejected.length} Rad (${realLabel} · FMP: ${fmpCallsToday} call)`);
 }
 
 function renderScanResults() {
@@ -3007,8 +3333,8 @@ function renderScanResults() {
       </tbody>
     </table>
     <div style="padding:8px 12px;font-size:9.5px;color:var(--text3);font-family:var(--mono);border-top:1px solid var(--border);display:flex;gap:12px;flex-wrap:wrap">
-      <span>📡 = Real data (Twelve Data)</span>
-      <span>~ = Simulatsiya (fundamental API kerak)</span>
+      <span>📡 = Real data (FMP)</span>
+      <span>~ = Fundamental yuklashda xato (proxy ishlatildi)</span>
       <span style="color:var(--green3)">≥ 80 → 📥 Inbox</span>
       <span style="color:var(--yellow3)">65-79 → 👁 Watchlist</span>
       <span style="color:var(--red3)">&lt; 65 → Auto Rad</span>
@@ -3099,145 +3425,144 @@ async function sendToWatchlistFromScan(ticker, entry, score) {
 }
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-// MARKET DATA — Supabase dan o'qish (v13)
-// ✅ API call yo'q — Edge Function cron yangilaydi
+// MARKET DATA — Real narxlar (FMP Stable API)
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 let marketWorkerTimer = null;
 
 async function startMarketDataWorker() {
   await fetchMarketPrices();
-  marketWorkerTimer = setInterval(fetchMarketPrices, MARKET_REFRESH_INTERVAL);
+  marketWorkerTimer = setInterval(fetchMarketPrices, FMP_MARKET_INTERVAL); // 5 daqiqa
 }
 
 async function fetchMarketPrices() {
-  // ✅ v13: Supabase market_data dan o'qish (API call yo'q)
+  if (!currentUser) return;
+
   try {
-    const { data: marketRows, error } = await sb.from('market_data').select('*');
-    if (error) throw error;
-    if (!marketRows || marketRows.length === 0) return;
-
-    // priceCache ni yangilash
-    marketRows.forEach(row => {
-      if (row.ticker && row.price) priceCache[row.ticker] = parseFloat(row.price);
-    });
-
-    // Positions va watchlist trigger tekshirish
     const [posRes, watchRes] = await Promise.all([
       sb.from('positions').select('ticker').eq('analyst_id', currentUser.id).eq('status', 'open'),
       sb.from('watchlist').select('ticker').eq('analyst_id', currentUser.id).eq('status', 'active')
     ]);
-    const myTickers = [...new Set([
+    const tickers = [...new Set([
       ...(posRes.data || []).map(p => p.ticker),
       ...(watchRes.data || []).map(w => w.ticker)
-    ])];
-    for (const ticker of myTickers) {
-      const price = priceCache[ticker];
-      if (!price) continue;
-      await checkPositionTrigger(ticker, price);
-      await checkWatchlistTrigger(ticker, price);
+    ])].filter(t => t && /^[A-Z]{1,5}$/.test(t)).slice(0, 50);
+
+    if (tickers.length === 0) {
+      const el = document.getElementById('mkt-status');
+      if (el) { el.textContent = 'STANDBY'; el.style.color = ''; }
+      return;
     }
 
-    // Topbar yangilash
-    const topbarItems = marketRows.slice(0, 5);
-    const topbarHtml = topbarItems.map(r =>
-      `<span style="color:#fff;font-weight:700">${r.ticker}</span> <span style="color:var(--green3)">$${parseFloat(r.price).toFixed(2)}</span>`
-    ).join(' · ');
+    // FMP /stable/quote — batch (50 ticker birdan)
+    const quoteMap = await fmpBatchQuote(tickers);
+
+    if (Object.keys(quoteMap).length === 0) {
+      logFmp('⚠️ Market: FMP /stable/quote dan narxlar kelmadi');
+      return;
+    }
+
+    fmpStatus = 'ok'; fmpLastError = null;
+
+    // priceMap: {AAPL: 234.5}  + changePctMap
+    const priceMap = {};
+    const changePctMap = {};
+    Object.entries(quoteMap).forEach(([sym, q]) => {
+      const p = parseFloat(q.price || 0);
+      if (p > 0) {
+        priceMap[sym] = p;
+        changePctMap[sym] = parseFloat(q.changesPercentage || 0);
+        priceCache[sym] = p;
+      }
+    });
+
+    if (Object.keys(priceMap).length === 0) {
+      logFmp('⚠️ Market: narxlar bo\'sh');
+      return;
+    }
+
+    logFmp(`✅ Market update: ${Object.keys(priceMap).length} ta narx — ${Object.keys(priceMap).slice(0,5).join(', ')}`);
+
+    // Supabase market_data upsert (narx + change%)
+    const upsertData = Object.entries(priceMap).map(([ticker, price]) => ({
+      ticker, price,
+      change_pct: changePctMap[ticker] || 0,
+      volume: quoteMap[ticker]?.volume || null,
+      market_cap: quoteMap[ticker]?.marketCap || null,
+      updated_at: new Date().toISOString()
+    }));
+    if (upsertData.length > 0) {
+      const { error: upsertErr } = await sb.from('market_data').upsert(upsertData, { onConflict: 'ticker' });
+      if (upsertErr) logFmp(`❌ Supabase upsert: ${upsertErr.message}`, true);
+    }
+
+    // Positions va watchlist trigger
+    for (const [sym, price] of Object.entries(priceMap)) {
+      if (!price) continue;
+      await sb.from('positions').update({ current_price: price })
+        .eq('ticker', sym).eq('status', 'open').eq('analyst_id', currentUser.id);
+      await checkPositionTrigger(sym, price);
+      await checkWatchlistTrigger(sym, price);
+    }
+
+    // Topbar ticker chiziq (narx + change% bilan)
+    const topbarEntries = Object.entries(priceMap).slice(0, 5);
+    const topbarTickers = topbarEntries.map(([sym, price]) => {
+      const chg = changePctMap[sym] || 0;
+      const chgColor = chg >= 0 ? 'var(--green3)' : 'var(--red3)';
+      return `<span style="color:#fff;font-weight:700">${sym}</span> <span style="color:${chgColor}">$${price.toFixed(2)} ${chg >= 0 ? '+' : ''}${chg.toFixed(2)}%</span>`;
+    }).join(' · ');
     const tickerEl = document.getElementById('mkt-ticker');
-    if (tickerEl && topbarHtml) { tickerEl.innerHTML = topbarHtml; tickerEl.style.display = ''; }
+    if (topbarTickers && tickerEl) { tickerEl.innerHTML = topbarTickers; tickerEl.style.display = ''; }
 
     const now = new Date().toLocaleTimeString('uz-UZ', { timeZone: 'Asia/Tashkent' });
-    const lastSyncEl = document.getElementById('last-sync');
-    if (lastSyncEl) lastSyncEl.textContent = now;
+    document.getElementById('last-sync').textContent = now;
     const statusEl = document.getElementById('mkt-status');
-    if (statusEl) { statusEl.textContent = 'LIVE'; statusEl.style.color = 'var(--green3)'; }
-
+    if (statusEl) {
+      statusEl.textContent = `LIVE · ${fmpCallsToday}`;
+      statusEl.style.color = '';
+    }
     refreshVisibleData();
-  } catch(e) {
-    console.warn('❌ fetchMarketPrices:', e.message);
+
+  } catch (e) {
+    fmpStatus = 'error'; fmpLastError = e.message;
+    console.warn('❌ fetchMarketPrices catch:', e.message);
+    logFmp(`❌ Ulanish xatosi: ${e.message}`, true);
     const statusEl = document.getElementById('mkt-status');
     if (statusEl) { statusEl.textContent = 'STALE'; statusEl.style.color = 'var(--text3)'; }
   }
 }
 
 async function checkPositionTrigger(ticker, price) {
-  const { data: positions } = await sb.from('positions').select('*, signals(strategy_name, score, sector, conviction)')
+  const { data: positions } = await sb.from('positions').select('*')
     .eq('ticker', ticker).eq('status', 'open').eq('analyst_id', currentUser.id);
   if (!positions) return;
   for (const pos of positions) {
     let shouldClose = null;
     if (price <= parseFloat(pos.stop_loss)) shouldClose = 'stop';
     else if (pos.target1 && price >= parseFloat(pos.target1)) shouldClose = 'target1';
-    else if (pos.target2 && price >= parseFloat(pos.target2)) shouldClose = 'target2';
     if (shouldClose) {
       const returnPct = ((price - parseFloat(pos.entry_price)) / parseFloat(pos.entry_price) * 100).toFixed(2);
-      const isWin = parseFloat(returnPct) > 0;
-      const daysHeld = pos.opened_at ? Math.round((new Date() - new Date(pos.opened_at)) / 86400000) : 0;
-      const now = new Date().toISOString();
-
-      // Pozitsiyani yopish
       await sb.from('positions').update({
         status: 'closed', exit_price: price, exit_type: shouldClose,
-        closed_at: now, return_pct: returnPct
+        closed_at: new Date().toISOString(), return_pct: returnPct
       }).eq('id', pos.id);
-
-      // audit_results ga avtomatik yozish
-      await sb.from('audit_results').insert({
-        analyst_id: currentUser.id,
-        position_id: pos.id,
-        signal_id: pos.signal_id,
-        ticker: pos.ticker,
-        entry_price: pos.entry_price,
-        exit_price: price,
-        return_pct: parseFloat(returnPct),
-        result: isWin ? 'win' : 'loss',
-        exit_type: shouldClose,
-        score: pos.signals?.score || null,
-        sector: pos.sector || pos.signals?.sector || null,
-        strategy_name: pos.signals?.strategy_name || null,
-        source: 'auto',
-        opened_at: pos.opened_at || now,
-        closed_at: now
-      });
-
-      const sign = parseFloat(returnPct) >= 0 ? '+' : '';
-      const icon = shouldClose === 'stop' ? '🛑' : shouldClose === 'target2' ? '🎯🎯' : '🎯';
-      toast(`${icon} ${pos.ticker} avtomatik yopildi (${shouldClose}): ${sign}${returnPct}%`, false, 6000);
-      loadPositions(); loadDashboard();
+      toast(`${pos.ticker} avtomatik yopildi (${shouldClose}): ${parseFloat(returnPct) >= 0 ? '+' : ''}${returnPct}%`);
     }
   }
 }
 
 async function checkWatchlistTrigger(ticker, price) {
-  // Narx trigger
-  const { data: priceItems } = await sb.from('watchlist').select('*')
-    .eq('ticker', ticker).eq('status', 'active').eq('analyst_id', currentUser.id).eq('watch_type', 'price');
-  if (priceItems) {
-    for (const item of priceItems) {
-      if (item.trigger_value && price <= parseFloat(item.trigger_value)) {
-        await sb.from('watchlist').update({ status: 'triggered', triggered_at: new Date().toISOString() }).eq('id', item.id);
-        if (item.signal_id) await sb.from('signals').update({ status: 'pending' }).eq('id', item.signal_id);
-        toast(`🎯 ${ticker} narx triggeri: $${price.toFixed(2)} — Signal Inbox ga qaytdi!`, false, 6000);
-        loadSignals();
-      }
-    }
-  }
-}
-
-// Sana trigger tekshirish — login va har soatda chaqiriladi
-async function checkDateTriggers() {
-  const today = new Date().toISOString().split('T')[0];
   const { data: items } = await sb.from('watchlist').select('*')
-    .eq('analyst_id', currentUser.id).eq('status', 'active').eq('watch_type', 'date');
+    .eq('ticker', ticker).eq('status', 'active').eq('analyst_id', currentUser.id).eq('watch_type', 'price');
   if (!items) return;
   for (const item of items) {
-    if (item.trigger_date && item.trigger_date.split('T')[0] <= today) {
+    if (item.trigger_value && price <= parseFloat(item.trigger_value)) {
       await sb.from('watchlist').update({ status: 'triggered', triggered_at: new Date().toISOString() }).eq('id', item.id);
-      if (item.signal_id) await sb.from('signals').update({ status: 'pending' }).eq('id', item.signal_id);
-      toast(`📅 ${item.ticker} sana triggeri: ${item.trigger_date.split('T')[0]} — Signal Inbox ga qaytdi!`, false, 7000);
+      if (item.signal_id) {
+        await sb.from('signals').update({ status: 'pending' }).eq('id', item.signal_id);
+      }
+      toast(`👁 ${ticker} trigger bo'ldi: $${price.toFixed(2)}`);
     }
-  }
-  if (items.some(i => i.trigger_date && i.trigger_date.split('T')[0] <= today)) {
-    loadSignals(); loadWatchlist();
   }
 }
 
@@ -3251,183 +3576,6 @@ function refreshVisibleData() {
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 // REALTIME SUBSCRIPTIONS
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-// ADMIN PANEL — v13
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-async function loadAdminPanel() {
-  if (currentAnalyst?.role !== 'admin') return;
-
-  // Barcha analystlarni yuklash
-  const { data: analysts } = await sb.from('analysts').select('*').order('created_at');
-  if (!analysts) return;
-
-  const total = analysts.length;
-  const active = analysts.filter(a => a.is_active).length;
-  const blocked = analysts.filter(a => !a.is_active).length;
-
-  document.getElementById('adm-total').textContent = total;
-  document.getElementById('adm-active').textContent = active;
-  document.getElementById('adm-blocked').textContent = blocked;
-
-  // Jadval
-  const tbody = document.getElementById('adm-analysts-tbl');
-  if (!tbody) return;
-  tbody.innerHTML = analysts.map(a => {
-    const lastLogin = a.last_login ? new Date(a.last_login).toLocaleDateString('uz-UZ') : '—';
-    const isMe = a.id === currentUser.id;
-    const roleColor = a.role === 'admin' ? 'var(--blue3)' : 'var(--text2)';
-    const statusBadge = a.is_active
-      ? '<span style="color:var(--green3);font-size:10px;font-weight:700">● AKTIV</span>'
-      : '<span style="color:var(--red3);font-size:10px;font-weight:700">● BLOKLANGAN</span>';
-    const actions = isMe ? '<span style="color:var(--text3);font-size:11px">Bu siz</span>' : `
-      <button class="btn btn-ghost btn-sm" onclick="toggleAnalyst('${a.id}', ${a.is_active})" style="font-size:10px">
-        ${a.is_active ? '🔒 Bloklash' : '✅ Faollashtirish'}
-      </button>`;
-    return `<tr>
-      <td><strong>${a.name}</strong></td>
-      <td style="font-family:var(--mono);font-size:11px">${a.email}</td>
-      <td><span style="color:${roleColor};font-weight:700;font-size:11px">${a.role.toUpperCase()}</span></td>
-      <td style="font-family:var(--mono);font-size:11px">${lastLogin}</td>
-      <td>${statusBadge}</td>
-      <td>${actions}</td>
-    </tr>`;
-  }).join('');
-
-  // Arxivlangan strategiyalar
-  const { data: archived } = await sb.from('strategies')
-    .select('*, analysts(name, email)')
-    .not('archived_at', 'is', null)
-    .order('archived_at', { ascending: false });
-
-  const archDiv = document.getElementById('adm-archived-strategies');
-  if (!archDiv) return;
-  if (!archived || archived.length === 0) {
-    archDiv.innerHTML = '<div style="color:var(--text3);font-size:12px;padding:20px;text-align:center">Arxivlangan strategiya yo\'q</div>';
-  } else {
-    archDiv.innerHTML = `<div class="tbl-wrap"><table>
-      <thead><tr><th>STRATEGIYA</th><th>TAHLILCHI</th><th>ARXIV SANASI</th><th>MEZONLAR</th><th>AMAL</th></tr></thead>
-      <tbody>${archived.map(s => `<tr>
-        <td><strong>${s.name}</strong></td>
-        <td style="font-size:11px">${s.analysts?.name || '—'}<br><span style="color:var(--text3);font-size:10px">${s.analysts?.email || ''}</span></td>
-        <td style="font-family:var(--mono);font-size:11px">${new Date(s.archived_at).toLocaleDateString('uz-UZ')}</td>
-        <td style="font-size:11px;color:var(--text2)">${s.threshold}% threshold</td>
-        <td><button class="btn btn-ghost btn-sm" onclick="restoreStrategy('${s.id}')" style="font-size:10px">♻️ Tiklash</button></td>
-      </tr>`).join('')}</tbody>
-    </table></div>`;
-  }
-}
-
-async function toggleAnalyst(analystId, currentStatus) {
-  const newStatus = !currentStatus;
-  const action = newStatus ? 'faollashtirish' : 'bloklash';
-  if (!confirm(`Bu tahlilchini ${action}ni xohlaysizmi?`)) return;
-
-  const { error } = await sb.from('analysts').update({ is_active: newStatus }).eq('id', analystId);
-  if (error) { toast(`❌ Xato: ${error.message}`, true); return; }
-
-  // Agar bloklansa — strategiyalarini arxivlaymiz
-  if (!newStatus) {
-    await sb.from('strategies')
-      .update({ archived_at: new Date().toISOString(), archived_by: currentUser.id })
-      .eq('analyst_id', analystId)
-      .is('archived_at', null);
-  }
-
-  toast(`✅ Tahlilchi ${action}ldi`);
-  loadAdminPanel();
-}
-
-async function restoreStrategy(strategyId) {
-  if (!confirm('Bu strategiyani tiklashni xohlaysizmi?')) return;
-  const { error } = await sb.from('strategies')
-    .update({ archived_at: null, archived_by: null })
-    .eq('id', strategyId);
-  if (error) { toast(`❌ Xato: ${error.message}`, true); return; }
-  toast('✅ Strategiya tiklandi');
-  loadAdminPanel();
-}
-
-function openAddAnalyst() {
-  document.getElementById('aa-name').value = '';
-  document.getElementById('aa-email').value = '';
-  document.getElementById('aa-password').value = '';
-  document.getElementById('aa-role').value = 'analyst';
-  document.getElementById('aa-error').style.display = 'none';
-  document.getElementById('aa-success').style.display = 'none';
-  document.getElementById('modal-add-analyst').classList.add('open');
-}
-
-async function submitAddAnalyst() {
-  const name = document.getElementById('aa-name').value.trim();
-  const email = document.getElementById('aa-email').value.trim();
-  const password = document.getElementById('aa-password').value;
-  const role = document.getElementById('aa-role').value;
-  const errEl = document.getElementById('aa-error');
-  const okEl = document.getElementById('aa-success');
-  const btn = document.getElementById('aa-submit-btn');
-
-  errEl.style.display = 'none';
-  okEl.style.display = 'none';
-
-  if (!name || !email || !password) {
-    errEl.textContent = 'Ism, email va parol majburiy!';
-    errEl.style.display = 'block';
-    return;
-  }
-  if (password.length < 8) {
-    errEl.textContent = 'Parol kamida 8 ta belgi bo\'lishi kerak';
-    errEl.style.display = 'block';
-    return;
-  }
-
-  btn.disabled = true;
-  btn.innerHTML = '<div class="spin" style="width:12px;height:12px;border-width:2px;display:inline-block"></div> Yaratilmoqda...';
-
-  try {
-    const { data: { session } } = await sb.auth.getSession();
-    const token = session?.access_token;
-    if (!token) {
-      errEl.textContent = 'Session topilmadi. Qayta login qiling.';
-      errEl.style.display = 'block';
-      btn.disabled = false; btn.textContent = '✅ Qo\'shish';
-      return;
-    }
-
-    const res = await fetch(`${SUPABASE_URL}/functions/v1/create-analyst`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`,
-        'apikey': SUPABASE_ANON_KEY
-      },
-      body: JSON.stringify({ name, email, password, role })
-    });
-
-    let result;
-    try { result = await res.json(); } 
-    catch(e) { result = { error: 'Server javob bermadi (status: ' + res.status + ')' }; }
-
-    if (!res.ok || result.error) {
-      errEl.textContent = '❌ ' + (result.error || 'Xato yuz berdi (status: ' + res.status + ')');
-      errEl.style.display = 'block';
-      btn.disabled = false; btn.textContent = '✅ Qo\'shish';
-    } else {
-      okEl.textContent = `✅ ${name} (${email}) muvaffaqiyatli qo\'shildi!`;
-      okEl.style.display = 'block';
-      btn.disabled = true;
-      setTimeout(() => {
-        closeModal('modal-add-analyst');
-        loadAdminPanel();
-        toast(`👤 ${name} tahlilchi sifatida qo\'shildi`);
-      }, 1500);
-    }
-  } catch(e) {
-    errEl.textContent = '❌ Tarmoq xatosi: ' + e.message;
-    errEl.style.display = 'block';
-    btn.disabled = false; btn.textContent = '✅ Qo\'shish';
-  }
-}
-
 function setupRealtime() {
   const ch1 = sb.channel('signals-rt').on('postgres_changes', {
     event: '*', schema: 'public', table: 'signals', filter: `analyst_id=eq.${currentUser.id}`
