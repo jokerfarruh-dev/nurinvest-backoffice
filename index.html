@@ -1013,7 +1013,8 @@ const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
 // Scan: Supabase dan o'qib ishlaydi, FMP call minimal
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 const FMP_API_KEY  = 'L1ai5eKS45wUJOoIiQkseYkrMf5idNyT';
-const FMP_BASE     = 'https://financialmodelingprep.com/stable';
+const FMP_BASE     = 'https://financialmodelingprep.com/api/v3';
+const FMP_STABLE   = 'https://financialmodelingprep.com/stable';
 const FUND_CACHE_TTL_DAYS = 90; // Har kvartalda 1x yangilash
 const MARKET_REFRESH_INTERVAL = 60000;
 let fmpStatus = 'ok';
@@ -2928,7 +2929,7 @@ async function runScan() {
     if (prog) prog.textContent = `📦 ${currentUniverse.toUpperCase()} bulk yuklanmoqda (1 call)...`;
     logFmp(`📦 /stable/quotes/${currentUniverse} — 1 callda butun birja...`);
     try {
-      const r = await fetch(`${FMP_BASE}/quotes/${currentUniverse}?apikey=${FMP_API_KEY}`, { signal: AbortSignal.timeout(30000) });
+      const r = await fetch(`${FMP_BASE}/quotes/${currentUniverse}?apikey=${FMP_API_KEY}`, { signal: AbortSignal.timeout(60000) });
       trackFmpCall(1);
       if (r.ok) {
         const data = await r.json();
@@ -3599,9 +3600,9 @@ async function fetchAndCacheFundamental(ticker) {
   try {
     // 1. key-metrics — pe, ps, ev_ebitda, debt_to_equity, pfcf, fcf, roe, roa
     const [kmRes, ratioRes, incRes] = await Promise.all([
-      fetch(`${FMP_BASE}/key-metrics-ttm?symbol=${ticker}&apikey=${FMP_API_KEY}`, { signal: AbortSignal.timeout(12000) }),
-      fetch(`${FMP_BASE}/ratios-ttm?symbol=${ticker}&apikey=${FMP_API_KEY}`, { signal: AbortSignal.timeout(12000) }),
-      fetch(`${FMP_BASE}/income-statement?symbol=${ticker}&limit=4&apikey=${FMP_API_KEY}`, { signal: AbortSignal.timeout(12000) })
+      fetch(`${FMP_STABLE}/key-metrics-ttm?symbol=${ticker}&apikey=${FMP_API_KEY}`, { signal: AbortSignal.timeout(12000) }),
+      fetch(`${FMP_STABLE}/ratios-ttm?symbol=${ticker}&apikey=${FMP_API_KEY}`, { signal: AbortSignal.timeout(12000) }),
+      fetch(`${FMP_BASE}/income-statement/${ticker}?limit=4&apikey=${FMP_API_KEY}`, { signal: AbortSignal.timeout(12000) })
     ]);
     trackFmpCall(3);
 
