@@ -1043,7 +1043,7 @@ function updateFmpCounter() {
 // FMP API test
 async function testFmpConnection() {
   try {
-    const res = await fetch(`${FMP_BASE}/quote?symbol=AAPL&apikey=${FMP_API_KEY}`,
+    const res = await fetch(`${FMP_BASE}/quote/AAPL&apikey=${FMP_API_KEY}`,
       { signal: AbortSignal.timeout(8000) });
     trackFmpCall(1);
     const data = await res.json();
@@ -1575,7 +1575,7 @@ async function loadSignals() {
     for (let i = 0; i < longT.length; i += 15) {
       const chunk = longT.slice(i, i+15);
       try {
-        const r = await fetch(`${FMP_BASE}/quote?symbol=${chunk.join(',')}&apikey=${FMP_API_KEY}`,
+        const r = await fetch(`${FMP_BASE}/quote/${chunk.join(',')}&apikey=${FMP_API_KEY}`,
           { signal: AbortSignal.timeout(10000) });
         trackFmpCall(1);
         if (r.ok) {
@@ -1587,7 +1587,7 @@ async function loadSignals() {
     // Qisqa tickerlar alohida
     for (const sym of shortT) {
       try {
-        const r = await fetch(`${FMP_BASE}/quote?symbol=${sym}&apikey=${FMP_API_KEY}`,
+        const r = await fetch(`${FMP_BASE}/quote/${sym}&apikey=${FMP_API_KEY}`,
           { signal: AbortSignal.timeout(5000) });
         trackFmpCall(1);
         if (r.ok) {
@@ -1660,7 +1660,7 @@ async function selectSignal(id) {
   // Agar priceCache da yo'q bo'lsa — FMP dan real joriy narx olish
   if (!priceCache[s.ticker] && s.ticker) {
     try {
-      const res = await fetch(`${FMP_BASE}/quote?symbol=${encodeURIComponent(s.ticker)}&apikey=${FMP_API_KEY}`,
+      const res = await fetch(`${FMP_BASE}/quote/${encodeURIComponent(s.ticker)}&apikey=${FMP_API_KEY}`,
         { signal: AbortSignal.timeout(5000) });
       trackFmpCall(1);
       if (res.ok) {
@@ -2785,6 +2785,26 @@ function setUniverse(uni, el) {
 }
 
 // DB tickers jadvalidan batch narx yuklash (NYSE/NASDAQ bulk ishlamasa)
+// ━━ FMP quote parser (global) ━━
+function parseQ(q) {
+  if (!q?.symbol || !q?.price || parseFloat(q.price) <= 0) return null;
+  return {
+    regularMarketPrice:         parseFloat(q.price),
+    regularMarketChangePercent: parseFloat(q.changesPercentage ?? q.changePercentage ?? q.percentChange ?? 0),
+    regularMarketVolume:        parseInt(q.volume || 0),
+    averageVolume:              parseInt(q.avgVolume || q.volume || 0),
+    week52High:                 parseFloat(q.yearHigh || 0),
+    week52Low:                  parseFloat(q.yearLow || 0),
+    priceAvg50:                 parseFloat(q.priceAvg50 || 0),
+    priceAvg200:                parseFloat(q.priceAvg200 || 0),
+    marketCap:                  parseFloat(q.marketCap || 0),
+    pe:                         parseFloat(q.pe || 0),
+    eps:                        parseFloat(q.eps || 0),
+    name:                       q.name || '',
+    sector:                     q.sector || '',
+  };
+}
+
 async function loadPricesFromDB(realPrices, prog) {
   try {
     // Supabase tickers jadvalidan barcha symbollarni olamiz
@@ -2799,7 +2819,7 @@ async function loadPricesFromDB(realPrices, prog) {
     for (let i = 0; i < allSyms.length; i += BSIZ) {
       const chunk = allSyms.slice(i, i + BSIZ);
       try {
-        const r = await fetch(`${FMP_BASE}/quote?symbol=${chunk.join(',')}&apikey=${FMP_API_KEY}`,
+        const r = await fetch(`${FMP_BASE}/quote/${chunk.join(',')}&apikey=${FMP_API_KEY}`,
           { signal: AbortSignal.timeout(15000) });
         trackFmpCall(1);
         if (r.ok) {
@@ -2864,30 +2884,12 @@ async function runScan() {
 
   try { // ← Barcha xatolarni ushlash — btn qayta yoqiladi
 
-  // Helper: FMP javobini parse qilish
-  function parseQ(q) {
-    if (!q?.symbol || !q?.price || parseFloat(q.price) <= 0) return null;
-    return {
-      regularMarketPrice:         parseFloat(q.price),
-      regularMarketChangePercent: parseFloat(q.changesPercentage ?? q.changePercentage ?? q.percentChange ?? 0),
-      regularMarketVolume:        parseInt(q.volume || 0),
-      averageVolume:              parseInt(q.avgVolume || q.volume || 0),
-      week52High:                 parseFloat(q.yearHigh || 0),
-      week52Low:                  parseFloat(q.yearLow || 0),
-      priceAvg50:                 parseFloat(q.priceAvg50 || 0),
-      priceAvg200:                parseFloat(q.priceAvg200 || 0),
-      marketCap:                  parseFloat(q.marketCap || 0),
-      pe:                         parseFloat(q.pe || 0),
-      eps:                        parseFloat(q.eps || 0),
-      name:                       q.name || '',
-      sector:                     q.sector || '',
-    };
-  }
+  // Helper: FMP javobini parse qilish (global parseQ ni ishlatamiz)
 
   // Helper: bitta ticker narxi olish
   async function fetchSingle(sym) {
     try {
-      const r = await fetch(`${FMP_BASE}/quote?symbol=${sym}&apikey=${FMP_API_KEY}`,
+      const r = await fetch(`${FMP_BASE}/quote/${sym}&apikey=${FMP_API_KEY}`,
         { signal: AbortSignal.timeout(8000) });
       trackFmpCall(1);
       if (!r.ok) return;
@@ -2901,7 +2903,7 @@ async function runScan() {
   // Helper: batch ticker narxlari (3+ harf uchun)
   async function fetchBatch(syms) {
     try {
-      const r = await fetch(`${FMP_BASE}/quote?symbol=${syms.join(',')}&apikey=${FMP_API_KEY}`,
+      const r = await fetch(`${FMP_BASE}/quote/${syms.join(',')}&apikey=${FMP_API_KEY}`,
         { signal: AbortSignal.timeout(20000) });
       trackFmpCall(1);
       if (!r.ok) return 0;
@@ -2925,29 +2927,9 @@ async function runScan() {
   // SP500/NDX → mavjud smart batching (proven)
 
   if (currentUniverse === 'nyse' || currentUniverse === 'nasdaq') {
-    // ━━ FMP ULTIMATE BULK: 1 CALL = BUTUN BIRJA ━━
-    if (prog) prog.textContent = `📦 ${currentUniverse.toUpperCase()} bulk yuklanmoqda (1 call)...`;
-    logFmp(`📦 /stable/quotes/${currentUniverse} — 1 callda butun birja...`);
-    try {
-      const r = await fetch(`${FMP_BASE}/quotes/${currentUniverse}?apikey=${FMP_API_KEY}`, { signal: AbortSignal.timeout(60000) });
-      trackFmpCall(1);
-      if (r.ok) {
-        const data = await r.json();
-        if (Array.isArray(data)) {
-          data.forEach(q => {
-            const parsed = parseQ(q);
-            if (parsed) realPrices[q.symbol.toUpperCase()] = parsed;
-          });
-          logFmp(`✅ ${currentUniverse.toUpperCase()} bulk: ${Object.keys(realPrices).length} ticker — 1 call!`);
-        }
-      } else {
-        logFmp(`⚠ ${currentUniverse} bulk ${r.status} — DB tickers dan batch yuklash...`, true);
-        await loadPricesFromDB(realPrices, prog);
-      }
-    } catch(e) {
-      logFmp(`❌ bulk xato: ${e.message} — DB tickers dan batch yuklash`, true);
-      await loadPricesFromDB(realPrices, prog);
-    }
+    // ━━ DB tickers jadvalidan batch yuklash ━━
+    logFmp(`📦 ${currentUniverse.toUpperCase()} — DB tickers batch yuklanmoqda...`);
+    await loadPricesFromDB(realPrices, prog);
   }
 
   if (currentUniverse === 'sp500' || currentUniverse === 'ndx') {
@@ -3777,7 +3759,7 @@ async function fetchMarketPrices() {
       for (let i = 0; i < longMkt.length; i += 15) {
         const chunk = longMkt.slice(i, i+15);
         try {
-          const res = await fetch(`${FMP_BASE}/quote?symbol=${chunk.join(',')}&apikey=${FMP_API_KEY}`,
+          const res = await fetch(`${FMP_BASE}/quote/${chunk.join(',')}&apikey=${FMP_API_KEY}`,
             { signal: AbortSignal.timeout(12000) });
           trackFmpCall(1);
           if (res.ok) {
@@ -3790,7 +3772,7 @@ async function fetchMarketPrices() {
       // Qisqa tickerlar alohida
       for (const sym of shortMkt) {
         try {
-          const r = await fetch(`${FMP_BASE}/quote?symbol=${sym}&apikey=${FMP_API_KEY}`,
+          const r = await fetch(`${FMP_BASE}/quote/${sym}&apikey=${FMP_API_KEY}`,
             { signal: AbortSignal.timeout(6000) });
           trackFmpCall(1);
           if (r.ok) {
