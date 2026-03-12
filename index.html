@@ -2783,6 +2783,43 @@ function setUniverse(uni, el) {
   if (el) el.classList.add('active');
 }
 
+// DB tickers jadvalidan batch narx yuklash (NYSE/NASDAQ bulk ishlamasa)
+async function loadPricesFromDB(realPrices, prog) {
+  try {
+    // Supabase tickers jadvalidan barcha symbollarni olamiz
+    const { data: tRows } = await sb.from('tickers').select('symbol').order('symbol');
+    if (!tRows || tRows.length === 0) return;
+    const allSyms = tRows.map(r => r.symbol);
+    logFmp(`📦 DB tickers: ${allSyms.length} ta — batch yuklash...`);
+
+    // Batch 50 ta — FMP /quote endpoint
+    const BSIZ = 50;
+    let loaded = 0;
+    for (let i = 0; i < allSyms.length; i += BSIZ) {
+      const chunk = allSyms.slice(i, i + BSIZ);
+      try {
+        const r = await fetch(`${FMP_BASE}/quote?symbol=${chunk.join(',')}&apikey=${FMP_API_KEY}`,
+          { signal: AbortSignal.timeout(15000) });
+        trackFmpCall(1);
+        if (r.ok) {
+          const data = await r.json();
+          if (Array.isArray(data)) {
+            data.forEach(q => {
+              const p = parseQ(q);
+              if (p) { realPrices[q.symbol.toUpperCase()] = p; loaded++; }
+            });
+          }
+        }
+      } catch(e) {}
+      if (prog) prog.textContent = `Narxlar: ${loaded} ta yuklandi (${i+BSIZ}/${allSyms.length})...`;
+      await new Promise(r => setTimeout(r, 100));
+    }
+    logFmp(`✅ DB batch: ${loaded} ta narx yuklandi`);
+  } catch(e) {
+    logFmp(`❌ loadPricesFromDB: ${e.message}`, true);
+  }
+}
+
 async function runScan() {
   if (!activeStrategy) {
     toast('⚠️ Strategiya tanlang! Yuqorida strategiya nomiga bosing yoki yangi yarating.', true);
@@ -2903,12 +2940,12 @@ async function runScan() {
           logFmp(`✅ ${currentUniverse.toUpperCase()} bulk: ${Object.keys(realPrices).length} ticker — 1 call!`);
         }
       } else {
-        logFmp(`⚠ ${currentUniverse} bulk xato (${r.status}) — SP500 ga fallback`, true);
-        currentUniverse = 'sp500';
+        logFmp(`⚠ ${currentUniverse} bulk ${r.status} — DB tickers dan batch yuklash...`, true);
+        await loadPricesFromDB(realPrices, prog);
       }
     } catch(e) {
-      logFmp(`❌ bulk xato: ${e.message} — SP500 ga fallback`, true);
-      currentUniverse = 'sp500';
+      logFmp(`❌ bulk xato: ${e.message} — DB tickers dan batch yuklash`, true);
+      await loadPricesFromDB(realPrices, prog);
     }
   }
 
@@ -3395,13 +3432,14 @@ function renderScanResults() {
           const tooltipId = `tip-${r.ticker}-${Math.random().toString(36).slice(2,6)}`;
 
           return `<tr style="border-top:1px solid var(--border)">
-            <td style="padding:9px 10px;position:relative">
-              <div class="tk" style="cursor:pointer" onclick="document.getElementById('${tooltipId}').style.display=document.getElementById('${tooltipId}').style.display==='none'?'block':'none'">${r.ticker}${dataTag}</div>
+            <td style="padding:9px 10px;position:relative"
+              onmouseenter="showScanTip('${tooltipId}',event)"
+              onmouseleave="hideScanTip('${tooltipId}')">
+              <div class="tk">${r.ticker}${dataTag}</div>
               <div style="font-size:8.5px;color:var(--text3)">${r.risk_level} risk</div>
-              <div id="${tooltipId}" style="display:none;position:fixed;z-index:9999;background:var(--surface);border:1px solid var(--border2);border-radius:10px;padding:12px;min-width:280px;box-shadow:0 8px 32px rgba(0,0,0,0.5)">
+              <div id="${tooltipId}" style="display:none;position:fixed;z-index:9999;background:var(--surface);border:1px solid var(--border2);border-radius:10px;padding:12px;min-width:300px;max-width:360px;box-shadow:0 8px 32px rgba(0,0,0,0.7)">
                 <div style="font-size:10px;font-weight:700;color:#fff;margin-bottom:8px;font-family:var(--mono)">${r.ticker} — Mezon natijalari (${passedCri.length}/${criDetails.length})</div>
                 ${allCriHtml}
-                <div style="font-size:8px;color:var(--text3);margin-top:6px;text-align:right">✕ yopish uchun qayta bosing</div>
               </div>
             </td>
             <td style="padding:9px 10px">
@@ -3593,28 +3631,38 @@ async function fetchAndCacheFundamental(ticker) {
       if (q4.revenue > 0) rev_growth_qoq = (q0.revenue - q4.revenue) / q4.revenue;
     }
 
-    // /stable/ratios-ttm field nomlari (peRatioTTM, priceToSalesRatioTTM, ...)
-    // /stable/key-metrics-ttm field nomlari (roicTTM, debtToEquityTTM, ...)
+    // /stable/ratios-ttm HAQIQIY field nomlari (response dan aniqlandi)
     const n = (v) => { const f = parseFloat(v || 0); return (f && !isNaN(f)) ? f : null; };
-    const peVal   = rat ? n(rat.peRatioTTM || rat.priceEarningsRatioTTM) : null;
-    const psVal   = rat ? n(rat.priceToSalesRatioTTM) : null;
-    const pbVal   = rat ? n(rat.priceToBookRatioTTM) : null;
-    const pfcfVal = rat ? n(rat.priceToFreeCashFlowsTTM) : null;
-    const roeVal  = rat ? n(rat.returnOnEquityTTM) : null;
-    const roaVal  = rat ? n(rat.returnOnAssetsTTM) : null;
-    const divYield = rat ? n(rat.dividendYieldTTM || rat.dividendYield) : null;
-    const payout  = rat ? n(rat.payoutRatioTTM || rat.payoutRatio) : null;
-    const roicVal = km  ? n(km.roicTTM || km.roic) : null;
-    const evEbitda = km ? n(km.enterpriseValueOverEBITDATTM || km.enterpriseValueOverEBITDA) : null;
-    const evSales  = km ? n(km.evToSalesTTM || km.evToSales) : null;
-    const debtEq   = km ? n(km.debtToEquityTTM || km.debtToEquity) : null;
-    const curRatio = km ? n(km.currentRatioTTM || km.currentRatio) : null;
-    const qkRatio  = km ? n(km.quickRatioTTM || km.quickRatio) : null;
-    const intCov   = km ? n(km.interestCoverageTTM || km.interestCoverage) : null;
-    const fcfShare = km ? n(km.freeCashFlowPerShareTTM || km.freeCashFlowPerShare) : null;
-    const fcfYield = km ? n(km.freeCashFlowYieldTTM || km.freeCashFlowYield) : null;
-    const mktCap   = km ? n(km.marketCapTTM || km.marketCap) : null;
-    const betaVal  = km ? n(km.betaTTM || km.beta) : null;
+    // ratios-ttm dan
+    const peVal    = rat ? n(rat.priceToEarningsRatioTTM) : null;
+    const psVal    = rat ? n(rat.priceToSalesRatioTTM) : null;
+    const pbVal    = rat ? n(rat.priceToBookRatioTTM) : null;
+    const pfcfVal  = rat ? n(rat.priceToFreeCashFlowRatioTTM) : null;
+    const roeVal   = rat ? n(rat.returnOnEquityTTM) : null;
+    const roaVal   = rat ? n(rat.returnOnAssetsTTM) : null;
+    const divYield = rat ? n(rat.dividendYieldTTM) : null;
+    const payout   = rat ? n(rat.dividendPayoutRatioTTM || rat.payoutRatioTTM) : null;
+    const curRatio = rat ? n(rat.currentRatioTTM) : null;
+    const qkRatio  = rat ? n(rat.quickRatioTTM) : null;
+    const debtEq   = rat ? n(rat.debtToEquityRatioTTM) : null;
+    const intCov   = rat ? n(rat.interestCoverageRatioTTM) : null;
+    const grossM   = rat ? n(rat.grossProfitMarginTTM) : null;
+    const opM      = rat ? n(rat.operatingProfitMarginTTM) : null;
+    const netM     = rat ? n(rat.netProfitMarginTTM) : null;
+    // key-metrics-ttm dan (HAQIQIY field nomlar)
+    const roeVal2  = km ? n(km.returnOnEquityTTM) : null;
+    const roaVal2  = km ? n(km.returnOnAssetsTTM) : null;
+    const roicVal  = km ? n(km.returnOnInvestedCapitalTTM) : null;
+    const evEbitda = km ? n(km.evToEBITDATTM) : null;
+    const evSales  = km ? n(km.evToSalesTTM) : null;
+    const fcfShare = km ? n(km.freeCashFlowToEquityTTM) : null;
+    const fcfYield = km ? n(km.freeCashFlowYieldTTM) : null;
+    const capexRev = km ? n(km.capexToRevenueTTM) : null;
+    const mktCap   = km ? n(km.marketCap) : null;
+    const betaVal  = null; // key-metrics-ttm da beta yo'q — quote dan olish kerak
+    // ratios dan kelgan roeVal/roaVal bo'sh bo'lsa key-metrics dan olamiz
+    const finalRoe = roeVal || roeVal2;
+    const finalRoa = roaVal || roaVal2;
 
     const row = {
       ticker,
@@ -3624,14 +3672,14 @@ async function fetchAndCacheFundamental(ticker) {
       ev_sales:        evSales,
       pfcf:            pfcfVal,
       pfcf_ratio:      pfcfVal,
-      roe:             roeVal,
-      roa:             roaVal,
+      roe:             finalRoe,
+      roa:             finalRoa,
       roic:            roicVal,
-      gross_margin,
-      operating_margin,
-      net_margin,
-      eps_ttm:         km ? n(km.netIncomePerShareTTM || km.netIncomePerShare) : null,
-      eps_curr:        km ? n(km.netIncomePerShareTTM || km.netIncomePerShare) : null,
+      gross_margin:    grossM !== null ? grossM : gross_margin,
+      operating_margin: opM !== null ? opM : operating_margin,
+      net_margin:       netM !== null ? netM : net_margin,
+      eps_ttm:         inc.length > 0 ? n(inc[0].eps) : null,
+      eps_curr:        inc.length > 0 ? n(inc[0].eps) : null,
       rev_growth:      rev_growth_yoy,
       eps_growth:      eps_growth_yoy,
       revenue_growth_qoq: rev_growth_qoq,
@@ -3641,6 +3689,7 @@ async function fetchAndCacheFundamental(ticker) {
       interest_coverage: intCov,
       fcf_per_share:   fcfShare,
       fcf_margin:      fcfYield,
+      capex_rev:       capexRev,
       dividend_yield:  divYield,
       payout_ratio:    payout,
       market_cap:      mktCap,
@@ -4083,6 +4132,30 @@ function setupRealtime() {
   }, () => loadAudit()).subscribe();
 
   realtimeChannels = [ch1, ch2, ch3];
+}
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// SCAN TOOLTIP HOVER
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+function showScanTip(id, e) {
+  const tip = document.getElementById(id);
+  if (!tip) return;
+  const vw = window.innerWidth, vh = window.innerHeight;
+  const tipW = 320, tipH = 220;
+  let x = e.clientX + 16;
+  let y = e.clientY - 10;
+  // O'ngdan chiqib ketmasin
+  if (x + tipW > vw - 10) x = e.clientX - tipW - 8;
+  // Pastdan chiqib ketmasin
+  if (y + tipH > vh - 10) y = vh - tipH - 10;
+  if (y < 10) y = 10;
+  tip.style.left = x + 'px';
+  tip.style.top = y + 'px';
+  tip.style.display = 'block';
+}
+function hideScanTip(id) {
+  const tip = document.getElementById(id);
+  if (tip) tip.style.display = 'none';
 }
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
