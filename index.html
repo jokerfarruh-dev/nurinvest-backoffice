@@ -3534,11 +3534,14 @@ let fundamentalCache = {}; // { AAPL: { pe_ratio, ps_ratio, ev_ebitda, ... } }
 let fundCacheLoaded = false;
 
 function isFundCacheStale(ticker) {
-  const fc = fundamentalCache[ticker];
-  if (!fc || !fc.updated_at) return true;
-  const daysSince = (Date.now() - new Date(fc.updated_at).getTime()) / 86400000;
-  return daysSince > FUND_CACHE_TTL_DAYS;
+  // PE null = eski noto'g'ri cache, qayta yukla
+  const _fc = fundamentalCache[ticker];
+  if (!_fc || !_fc.updated_at) return true;
+  if (!_fc.pe || _fc.pe === 0) return true;
+  const _days = (Date.now() - new Date(_fc.updated_at).getTime()) / 86400000;
+  return _days > FUND_CACHE_TTL_DAYS;
 }
+
 
 async function loadFundamentalCache() {
   try {
@@ -3558,8 +3561,8 @@ async function fetchAndCacheFundamental(ticker) {
   try {
     // 1. key-metrics — pe, ps, ev_ebitda, debt_to_equity, pfcf, fcf, roe, roa
     const [kmRes, ratioRes, incRes] = await Promise.all([
-      fetch(`${FMP_BASE}/key-metrics?symbol=${ticker}&limit=1&apikey=${FMP_API_KEY}`, { signal: AbortSignal.timeout(12000) }),
-      fetch(`${FMP_BASE}/ratios?symbol=${ticker}&limit=1&apikey=${FMP_API_KEY}`, { signal: AbortSignal.timeout(12000) }),
+      fetch(`${FMP_BASE}/key-metrics-ttm?symbol=${ticker}&apikey=${FMP_API_KEY}`, { signal: AbortSignal.timeout(12000) }),
+      fetch(`${FMP_BASE}/ratios-ttm?symbol=${ticker}&apikey=${FMP_API_KEY}`, { signal: AbortSignal.timeout(12000) }),
       fetch(`${FMP_BASE}/income-statement?symbol=${ticker}&limit=4&apikey=${FMP_API_KEY}`, { signal: AbortSignal.timeout(12000) })
     ]);
     trackFmpCall(3);
@@ -3590,50 +3593,59 @@ async function fetchAndCacheFundamental(ticker) {
       if (q4.revenue > 0) rev_growth_qoq = (q0.revenue - q4.revenue) / q4.revenue;
     }
 
-    // PE: ratios dan ol (km.peRatio bo'lmaydi /stable/key-metrics da)
-    const peVal = rat ? (parseFloat(rat.priceEarningsRatioTTM || rat.peRatioTTM || rat.peRatio || 0) || null) : null;
-    const psVal = rat ? (parseFloat(rat.priceToSalesRatioTTM || rat.priceToSalesRatio || 0) || null) : null;
-    const pbVal = rat ? (parseFloat(rat.priceToBookRatioTTM || rat.priceToBookRatio || 0) || null) : null;
-    const pfcfVal = rat ? (parseFloat(rat.priceToFreeCashFlowsTTM || rat.pfcfRatio || 0) || null) : null;
+    // /stable/ratios-ttm field nomlari (peRatioTTM, priceToSalesRatioTTM, ...)
+    // /stable/key-metrics-ttm field nomlari (roicTTM, debtToEquityTTM, ...)
+    const n = (v) => { const f = parseFloat(v || 0); return (f && !isNaN(f)) ? f : null; };
+    const peVal   = rat ? n(rat.peRatioTTM || rat.priceEarningsRatioTTM) : null;
+    const psVal   = rat ? n(rat.priceToSalesRatioTTM) : null;
+    const pbVal   = rat ? n(rat.priceToBookRatioTTM) : null;
+    const pfcfVal = rat ? n(rat.priceToFreeCashFlowsTTM) : null;
+    const roeVal  = rat ? n(rat.returnOnEquityTTM) : null;
+    const roaVal  = rat ? n(rat.returnOnAssetsTTM) : null;
+    const divYield = rat ? n(rat.dividendYieldTTM || rat.dividendYield) : null;
+    const payout  = rat ? n(rat.payoutRatioTTM || rat.payoutRatio) : null;
+    const roicVal = km  ? n(km.roicTTM || km.roic) : null;
+    const evEbitda = km ? n(km.enterpriseValueOverEBITDATTM || km.enterpriseValueOverEBITDA) : null;
+    const evSales  = km ? n(km.evToSalesTTM || km.evToSales) : null;
+    const debtEq   = km ? n(km.debtToEquityTTM || km.debtToEquity) : null;
+    const curRatio = km ? n(km.currentRatioTTM || km.currentRatio) : null;
+    const qkRatio  = km ? n(km.quickRatioTTM || km.quickRatio) : null;
+    const intCov   = km ? n(km.interestCoverageTTM || km.interestCoverage) : null;
+    const fcfShare = km ? n(km.freeCashFlowPerShareTTM || km.freeCashFlowPerShare) : null;
+    const fcfYield = km ? n(km.freeCashFlowYieldTTM || km.freeCashFlowYield) : null;
+    const mktCap   = km ? n(km.marketCapTTM || km.marketCap) : null;
+    const betaVal  = km ? n(km.betaTTM || km.beta) : null;
 
     const row = {
       ticker,
-      // Baholash
       pe:              peVal,
       ps:              psVal,
-      ev_ebitda:       km ? (parseFloat(km.enterpriseValueOverEBITDATTM || km.enterpriseValueOverEBITDA || 0) || null) : null,
-      ev_sales:        km ? (parseFloat(km.evToSalesTTM || km.evToSales || 0) || null) : null,
+      ev_ebitda:       evEbitda,
+      ev_sales:        evSales,
       pfcf:            pfcfVal,
       pfcf_ratio:      pfcfVal,
-      // Rentabellik
-      roe:             rat ? (parseFloat(rat.returnOnEquityTTM || rat.returnOnEquity || 0) || null) : null,
-      roa:             rat ? (parseFloat(rat.returnOnAssetsTTM || rat.returnOnAssets || 0) || null) : null,
-      roic:            km  ? (parseFloat(km.roicTTM || km.roic || 0) || null) : null,
+      roe:             roeVal,
+      roa:             roaVal,
+      roic:            roicVal,
       gross_margin,
       operating_margin,
       net_margin,
-      eps_ttm:         km  ? (parseFloat(km.netIncomePerShare || 0) || null) : null,
-      eps_curr:        km  ? (parseFloat(km.netIncomePerShare || 0) || null) : null,
-      // O'sish — bazadagi HAQIQIY column nomlar
+      eps_ttm:         km ? n(km.netIncomePerShareTTM || km.netIncomePerShare) : null,
+      eps_curr:        km ? n(km.netIncomePerShareTTM || km.netIncomePerShare) : null,
       rev_growth:      rev_growth_yoy,
       eps_growth:      eps_growth_yoy,
       revenue_growth_qoq: rev_growth_qoq,
-      // Moliyaviy holat — bazadagi HAQIQIY column nom
-      debt_eq:         km ? (parseFloat(km.debtToEquity || 0) || null) : null,
-      current_ratio:   km ? (parseFloat(km.currentRatio || 0) || null) : null,
-      quick_ratio:     km ? (parseFloat(km.quickRatio || 0) || null) : null,
-      interest_coverage: km ? (parseFloat(km.interestCoverage || 0) || null) : null,
-      // Pul oqimi
-      fcf_per_share:   km ? (parseFloat(km.freeCashFlowPerShare || 0) || null) : null,
-      fcf_margin:      km ? (parseFloat(km.freeCashFlowYield || 0) || null) : null,
-      // Dividendlar
-      dividend_yield:  rat ? (parseFloat(rat.dividendYield || 0) || null) : null,
-      payout_ratio:    rat ? (parseFloat(rat.payoutRatio || 0) || null) : null,
-      // Market
-      market_cap:      km  ? (parseFloat(km.marketCap || 0) || null) : null,
-      beta:            km  ? (parseFloat(km.beta || 0) || null) : null,
-      pb_ratio:        km  ? (parseFloat(km.pbRatio || km.priceToBookRatio || 0) || null) : null,
-      // Metadata
+      debt_eq:         debtEq,
+      current_ratio:   curRatio,
+      quick_ratio:     qkRatio,
+      interest_coverage: intCov,
+      fcf_per_share:   fcfShare,
+      fcf_margin:      fcfYield,
+      dividend_yield:  divYield,
+      payout_ratio:    payout,
+      market_cap:      mktCap,
+      beta:            betaVal,
+      pb_ratio:        pbVal,
       updated_at: new Date().toISOString()
     };
 
