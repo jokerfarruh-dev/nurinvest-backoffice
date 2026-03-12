@@ -2807,20 +2807,24 @@ function parseQ(q) {
 
 async function loadPricesFromDB(realPrices, prog) {
   try {
-    // Supabase tickers jadvalidan barcha symbollarni olamiz
     const { data: tRows } = await sb.from('tickers').select('symbol').order('symbol');
-    if (!tRows || tRows.length === 0) return;
+    if (!tRows || tRows.length === 0) { logFmp('DB tickers bosh!', true); return; }
     const allSyms = tRows.map(r => r.symbol);
     logFmp(`📦 DB tickers: ${allSyms.length} ta — batch yuklash...`);
 
-    // Batch 50 ta — FMP /quote endpoint
-    const BSIZ = 100;
+    // Long (3+ harf) → batch 15, Short (1-2 harf) → alohida
+    const longSyms  = allSyms.filter(s => s.length > 2);
+    const shortSyms = allSyms.filter(s => s.length <= 2);
+    const BSIZ = 15;
     let loaded = 0;
-    for (let i = 0; i < allSyms.length; i += BSIZ) {
-      const chunk = allSyms.slice(i, i + BSIZ);
+    const total = allSyms.length;
+
+    // Long batch
+    for (let i = 0; i < longSyms.length; i += BSIZ) {
+      const chunk = longSyms.slice(i, i + BSIZ);
       try {
         const r = await fetch(`${FMP_BASE}/quote?symbol=${chunk.join(',')}&apikey=${FMP_API_KEY}`,
-          { signal: AbortSignal.timeout(15000) });
+          { signal: AbortSignal.timeout(20000) });
         trackFmpCall(1);
         if (r.ok) {
           const data = await r.json();
@@ -2832,10 +2836,27 @@ async function loadPricesFromDB(realPrices, prog) {
           }
         }
       } catch(e) {}
-      if (prog) prog.textContent = `Narxlar: ${loaded} ta yuklandi (${i+BSIZ}/${allSyms.length})...`;
-      await new Promise(r => setTimeout(r, 100));
+      if (prog) prog.textContent = `Narxlar: ${loaded} yuklandi · ${i+BSIZ}/${longSyms.length} batch...`;
+      await new Promise(r => setTimeout(r, 80));
     }
-    logFmp(`✅ DB batch: ${loaded} ta narx yuklandi`);
+
+    // Short tickerlar alohida
+    for (const sym of shortSyms) {
+      try {
+        const r = await fetch(`${FMP_BASE}/quote?symbol=${sym}&apikey=${FMP_API_KEY}`,
+          { signal: AbortSignal.timeout(8000) });
+        trackFmpCall(1);
+        if (r.ok) {
+          const d = await r.json();
+          const q = Array.isArray(d) ? d[0] : d;
+          const p = parseQ(q);
+          if (p) { realPrices[sym.toUpperCase()] = p; loaded++; }
+        }
+      } catch(e) {}
+      await new Promise(r => setTimeout(r, 50));
+    }
+
+    logFmp(`✅ DB batch: ${loaded}/${total} ta narx yuklandi`);
   } catch(e) {
     logFmp(`❌ loadPricesFromDB: ${e.message}`, true);
   }
