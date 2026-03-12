@@ -3178,9 +3178,9 @@ async function runScan() {
           else if (fundId === 'volume_gt') { pass = avgVolume > (threshold * 1e6); isReal = avgVolume > 0; note = `${(avgVolume/1e6).toFixed(1)}M avg`; }
           else if (fundId === 'week52_near_high') { pass = week52High > 0 && price >= week52High * (threshold/100); isReal = week52High > 0; note = week52High > 0 ? `${((price/week52High)*100).toFixed(0)}% of 52wH` : '—'; }
           // Baholash — FMP key-metrics dan
-          else if (fundId === 'pe_lt') { const v = fd.pe || pe_quote; pass = v > 0 && v < threshold; isReal = v > 0; note = v > 0 ? `P/E=${v.toFixed(1)}` : '—'; }
-          else if (fundId === 'pe_gt') { const v = fd.pe || pe_quote; pass = v > threshold; isReal = v > 0; note = v > 0 ? `P/E=${v.toFixed(1)}` : '—'; }
-          else if (fundId === 'fwd_pe_lt') { const v = fd.pe || pe_quote; pass = v > 0 && v < threshold; isReal = v > 0; note = v > 0 ? `fP/E≈${v.toFixed(1)}` : '—'; }
+          else if (fundId === 'pe_lt') { const v = fd.pe || pe_quote || 0; pass = v > 0 && v < threshold; isReal = fd.pe > 0; note = v > 0 ? `P/E=${v.toFixed(1)}` : '—'; }
+          else if (fundId === 'pe_gt') { const v = fd.pe || pe_quote || 0; pass = v > 0 && v > threshold; isReal = fd.pe > 0; note = v > 0 ? `P/E=${v.toFixed(1)}` : '—'; }
+          else if (fundId === 'fwd_pe_lt') { const v = fd.fwd_pe || fd.pe || pe_quote || 0; pass = v > 0 && v < threshold; isReal = v > 0; note = v > 0 ? `fP/E=${v.toFixed(1)}` : '—'; }
           else if (fundId === 'peg_lt') { const v = fd.pfcf_ratio; pass = v > 0 && v < threshold; isReal = v > 0; note = v > 0 ? `PEG=${v.toFixed(2)}` : '—'; }
           else if (fundId === 'ps_lt') { const v = fd.ps; pass = v > 0 && v < threshold; isReal = v > 0; note = v > 0 ? `P/S=${v.toFixed(1)}` : '—'; }
           else if (fundId === 'pb_lt') { const v = fd.pfcf; pass = v > 0 && v < threshold; isReal = v > 0; note = v > 0 ? `P/B=${v.toFixed(1)}` : '—'; }
@@ -3384,10 +3384,25 @@ function renderScanResults() {
               '<button class="btn btn-ghost btn-sm" style="font-size:9px" onclick="sendToInbox(\'' + _t + '\',' + _e + ',' + _tg + ',' + _s + ',\'' + _sec + '\',\'' + _rl + '\',' + _sc + ')">📥 Inbox</button>' +
               '</div>';
 
+          // Barcha mezonlar breakdown — tooltip uchun
+          const allCriHtml = criDetails.map(c =>
+            `<div style="display:flex;align-items:center;gap:6px;padding:3px 0;border-bottom:1px solid rgba(255,255,255,0.06)">
+              <span style="font-size:11px">${c.pass ? '✅' : '❌'}</span>
+              <span style="color:${c.pass ? 'var(--green3)' : 'var(--red3)'};font-size:9px;flex:1">${c.label.split(' —')[0]}</span>
+              <span style="color:var(--text3);font-size:9px;font-family:var(--mono)">${c.note || '—'}</span>
+            </div>`
+          ).join('');
+          const tooltipId = `tip-${r.ticker}-${Math.random().toString(36).slice(2,6)}`;
+
           return `<tr style="border-top:1px solid var(--border)">
-            <td style="padding:9px 10px">
-              <div class="tk">${r.ticker}${dataTag}</div>
+            <td style="padding:9px 10px;position:relative">
+              <div class="tk" style="cursor:pointer" onclick="document.getElementById('${tooltipId}').style.display=document.getElementById('${tooltipId}').style.display==='none'?'block':'none'">${r.ticker}${dataTag}</div>
               <div style="font-size:8.5px;color:var(--text3)">${r.risk_level} risk</div>
+              <div id="${tooltipId}" style="display:none;position:fixed;z-index:9999;background:var(--surface);border:1px solid var(--border2);border-radius:10px;padding:12px;min-width:280px;box-shadow:0 8px 32px rgba(0,0,0,0.5)">
+                <div style="font-size:10px;font-weight:700;color:#fff;margin-bottom:8px;font-family:var(--mono)">${r.ticker} — Mezon natijalari (${passedCri.length}/${criDetails.length})</div>
+                ${allCriHtml}
+                <div style="font-size:8px;color:var(--text3);margin-top:6px;text-align:right">✕ yopish uchun qayta bosing</div>
+              </div>
             </td>
             <td style="padding:9px 10px">
               <div style="display:flex;align-items:center;gap:6px">
@@ -3399,8 +3414,8 @@ function renderScanResults() {
             </td>
             <td style="padding:9px 10px">${criHtml}</td>
             <td style="padding:9px 10px;font-size:10px;color:var(--text3);font-family:var(--mono)">${r.sector}</td>
-            <td style="padding:9px 10px;font-family:var(--mono);font-weight:700">$${r.entry_price.toFixed(2)}</td>
-            <td style="padding:9px 10px;font-family:var(--mono)" class="${chg >= 0 ? 'pos' : 'neg'}">${chg >= 0 ? '+' : ''}${chg.toFixed(2)}%</td>
+            <td style="padding:9px 10px;font-family:var(--mono);font-weight:700">$${(r.entry_price||0).toFixed(2)}</td>
+            <td style="padding:9px 10px;font-family:var(--mono)" class="${chg >= 0 ? 'pos' : 'neg'}">${chg >= 0 ? '+' : ''}${(chg||0).toFixed(2)}%</td>
             <td style="padding:9px 10px;font-family:var(--mono);color:var(--green3)">+${upside}%</td>
             <td style="padding:9px 10px">${actionBtn}</td>
           </tr>`;
@@ -3575,19 +3590,25 @@ async function fetchAndCacheFundamental(ticker) {
       if (q4.revenue > 0) rev_growth_qoq = (q0.revenue - q4.revenue) / q4.revenue;
     }
 
+    // PE: ratios dan ol (km.peRatio bo'lmaydi /stable/key-metrics da)
+    const peVal = rat ? (parseFloat(rat.priceEarningsRatioTTM || rat.peRatioTTM || rat.peRatio || 0) || null) : null;
+    const psVal = rat ? (parseFloat(rat.priceToSalesRatioTTM || rat.priceToSalesRatio || 0) || null) : null;
+    const pbVal = rat ? (parseFloat(rat.priceToBookRatioTTM || rat.priceToBookRatio || 0) || null) : null;
+    const pfcfVal = rat ? (parseFloat(rat.priceToFreeCashFlowsTTM || rat.pfcfRatio || 0) || null) : null;
+
     const row = {
       ticker,
-      // Baholash — bazadagi HAQIQIY column nomlar
-      pe:              km ? (parseFloat(km.peRatio       || 0) || null) : null,
-      ps:              km ? (parseFloat(km.priceToSalesRatio || 0) || null) : null,
-      ev_ebitda:       km ? (parseFloat(km.enterpriseValueOverEBITDA || 0) || null) : null,
-      ev_sales:        km ? (parseFloat(km.evToSales || km.enterpriseValueOverRevenue || 0) || null) : null,
-      pfcf:            km ? (parseFloat(km.pfcfRatio || 0) || null) : null,
-      pfcf_ratio:      km ? (parseFloat(km.pfcfRatio || 0) || null) : null,
+      // Baholash
+      pe:              peVal,
+      ps:              psVal,
+      ev_ebitda:       km ? (parseFloat(km.enterpriseValueOverEBITDATTM || km.enterpriseValueOverEBITDA || 0) || null) : null,
+      ev_sales:        km ? (parseFloat(km.evToSalesTTM || km.evToSales || 0) || null) : null,
+      pfcf:            pfcfVal,
+      pfcf_ratio:      pfcfVal,
       // Rentabellik
-      roe:             rat ? (parseFloat(rat.returnOnEquity || 0) || null) : null,
-      roa:             rat ? (parseFloat(rat.returnOnAssets || 0) || null) : null,
-      roic:            km  ? (parseFloat(km.roic || 0) || null) : null,
+      roe:             rat ? (parseFloat(rat.returnOnEquityTTM || rat.returnOnEquity || 0) || null) : null,
+      roa:             rat ? (parseFloat(rat.returnOnAssetsTTM || rat.returnOnAssets || 0) || null) : null,
+      roic:            km  ? (parseFloat(km.roicTTM || km.roic || 0) || null) : null,
       gross_margin,
       operating_margin,
       net_margin,
