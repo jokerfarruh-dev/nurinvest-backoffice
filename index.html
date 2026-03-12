@@ -1013,7 +1013,7 @@ const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
 // Scan: Supabase dan o'qib ishlaydi, FMP call minimal
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 const FMP_API_KEY  = 'L1ai5eKS45wUJOoIiQkseYkrMf5idNyT';
-const FMP_BASE     = 'https://financialmodelingprep.com/api/v3';
+const FMP_BASE     = 'https://financialmodelingprep.com/stable';
 const FMP_STABLE   = 'https://financialmodelingprep.com/stable';
 const FUND_CACHE_TTL_DAYS = 90; // Har kvartalda 1x yangilash
 const MARKET_REFRESH_INTERVAL = 60000;
@@ -1043,7 +1043,7 @@ function updateFmpCounter() {
 // FMP API test
 async function testFmpConnection() {
   try {
-    const res = await fetch(`${FMP_BASE}/quote/AAPL&apikey=${FMP_API_KEY}`,
+    const res = await fetch(`${FMP_BASE}/quote?symbol=AAPL&apikey=${FMP_API_KEY}`,
       { signal: AbortSignal.timeout(8000) });
     trackFmpCall(1);
     const data = await res.json();
@@ -1349,7 +1349,7 @@ async function debugTestBatch() {
   toast('🧪 Batch test: ' + TEST_TICKERS.length + ' ticker...');
   try {
     // /api/v3/quote — batch test uchun (ko'proq ticker qo'llab-quvvatlaydi)
-    const url = `https://financialmodelingprep.com/api/v3/quote/${TEST_TICKERS.join(',')}?apikey=${FMP_API_KEY}`;
+    const url = `https://financialmodelingprep.com/stable/quote?symbol=${TEST_TICKERS.join(',')}&apikey=${FMP_API_KEY}`;
     const res = await fetch(url, { signal: AbortSignal.timeout(15000) });
     trackFmpCall(1);
     if (!res.ok) { logFmp(`❌ Batch test HTTP ${res.status}`, true); return; }
@@ -1575,7 +1575,7 @@ async function loadSignals() {
     for (let i = 0; i < longT.length; i += 15) {
       const chunk = longT.slice(i, i+15);
       try {
-        const r = await fetch(`${FMP_BASE}/quote/${chunk.join(',')}&apikey=${FMP_API_KEY}`,
+        const r = await fetch(`${FMP_BASE}/quote?symbol=${chunk.join(',')}&apikey=${FMP_API_KEY}`,
           { signal: AbortSignal.timeout(10000) });
         trackFmpCall(1);
         if (r.ok) {
@@ -1587,7 +1587,7 @@ async function loadSignals() {
     // Qisqa tickerlar alohida
     for (const sym of shortT) {
       try {
-        const r = await fetch(`${FMP_BASE}/quote/${sym}&apikey=${FMP_API_KEY}`,
+        const r = await fetch(`${FMP_BASE}/quote?symbol=${sym}&apikey=${FMP_API_KEY}`,
           { signal: AbortSignal.timeout(5000) });
         trackFmpCall(1);
         if (r.ok) {
@@ -1660,7 +1660,7 @@ async function selectSignal(id) {
   // Agar priceCache da yo'q bo'lsa — FMP dan real joriy narx olish
   if (!priceCache[s.ticker] && s.ticker) {
     try {
-      const res = await fetch(`${FMP_BASE}/quote/${encodeURIComponent(s.ticker)}&apikey=${FMP_API_KEY}`,
+      const res = await fetch(`${FMP_BASE}/quote?symbol=${encodeURIComponent(s.ticker)}&apikey=${FMP_API_KEY}`,
         { signal: AbortSignal.timeout(5000) });
       trackFmpCall(1);
       if (res.ok) {
@@ -2814,12 +2814,12 @@ async function loadPricesFromDB(realPrices, prog) {
     logFmp(`📦 DB tickers: ${allSyms.length} ta — batch yuklash...`);
 
     // Batch 50 ta — FMP /quote endpoint
-    const BSIZ = 50;
+    const BSIZ = 100;
     let loaded = 0;
     for (let i = 0; i < allSyms.length; i += BSIZ) {
       const chunk = allSyms.slice(i, i + BSIZ);
       try {
-        const r = await fetch(`${FMP_BASE}/quote/${chunk.join(',')}&apikey=${FMP_API_KEY}`,
+        const r = await fetch(`${FMP_BASE}/quote?symbol=${chunk.join(',')}&apikey=${FMP_API_KEY}`,
           { signal: AbortSignal.timeout(15000) });
         trackFmpCall(1);
         if (r.ok) {
@@ -2889,7 +2889,7 @@ async function runScan() {
   // Helper: bitta ticker narxi olish
   async function fetchSingle(sym) {
     try {
-      const r = await fetch(`${FMP_BASE}/quote/${sym}&apikey=${FMP_API_KEY}`,
+      const r = await fetch(`${FMP_BASE}/quote?symbol=${sym}&apikey=${FMP_API_KEY}`,
         { signal: AbortSignal.timeout(8000) });
       trackFmpCall(1);
       if (!r.ok) return;
@@ -2903,7 +2903,7 @@ async function runScan() {
   // Helper: batch ticker narxlari (3+ harf uchun)
   async function fetchBatch(syms) {
     try {
-      const r = await fetch(`${FMP_BASE}/quote/${syms.join(',')}&apikey=${FMP_API_KEY}`,
+      const r = await fetch(`${FMP_BASE}/quote?symbol=${syms.join(',')}&apikey=${FMP_API_KEY}`,
         { signal: AbortSignal.timeout(20000) });
       trackFmpCall(1);
       if (!r.ok) return 0;
@@ -2994,22 +2994,20 @@ async function runScan() {
     // Universe tickerlar uchun cache bo'sh/eski bo'lsa — SCAN PAYTIDA olamiz
     // Bu bir martalik: 90 kun Supabase da saqlanadi
     const scanTickers = Object.keys(realPrices); // real narx bor tickerlar
-    const missingFund = scanTickers.filter(t => {
-      const c = fundamentalCache[t];
-      return !c || !c.pe; // cache yo'q yoki bo'sh
-    });
+    const missingFund = scanTickers.filter(t => isFundCacheStale(t));
+    // Faqat stale (eski/yo'q) bo'lsa yuklaymiz — yangi scan da emas
     if (missingFund.length > 0) {
-      logFmp(`📊 ${missingFund.length} ta ticker uchun fundamental yuklash (FMP)...`);
-      if (prog) prog.textContent = `Fundamental: 0/${missingFund.length} ticker...`;
-      // Parallel 5 ta — tez, lekin rate limit saqlaymiz
+      const fundLimit = Math.min(missingFund.length, 30); // Bir scan da max 30 ta
+      logFmp(`📊 ${fundLimit}/${missingFund.length} ta ticker fundamental yuklanmoqda...`);
+      if (prog) prog.textContent = `Fundamental: 0/${fundLimit} ticker...`;
       let fundDone = 0;
       const fundGroups = [];
-      for (let i = 0; i < missingFund.length; i += 5) fundGroups.push(missingFund.slice(i, i+5));
+      for (let i = 0; i < fundLimit; i += 5) fundGroups.push(missingFund.slice(i, Math.min(i+5, fundLimit)));
       for (const grp of fundGroups) {
         await Promise.all(grp.map(t => fetchAndCacheFundamental(t)));
         fundDone += grp.length;
-        if (prog) prog.textContent = `Fundamental: ${fundDone}/${missingFund.length} ticker...`;
-        await new Promise(r => setTimeout(r, 200)); // rate limit
+        if (prog) prog.textContent = `Fundamental: ${fundDone}/${fundLimit} ticker...`;
+        await new Promise(r => setTimeout(r, 300));
       }
       logFmp(`✅ Fundamental cache: ${Object.keys(fundamentalCache).length} ta ticker`);
     }
@@ -3584,7 +3582,7 @@ async function fetchAndCacheFundamental(ticker) {
     const [kmRes, ratioRes, incRes] = await Promise.all([
       fetch(`${FMP_STABLE}/key-metrics-ttm?symbol=${ticker}&apikey=${FMP_API_KEY}`, { signal: AbortSignal.timeout(12000) }),
       fetch(`${FMP_STABLE}/ratios-ttm?symbol=${ticker}&apikey=${FMP_API_KEY}`, { signal: AbortSignal.timeout(12000) }),
-      fetch(`${FMP_BASE}/income-statement/${ticker}?limit=4&apikey=${FMP_API_KEY}`, { signal: AbortSignal.timeout(12000) })
+      fetch(`${FMP_BASE}/income-statement?symbol=${ticker}&limit=4&apikey=${FMP_API_KEY}`, { signal: AbortSignal.timeout(12000) })
     ]);
     trackFmpCall(3);
 
@@ -3759,7 +3757,7 @@ async function fetchMarketPrices() {
       for (let i = 0; i < longMkt.length; i += 15) {
         const chunk = longMkt.slice(i, i+15);
         try {
-          const res = await fetch(`${FMP_BASE}/quote/${chunk.join(',')}&apikey=${FMP_API_KEY}`,
+          const res = await fetch(`${FMP_BASE}/quote?symbol=${chunk.join(',')}&apikey=${FMP_API_KEY}`,
             { signal: AbortSignal.timeout(12000) });
           trackFmpCall(1);
           if (res.ok) {
@@ -3772,7 +3770,7 @@ async function fetchMarketPrices() {
       // Qisqa tickerlar alohida
       for (const sym of shortMkt) {
         try {
-          const r = await fetch(`${FMP_BASE}/quote/${sym}&apikey=${FMP_API_KEY}`,
+          const r = await fetch(`${FMP_BASE}/quote?symbol=${sym}&apikey=${FMP_API_KEY}`,
             { signal: AbortSignal.timeout(6000) });
           trackFmpCall(1);
           if (r.ok) {
