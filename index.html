@@ -2874,30 +2874,19 @@ async function runScan() {
   btn.disabled = true; btn.innerHTML = '<div class="spin" style="width:12px;height:12px;border-width:2px"></div> Skanlanmoqda...';
   // Threshold: slider qiymatidan olamiz (tahlilchi o'zi belgilaydi)
   const userThreshold = parseInt(document.getElementById('threshold-slider').value) || 60;
-  INBOX_THRESH = userThreshold;                       // global — renderScanResults() da ham ishlaydi
-  WATCH_THRESH = Math.max(10, userThreshold - 20);    // Inbox dan 20% past
+  INBOX_THRESH = userThreshold;
+  WATCH_THRESH = Math.max(10, userThreshold - 20);
   const N = enabledCriteria.length;
-  const perBall = N > 0 ? (100 / N) : 0; // har bir mezon = 100/N ball
+  const perBall = N > 0 ? (100 / N) : 0;
   const startTime = Date.now();
-  const totalTickers = SP500_SAMPLE.length;
+  const scanMinCap = parseFloat(document.getElementById('scan-min-cap')?.value || '2') * 1e9;
+  const scanMinVol = parseFloat(document.getElementById('scan-min-vol')?.value || '500') * 1e3;
 
   document.getElementById('scan-content').innerHTML = `<div class="loading-state"><div class="spin"></div><span id="scan-progress">Narxlar yuklanmoqda...</span></div>`;
 
   // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  // FMP FREE PLAN UCHUN OPTIMAL NARX OLISH TIZIMI
-  //
-  // Muammo: /stable/quote?symbol=A,B,C — batch da ba'zi tickerlar
-  //         (ayniqsa 1-2 harfli: D, V, C, F...) butun batchni buzadi
-  //
-  // Yechim: Smart batching
-  //   • 1-2 harfli tickerlar → ALOHIDA (har biri 1 call)
-  //   • 3+ harfli tickerlar → 15 ta batch (/stable/quote?symbol=...)
-  //   • Agar batch bo'sh → individual qayta urinish
-  //
-  // CALL HISOB:
-  //   Short tickers (~25 ta): 25 call
-  //   Long tickers (273 ta / 15): 19 call
-  //   Jami: ~44 call / scan  (800 dan 5.5%)
+  // NARXLAR — Supabase market_data dan (sync-prices EF har 15 daqiqa yangilaydi)
+  // FMP ga to'g'ridan murojaat QILINMAYDI — 0 FMP call
   // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
   let realPrices = {};
   let indicatorCache = {};
@@ -2905,88 +2894,68 @@ async function runScan() {
 
   try { // ← Barcha xatolarni ushlash — btn qayta yoqiladi
 
-  // Helper: FMP javobini parse qilish (global parseQ ni ishlatamiz)
+  if (prog) prog.textContent = 'Supabase market_data dan narxlar yuklanmoqda...';
 
-  // Helper: bitta ticker narxi olish
-  async function fetchSingle(sym) {
-    try {
-      const r = await fetch(`${FMP_BASE}/quote?symbol=${sym}&apikey=${FMP_API_KEY}`,
-        { signal: AbortSignal.timeout(8000) });
-      trackFmpCall(1);
-      if (!r.ok) return;
-      const d = await r.json();
-      const q = Array.isArray(d) ? d[0] : d;
-      const parsed = parseQ(q);
-      if (parsed) realPrices[sym] = parsed;
-    } catch(e) {}
+  // Universe filtr
+  const UNIVERSE_FILTER = {
+    sp500:   SP500_SAMPLE,
+    ndx:     NDX100_SAMPLE,
+    nyse:    null, // null = barchasi
+    nasdaq:  null,
+  };
+  const universeList = UNIVERSE_FILTER[currentUniverse] || null;
+
+  // market_data dan o'qish — universe ga qarab filter
+  let mdQuery = sb.from('market_data').select('*');
+  if (universeList) {
+    mdQuery = mdQuery.in('ticker', universeList);
+  }
+  // Cap filter
+  if (scanMinCap > 0) {
+    mdQuery = mdQuery.gte('market_cap', scanMinCap);
+  }
+  // Volume filter
+  if (scanMinVol > 0) {
+    mdQuery = mdQuery.gte('volume', scanMinVol);
   }
 
-  // Helper: batch ticker narxlari (3+ harf uchun)
-  async function fetchBatch(syms) {
-    try {
-      const r = await fetch(`${FMP_BASE}/quote?symbol=${syms.join(',')}&apikey=${FMP_API_KEY}`,
-        { signal: AbortSignal.timeout(20000) });
-      trackFmpCall(1);
-      if (!r.ok) return 0;
-      const d = await r.json();
-      if (!Array.isArray(d) || d.length === 0) {
-        // Batch bo'sh — alohida urinib ko'ramiz (eng muhim 5 ta)
-        for (const s of syms.slice(0, 5)) {
-          await fetchSingle(s);
-          await new Promise(r => setTimeout(r, 50));
-        }
-        return 0;
-      }
-      let cnt = 0;
-      d.forEach(q => { const p = parseQ(q); if (p) { realPrices[q.symbol] = p; cnt++; } });
-      return cnt;
-    } catch(e) { return 0; }
-  }
+  const { data: mdRows, error: mdErr } = await mdQuery;
 
-  // 1. Universe yuklash — FMP Ultimate plan imtiyozlari
-  // NYSE/Nasdaq → 1 ta callda 2800-3500 ticker!
-  // SP500/NDX → mavjud smart batching (proven)
-
-  if (currentUniverse === 'nyse' || currentUniverse === 'nasdaq') {
-    // ━━ DB tickers jadvalidan batch yuklash ━━
-    logFmp(`📦 ${currentUniverse.toUpperCase()} — DB tickers batch yuklanmoqda...`);
+  if (mdErr) {
+    logFmp('market_data xato: ' + mdErr.message, true);
+  } else if (mdRows && mdRows.length > 0) {
+    mdRows.forEach(row => {
+      realPrices[row.ticker] = {
+        regularMarketPrice:          parseFloat(row.price || 0),
+        regularMarketChangePercent:  parseFloat(row.change_pct || 0),
+        regularMarketVolume:         parseInt(row.volume || 0),
+        averageVolume:               parseInt(row.avg_volume || row.volume || 0),
+        week52High:                  parseFloat(row.high_52w || 0),
+        week52Low:                   parseFloat(row.low_52w || 0),
+        priceAvg50:                  parseFloat(row.sma50 || 0),
+        priceAvg200:                 parseFloat(row.sma200 || 0),
+        marketCap:                   parseFloat(row.market_cap || 0),
+        pe:                          parseFloat(row.pe || 0),
+        name:                        row.company_name || '',
+        sector:                      row.sector || '',
+        updatedAt:                   row.updated_at,
+      };
+    });
+    const ageMin = mdRows[0]?.updated_at
+      ? Math.round((Date.now() - new Date(mdRows[0].updated_at).getTime()) / 60000)
+      : null;
+    logFmp(`✅ market_data: ${mdRows.length} ticker yuklandi${ageMin !== null ? ' · ' + ageMin + ' daqiqa oldin yangilangan' : ''}`);
+    if (ageMin !== null && ageMin > 30) {
+      logFmp('⚠ Narxlar 30+ daqiqa eski — sync-prices EF ishlamagandir', true);
+    }
+  } else {
+    logFmp('market_data bosh — sync-prices EF ishga tushiring!', true);
+    // Fallback: FMP dan to'g'ridan yuklaymiz (eski logika)
     await loadPricesFromDB(realPrices, prog);
   }
 
-  if (currentUniverse === 'sp500' || currentUniverse === 'ndx') {
-    // ━━ SMART BATCHING: proven v15 logic ━━
-    const tickerList = currentUniverse === 'ndx' ? NDX100_SAMPLE : SP500_SAMPLE;
-    const shortTickers = tickerList.filter(t => t.length <= 2);
-    const longTickers  = tickerList.filter(t => t.length >  2);
-    logFmp(`📊 Scan universe: ${tickerList.length} ta (${shortTickers.length} qisqa, ${longTickers.length} uzun)`);
-    if (prog) prog.textContent = `📡 ${tickerList.length} ta ticker narxi yuklanmoqda...`;
-
-    // Uzun tickerlar — batch 15 ta
-    const BATCH_SZ = 15;
-    const batches = [];
-    for (let i = 0; i < longTickers.length; i += BATCH_SZ) {
-      batches.push(longTickers.slice(i, i + BATCH_SZ));
-    }
-    for (let bi = 0; bi < batches.length; bi++) {
-      const cnt = await fetchBatch(batches[bi]);
-      if (prog) prog.textContent = `Batch ${bi+1}/${batches.length} · ${Object.keys(realPrices).length} narx olindi`;
-      await new Promise(r => setTimeout(r, 80));
-    }
-
-    // Qisqa tickerlar — har biri alohida
-    if (shortTickers.length > 0) {
-      if (prog) prog.textContent = `Qisqa tickerlar (${shortTickers.length} ta)...`;
-      const groups = [];
-      for (let i = 0; i < shortTickers.length; i += 5) groups.push(shortTickers.slice(i, i+5));
-      for (const grp of groups) {
-        await Promise.all(grp.map(s => fetchSingle(s)));
-        await new Promise(r => setTimeout(r, 80));
-      }
-    }
-  }
-
-  logFmp(`✅ Narxlar: ${Object.keys(realPrices).length} ta olindi · ${fmpCallsToday} call sarflandi`);
-  if (prog) prog.textContent = `✅ ${Object.keys(realPrices).length} ta narx olindi · Scoring boshlandi...`;
+  logFmp(`📊 Universe: ${Object.keys(realPrices).length} ticker · ${currentUniverse.toUpperCase()}`);
+  if (prog) prog.textContent = `✅ ${Object.keys(realPrices).length} ta narx tayyor · Scoring boshlandi...`;
 
   // 2. Supabase indicator_values dan texnik indikatorlar
   try {
@@ -3058,7 +3027,7 @@ async function runScan() {
   // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
   // Scan universe: UI dan taniladi (default: Large+Mid cap, >$2B)
-  const scanMinCap  = parseFloat(document.getElementById('scan-min-cap')?.value  || '2') * 1e9;
+  // scanMinCap yuqorida aniqlangan
   const scanMinVol  = parseFloat(document.getElementById('scan-min-vol')?.value  || '0.5') * 1e6;
   const scanMinPrice = parseFloat(document.getElementById('scan-min-price')?.value || '5');
 
