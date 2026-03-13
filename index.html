@@ -340,7 +340,7 @@ tbody td{padding:11px 13px;font-size:12px;font-family:var(--mono);}
     <div id="mkt-ticker" class="mkt" style="font-size:9px;gap:8px;display:none"></div>
     <div class="mkt"><span class="mkt-dot"></span><span id="mkt-status">LIVE</span></div>
     <div style="font-size:9px;color:var(--text3);font-family:var(--mono);padding:2px 7px;background:var(--surface2);border-radius:5px;border:1px solid var(--border)" title="FMP API kunlik limit: 800 call">
-      TD <span id="fmp-counter">0</span>/800
+      FMP <span id="fmp-counter">0</span> call
     </div>
     <button class="btn btn-ghost btn-sm" onclick="showManualSignalModal()">+ Manual Signal</button>
     <div style="font-size:10px;color:var(--text3);font-family:var(--mono)" id="last-sync">—</div>
@@ -1021,7 +1021,7 @@ let fmpStatus = 'ok';
 let fmpLastError = null;
 let fmpCallsToday = parseInt(localStorage.getItem('fmp_calls_today') || '0');
 let fmpCallsDate  = localStorage.getItem('fmp_calls_date') || '';
-const FMP_DAILY_LIMIT = 800;
+const FMP_DAILY_LIMIT = 150000; // FMP 3000 call/min plan — kunlik limit yo'q
 
 // FMP call counter
 function trackFmpCall(n = 1) {
@@ -3733,15 +3733,18 @@ async function refreshFundamentalCache(tickers, staleOnly = true, progressCb = n
 }
 
 async function debugRefreshFundCache() {
-  const tickers = SP500_SAMPLE.slice(0, 200); // Top 200
+  // DB dagi BARCHA cached tickerlarni olamiz (SP500 emas)
+  const { data: cacheRows } = await sb.from('fundamental_cache').select('ticker');
+  const tickers = cacheRows ? cacheRows.map(r => r.ticker) : [];
   const stale = tickers.filter(t => isFundCacheStale(t));
-  toast(`🔄 ${stale.length} ta eski ticker yangilanmoqda...`);
+  toast(`🔄 ${stale.length}/${tickers.length} ta eski ticker yangilanmoqda...`);
   const progEl = document.getElementById('fund-cache-progress');
-  await refreshFundamentalCache(tickers, true, (done, total) => {
+  await refreshFundamentalCache(stale, false, (done, total) => {
     if (progEl) progEl.textContent = `${done}/${total} yangilandi · FMP: ${fmpCallsToday} call`;
   });
   if (progEl) progEl.textContent = `✅ Tugadi! ${stale.length} ticker yangilandi`;
   toast(`✅ Fundamental cache yangilandi: ${stale.length} ticker`);
+  await loadFundamentalCache();
   updateDebugPanel();
 }
 
