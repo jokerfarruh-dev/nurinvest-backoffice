@@ -1477,7 +1477,7 @@ function renderSectorChart(positions) {
   const el = document.getElementById('sector-chart');
   if (positions.length === 0) { el.innerHTML = '<div class="empty-state">Hozircha ochiq pozitsiya yo\'q</div>'; return; }
   const sectors = {};
-  positions.forEach(p => { const s = p.sector || 'Other'; sectors[s] = (sectors[s] || 0) + 1; });
+  positions.forEach(p => { const s = p.sector || fundamentalCache[p.ticker]?.sector || SECTORS[p.ticker] || 'Other'; sectors[s] = (sectors[s] || 0) + 1; });
   const total = positions.length;
   const sorted = Object.entries(sectors).sort((a, b) => b[1] - a[1]);
   const colors = ['#3b82f6', '#34d399', '#f59e0b', '#f87171', '#8b5cf6', '#06b6d4', '#f97316'];
@@ -3011,6 +3011,7 @@ async function runScan() {
     if (!fundCacheLoaded) {
       if (prog) prog.textContent = 'Fundamental cache yuklanmoqda...';
       await loadFundamentalCache();
+  requestNotificationPermission();
     }
     // Universe tickerlar uchun cache bo'sh/eski bo'lsa — SCAN PAYTIDA olamiz
     // Bu bir martalik: 90 kun Supabase da saqlanadi
@@ -3272,7 +3273,7 @@ async function runScan() {
 
     // score = passed/total * 100
     const score = N > 0 ? Math.round(passed / N * 100) : 0;
-    const sector = q.sector || SECTORS[ticker] || 'Other';
+    const sector = q.sector || fundamentalCache[ticker]?.sector || SECTORS[ticker] || 'Other';
 
     let status;
     if (score >= INBOX_THRESH) status = 'idea';
@@ -3600,20 +3601,23 @@ async function loadFundamentalCache() {
 async function fetchAndCacheFundamental(ticker) {
   try {
     // 1. key-metrics — pe, ps, ev_ebitda, debt_to_equity, pfcf, fcf, roe, roa
-    const [kmRes, ratioRes, incRes] = await Promise.all([
+    const [kmRes, ratioRes, incRes, profRes] = await Promise.all([
       fetch(`${FMP_STABLE}/key-metrics-ttm?symbol=${ticker}&apikey=${FMP_API_KEY}`, { signal: AbortSignal.timeout(12000) }),
       fetch(`${FMP_STABLE}/ratios-ttm?symbol=${ticker}&apikey=${FMP_API_KEY}`, { signal: AbortSignal.timeout(12000) }),
-      fetch(`${FMP_BASE}/income-statement?symbol=${ticker}&limit=4&apikey=${FMP_API_KEY}`, { signal: AbortSignal.timeout(12000) })
+      fetch(`${FMP_BASE}/income-statement?symbol=${ticker}&limit=4&apikey=${FMP_API_KEY}`, { signal: AbortSignal.timeout(12000) }),
+      fetch(`${FMP_STABLE}/profile?symbol=${ticker}&apikey=${FMP_API_KEY}`, { signal: AbortSignal.timeout(12000) })
     ]);
-    trackFmpCall(3);
+    trackFmpCall(4);
 
     const kmData   = kmRes.ok   ? await kmRes.json()   : [];
     const ratData  = ratioRes.ok ? await ratioRes.json() : [];
     const incData  = incRes.ok  ? await incRes.json()  : [];
+    const profData = profRes.ok ? await profRes.json() : [];
 
-    const km  = Array.isArray(kmData)  ? kmData[0]  : kmData;
-    const rat = Array.isArray(ratData) ? ratData[0] : ratData;
-    const inc = Array.isArray(incData) ? incData    : [];
+    const km   = Array.isArray(kmData)  ? kmData[0]  : kmData;
+    const rat  = Array.isArray(ratData) ? ratData[0] : ratData;
+    const inc  = Array.isArray(incData) ? incData    : [];
+    const prof = Array.isArray(profData) ? profData[0] : profData;
 
     // Revenue va EPS o'sish
     let rev_growth_yoy = null, eps_growth_yoy = null, rev_growth_qoq = null;
@@ -3695,8 +3699,10 @@ async function fetchAndCacheFundamental(ticker) {
       dividend_yield:  divYield,
       payout_ratio:    payout,
       market_cap:      mktCap,
-      beta:            betaVal,
+      beta:            prof ? (parseFloat(prof.beta) || betaVal) : betaVal,
       pb_ratio:        pbVal,
+      sector:          prof?.sector || null,
+      company_name:    prof?.companyName || null,
       updated_at: new Date().toISOString()
     };
 
@@ -3878,7 +3884,9 @@ async function checkPositionTrigger(ticker, price) {
 
       const sign = parseFloat(returnPct) >= 0 ? '+' : '';
       const icon = shouldClose === 'stop' ? '🛑' : shouldClose === 'target2' ? '🎯🎯' : '🎯';
-      toast(`${icon} ${pos.ticker} avtomatik yopildi (${shouldClose}): ${sign}${returnPct}%`, false, 6000);
+      const msg = `${icon} ${pos.ticker} avtomatik yopildi (${shouldClose}): ${sign}${returnPct}%`;
+      toast(msg, false, 6000);
+      sendBrowserNotification('NurInvest: Pozitsiya yopildi!', msg);
       loadPositions(); loadDashboard();
     }
   }
@@ -3890,10 +3898,17 @@ async function checkWatchlistTrigger(ticker, price) {
     .eq('ticker', ticker).eq('status', 'active').eq('analyst_id', currentUser.id).eq('watch_type', 'price');
   if (priceItems) {
     for (const item of priceItems) {
-      if (item.trigger_value && price <= parseFloat(item.trigger_value)) {
+      const tv = parseFloat(item.trigger_value);
+      // Trigger: narx <= belgilangan qiymat (buy trigger) YOKI >= (breakout trigger)
+      const triggered = item.trigger_direction === 'above'
+        ? price >= tv
+        : price <= tv;
+      if (item.trigger_value && triggered) {
         await sb.from('watchlist').update({ status: 'triggered', triggered_at: new Date().toISOString() }).eq('id', item.id);
         if (item.signal_id) await sb.from('signals').update({ status: 'pending' }).eq('id', item.signal_id);
-        toast(`🎯 ${ticker} narx triggeri: $${price.toFixed(2)} — Signal Inbox ga qaytdi!`, false, 6000);
+        const msg = `🎯 ${ticker} narx triggeri: $${price.toFixed(2)} — Signal Inbox ga qaytdi!`;
+        toast(msg, false, 6000);
+        sendBrowserNotification('NurInvest: Trigger!', msg);
         loadSignals();
       }
     }
@@ -4134,6 +4149,22 @@ function setupRealtime() {
   }, () => loadAudit()).subscribe();
 
   realtimeChannels = [ch1, ch2, ch3];
+}
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// BROWSER NOTIFICATIONS
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+function sendBrowserNotification(title, body) {
+  if (!('Notification' in window)) return;
+  if (Notification.permission === 'granted') {
+    new Notification(title, { body, icon: '/favicon.ico' });
+  }
+}
+async function requestNotificationPermission() {
+  if (!('Notification' in window)) return;
+  if (Notification.permission === 'default') {
+    await Notification.requestPermission();
+  }
 }
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
