@@ -258,7 +258,128 @@ tbody td{padding:11px 13px;font-size:12px;font-family:var(--mono);}
 .uni-btn:hover{border-color:var(--border2);color:var(--text);}
 .uni-btn.active{background:rgba(37,99,235,.2);border-color:var(--blue2);color:var(--blue3);}
 
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   EQUITY RESEARCH MODULE — CSS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+#page-research{display:none;flex-direction:column;height:100%;overflow:hidden;}
+#page-research.active{display:flex;}
+:root{--brand-primary:#B91C1C;--brand-secondary:#ffffff;--brand-light:rgba(185,28,28,0.12);}
+.rp-topbar{display:flex;align-items:center;gap:10px;padding:10px 20px;border-bottom:1px solid var(--border);background:var(--surface);flex-shrink:0;flex-wrap:wrap;}
+.rp-ticker-input{background:var(--surface2);border:1px solid var(--border2);border-radius:8px;padding:7px 12px;color:var(--text);font-family:var(--mono);font-size:13px;font-weight:700;text-transform:uppercase;width:90px;outline:none;transition:.15s;letter-spacing:1px;}
+.rp-ticker-input:focus{border-color:var(--brand-primary);}
+.rp-field{background:var(--surface2);border:1px solid var(--border2);border-radius:8px;padding:7px 11px;color:var(--text);font-family:var(--sans);font-size:12px;outline:none;transition:.15s;min-width:110px;}
+.rp-field:focus{border-color:var(--brand-primary);}
+.rp-field option{background:var(--surface2);}
+.rp-color-swatch{width:30px;height:30px;border-radius:6px;border:2px solid var(--border2);cursor:pointer;}
+.rp-generate-btn{padding:7px 18px;background:var(--brand-primary);color:#fff;border:none;border-radius:8px;font-family:var(--sans);font-size:12px;font-weight:700;cursor:pointer;transition:.15s;white-space:nowrap;}
+.rp-generate-btn:hover{opacity:.88;}
+.rp-generate-btn:disabled{opacity:.4;cursor:not-allowed;}
+.rp-save-btn{padding:7px 14px;background:var(--surface2);color:var(--text2);border:1px solid var(--border2);border-radius:8px;font-family:var(--sans);font-size:12px;font-weight:600;cursor:pointer;transition:.15s;}
+.rp-save-btn:hover{border-color:var(--text2);color:var(--text);}
+.rp-status{font-size:11px;color:var(--text3);font-family:var(--mono);flex:1;min-width:120px;}
+.rp-body{display:flex;flex:1;overflow:hidden;}
+.rp-archive{width:210px;min-width:210px;border-right:1px solid var(--border);background:var(--surface);display:flex;flex-direction:column;overflow:hidden;}
+.rp-archive-hdr{padding:9px 14px;border-bottom:1px solid var(--border);font-size:10px;font-family:var(--mono);color:var(--text3);text-transform:uppercase;letter-spacing:1.5px;}
+.rp-archive-list{flex:1;overflow-y:auto;padding:4px 0;}
+.rp-archive-item{padding:8px 14px;cursor:pointer;border-left:2px solid transparent;transition:.13s;}
+.rp-archive-item:hover{background:var(--surface2);}
+.rp-archive-item.rpa-active{background:var(--surface2);border-left-color:var(--brand-primary);}
+.ai-ticker{font-family:var(--mono);font-size:12px;font-weight:700;color:var(--text);}
+.ai-date{font-size:10px;color:var(--text3);margin-top:2px;}
+.ai-rating{display:inline-block;padding:1px 6px;border-radius:3px;font-size:9px;font-weight:700;font-family:var(--mono);margin-top:3px;}
+.ai-rating.buy{background:rgba(16,185,129,.15);color:var(--green3);}
+.ai-rating.hold{background:rgba(251,191,36,.12);color:var(--yellow3);}
+.ai-rating.sell{background:rgba(239,68,68,.12);color:var(--red3);}
+.rp-content{flex:1;display:flex;flex-direction:column;overflow:hidden;}
+.rp-slide-tabs{display:flex;gap:0;border-bottom:1px solid var(--border);background:var(--surface);flex-shrink:0;overflow-x:auto;}
+.rp-tab{padding:8px 14px;font-size:11px;font-weight:600;font-family:var(--mono);color:var(--text3);cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap;transition:.13s;background:none;border-top:none;border-left:none;border-right:none;}
+.rp-tab:hover{color:var(--text);}
+.rp-tab.active{color:#fff;border-bottom-color:var(--brand-primary);}
+.rp-slides{flex:1;overflow-y:auto;}
+.rp-slide{display:none;padding:14px 18px;}
+.rp-slide.active{display:block;}
+.rp-slide-header{display:flex;align-items:center;justify-content:space-between;background:var(--brand-primary);border-radius:8px 8px 0 0;padding:10px 16px;}
+.rp-slide-header h2{font-size:14px;font-weight:700;color:#fff;}
+.rp-slide-sub{font-size:10px;color:rgba(255,255,255,.6);font-family:var(--mono);}
+.rp-slide-body{background:var(--surface);border:1px solid var(--border);border-top:none;border-radius:0 0 8px 8px;padding:12px;}
+.rp-g2{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;}
+.rp-g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:10px;}
+.rp-g12{display:grid;grid-template-columns:1fr 2fr;gap:10px;margin-bottom:10px;}
+.rp-g21{display:grid;grid-template-columns:2fr 1fr;gap:10px;margin-bottom:10px;}
+.rp-cc{background:var(--surface2);border:1px solid var(--border);border-radius:6px;overflow:hidden;}
+.rp-ch{padding:5px 11px;font-size:10px;font-weight:700;font-family:var(--mono);text-transform:uppercase;letter-spacing:.5px;background:var(--brand-primary);color:#fff;}
+.rp-ch.gray{background:var(--surface3);color:var(--text2);}
+.rp-cb{padding:9px;}
+.rp-cover-top{display:grid;grid-template-columns:1fr 150px;border:1px solid var(--border);border-radius:6px;overflow:hidden;margin-bottom:10px;}
+.rp-cover-info{padding:12px 16px;}
+.rp-cover-rating{background:var(--brand-primary);display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:12px;}
+.rp-rating-big{font-size:26px;font-weight:800;color:#fff;font-family:var(--mono);}
+.rp-co-name{font-size:20px;font-weight:800;color:var(--text);}
+.rp-co-full{font-size:11px;color:var(--text2);margin-bottom:8px;}
+.rp-conv{display:inline-flex;align-items:center;gap:5px;padding:2px 9px;border-radius:20px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;font-family:var(--mono);margin-bottom:9px;}
+.rp-conv-h{background:var(--brand-light);color:var(--brand-primary);border:1px solid var(--brand-primary);}
+.rp-conv-m{background:rgba(251,191,36,.12);color:var(--yellow3);border:1px solid rgba(251,191,36,.3);}
+.rp-conv-l{background:var(--surface3);color:var(--text2);border:1px solid var(--border2);}
+.rp-mrow{display:grid;gap:0;border:1px solid var(--border);border-radius:6px;overflow:hidden;margin-bottom:9px;}
+.rp-mb{padding:7px 11px;border-right:1px solid var(--border);background:var(--surface2);}
+.rp-mb:last-child{border-right:none;}
+.rp-mb.hl{background:var(--brand-primary);}
+.rp-mb.hl .rp-ml{color:rgba(255,255,255,.6);}
+.rp-mb.hl .rp-mv{color:#fff;}
+.rp-ml{font-size:9px;color:var(--text3);font-family:var(--mono);text-transform:uppercase;letter-spacing:.5px;margin-bottom:2px;}
+.rp-mv{font-size:16px;font-weight:700;font-family:var(--mono);color:var(--text);}
+.rp-ms{font-size:9px;color:var(--text3);margin-top:1px;}
+.rp-ms.pos{color:var(--green3);}
+.rp-ms.neg{color:var(--red3);}
+.rp-thesis-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:9px;}
+.rp-tc{background:var(--surface2);border:1px solid var(--border);border-left:3px solid var(--brand-primary);border-radius:6px;padding:9px 11px;}
+.rp-tn{font-size:10px;font-weight:700;color:var(--brand-primary);font-family:var(--mono);margin-bottom:4px;}
+.rp-tt{font-size:11px;color:var(--text2);line-height:1.6;}
+.rp-tbl{width:100%;border-collapse:collapse;font-size:11px;}
+.rp-tbl th{background:var(--brand-primary);color:#fff;padding:5px 8px;text-align:left;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.3px;font-family:var(--mono);}
+.rp-tbl th.r{text-align:right;}
+.rp-tbl td{padding:4px 8px;border-bottom:1px solid var(--border);color:var(--text2);}
+.rp-tbl td.r{text-align:right;font-family:var(--mono);font-size:10px;}
+.rp-tbl tr.hl td{background:var(--brand-light);color:var(--text);font-weight:700;}
+.rp-tbl tr.med td{background:var(--surface2);color:var(--text3);font-style:italic;}
+.rp-tbl tr:hover td{background:var(--surface3);}
+.rp-tbl .pos{color:var(--green3);}
+.rp-tbl .neg{color:var(--red3);}
+.rp-tbl .bold{font-weight:700;color:var(--text);}
+.rp-altman{border:1px solid var(--border);border-radius:6px;overflow:hidden;text-align:center;}
+.rp-altman-hdr{background:var(--surface3);color:var(--text2);padding:4px;font-size:10px;font-weight:700;font-family:var(--mono);}
+.rp-altman-status{background:var(--brand-primary);color:#fff;padding:3px;font-size:9px;font-weight:700;}
+.rp-altman-body{padding:9px;}
+.rp-altman-val{font-size:24px;font-weight:800;font-family:var(--mono);color:var(--text);text-decoration:underline;}
+.rp-scen-bull td{background:rgba(16,185,129,.07);}
+.rp-scen-base td{background:var(--brand-light);}
+.rp-scen-bear td{background:rgba(251,191,36,.07);}
+.rp-tech-input{width:100%;min-height:110px;background:var(--surface2);border:1px solid var(--border2);border-radius:6px;color:var(--text);font-family:var(--sans);font-size:12px;padding:9px 11px;outline:none;resize:vertical;line-height:1.7;transition:.15s;}
+.rp-tech-input:focus{border-color:var(--brand-primary);}
+.rp-tech-label{font-size:10px;font-weight:700;font-family:var(--mono);color:var(--text3);text-transform:uppercase;letter-spacing:1px;margin-bottom:5px;display:block;}
+.rp-disclaimer{margin-top:10px;padding:6px 11px;border-top:1px solid var(--border);font-size:9px;color:var(--text3);font-family:var(--mono);text-align:right;line-height:1.6;}
+.rp-generating{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:260px;gap:14px;color:var(--text3);}
+.rp-spinner{width:32px;height:32px;border:3px solid var(--border2);border-top-color:var(--brand-primary);border-radius:50%;animation:rp-spin .7s linear infinite;}
+@keyframes rp-spin{to{transform:rotate(360deg);}}
+@media print {
+  .sidebar,.rp-topbar,.rp-archive,.rp-slide-tabs,
+  #login-screen,#rp-empty,#rp-loading,
+  .rp-save-btn,.rp-generate-btn { display:none!important; }
+  * { -webkit-print-color-adjust:exact!important; print-color-adjust:exact!important; }
+  body { background:#0c1422!important; margin:0; padding:0; }
+  .main-content { margin:0!important; padding:0!important; overflow:visible!important; }
+  #page-research { display:block!important; height:auto!important; overflow:visible!important; }
+  .rp-body { display:block!important; height:auto!important; overflow:visible!important; }
+  .rp-content { display:block!important; height:auto!important; overflow:visible!important; }
+  .rp-slides { display:block!important; height:auto!important; overflow:visible!important; }
+  .rp-slide { display:block!important; page-break-after:always!important; break-after:page!important;
+    padding:12px!important; margin-bottom:0!important; }
+  .rp-slide:last-child { page-break-after:avoid!important; break-after:avoid!important; }
+  canvas { max-width:100%!important; }
+}
 </style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 </head>
 <body>
 
@@ -310,6 +431,9 @@ tbody td{padding:11px 13px;font-size:12px;font-family:var(--mono);}
     <div class="nav-section">Tahlil</div>
     <div class="nav-item" onclick="go('audit',this)">
       <span class="nav-icon">🏆</span>Idea Audit
+    </div>
+    <div class="nav-item" onclick="go('research',this)">
+      <span class="nav-icon">📄</span>Research Reports
     </div>
     <div class="nav-section">Tizim</div>
     <div class="nav-item admin-only" id="nav-admin" onclick="go('admin',this)" style="display:none">
@@ -642,6 +766,250 @@ tbody td{padding:11px 13px;font-size:12px;font-family:var(--mono);}
         </table>
       </div>
     </div>
+
+    <!-- ═══ RESEARCH REPORTS ═══ -->
+    <div class="page" id="page-research">
+      <div class="rp-topbar">
+        <input id="rp-ticker" class="rp-ticker-input" placeholder="TICKER" maxlength="8" oninput="this.value=this.value.toUpperCase();rpAutoColor(this.value)">
+        <select id="rp-rating" class="rp-field"><option value="BUY">BUY</option><option value="HOLD">HOLD</option><option value="SELL">SELL</option></select>
+        <select id="rp-conviction" class="rp-field" style="min-width:100px"><option value="YUQORI">Yuqori ishonch</option><option value="O'RTA">O'rta ishonch</option><option value="PAST">Past ishonch</option></select>
+        <div style="display:flex;align-items:center;gap:6px"><span style="font-size:10px;color:var(--text3);font-family:var(--mono)">RANG:</span><input type="color" id="rp-color" value="#B91C1C" class="rp-color-swatch" onchange="rpApplyBrandColor(this.value)"></div>
+        <span id="rp-status" class="rp-status">Ticker kiriting va Generate bosing</span>
+        <button class="rp-save-btn" id="rp-save-btn" onclick="rpSaveReport()" style="display:none">💾 Saqlash</button>
+        <button class="rp-generate-btn" id="rp-gen-btn" onclick="rpGenerate()">⚡ Generate</button>
+        <button class="rp-save-btn" onclick="rpPrint()">🖨 PDF</button>
+      </div>
+      <div class="rp-body">
+        <div class="rp-archive">
+          <div class="rp-archive-hdr">📁 Arxiv</div>
+          <div class="rp-archive-list" id="rp-archive-list"><div style="padding:18px 14px;font-size:11px;color:var(--text3);font-family:var(--mono)">Hozircha report yo'q</div></div>
+        </div>
+        <div class="rp-content">
+          <div class="rp-slide-tabs" id="rp-tabs" style="display:none">
+            <button class="rp-tab active" onclick="rpShowSlide(0,this)">① Qoplama</button>
+            <button class="rp-tab" onclick="rpShowSlide(1,this)">② Moliyaviy I</button>
+            <button class="rp-tab" onclick="rpShowSlide(2,this)">③ Moliyaviy II</button>
+            <button class="rp-tab" onclick="rpShowSlide(3,this)">④ Raqobatchilar</button>
+            <button class="rp-tab" onclick="rpShowSlide(4,this)">⑤ Texnik tahlil</button>
+            <button class="rp-tab" onclick="rpShowSlide(5,this)">⑥ Xulosa</button>
+          </div>
+          <div class="rp-slides" id="rp-slides">
+            <div id="rp-empty" style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;gap:12px;color:var(--text3)">
+              <div style="font-size:44px">📊</div>
+              <div style="font-size:14px;font-weight:700;color:var(--text2)">Equity Research Generator</div>
+              <div style="font-size:12px;font-family:var(--mono)">Ticker kiriting → Generate bosing</div>
+              <div style="font-size:10px;color:var(--text3);font-family:var(--mono)">FMP Professional + Gemini AI + 6 ta vizual slide</div>
+            </div>
+            <div id="rp-loading" style="display:none">
+              <div class="rp-generating">
+                <div class="rp-spinner"></div>
+                <div style="font-size:13px;font-weight:700;color:var(--text2)" id="rp-loading-title">Yuklanmoqda...</div>
+                <div style="font-size:11px;font-family:var(--mono);color:var(--text3)" id="rp-loading-step">—</div>
+              </div>
+            </div>
+            <!-- SLIDE 0: QOPLAMA -->
+            <div class="rp-slide active" id="rp-slide-0">
+              <div class="rp-slide-header"><h2 id="s0-title">— | Investitsiya Xulosasi</h2><span class="rp-slide-sub" id="s0-date">NurInvest Research · —</span></div>
+              <div class="rp-slide-body">
+                <div class="rp-cover-top">
+                  <div class="rp-cover-info">
+                    <div class="rp-co-name" id="s0-company">—</div>
+                    <div class="rp-co-full" id="s0-sector">—</div>
+                    <div class="rp-conv rp-conv-h" id="s0-conviction">● Yuqori ishonch</div>
+                    <div class="rp-mrow" style="grid-template-columns:repeat(4,1fr)" id="s0-metrics">
+                      <div class="rp-mb"><div class="rp-ml">P/E</div><div class="rp-mv" id="s0-pe">—</div></div>
+                      <div class="rp-mb"><div class="rp-ml">EV/EBITDA</div><div class="rp-mv" id="s0-ev">—</div></div>
+                      <div class="rp-mb"><div class="rp-ml">Gross Margin</div><div class="rp-mv" id="s0-gm">—</div></div>
+                      <div class="rp-mb"><div class="rp-ml">Mkt Cap</div><div class="rp-mv" id="s0-mktcap">—</div></div>
+                    </div>
+                  </div>
+                  <div class="rp-cover-rating">
+                    <div style="font-size:9px;color:rgba(255,255,255,.6);margin-bottom:4px;font-family:var(--mono)">REYTING</div>
+                    <div class="rp-rating-big" id="s0-rating">BUY</div>
+                    <div style="width:36px;height:1px;background:rgba(255,255,255,.3);margin:7px auto"></div>
+                    <div style="font-size:9px;color:rgba(255,255,255,.6);margin-bottom:2px;font-family:var(--mono)">TAHLILCHI</div>
+                    <div style="font-size:11px;font-weight:700;color:#fff;font-family:var(--mono)" id="s0-analyst">—</div>
+                  </div>
+                </div>
+                <div class="rp-mrow" style="grid-template-columns:repeat(5,1fr);margin-bottom:10px">
+                  <div class="rp-mb"><div class="rp-ml">52w High</div><div class="rp-mv" id="s0-52h">—</div></div>
+                  <div class="rp-mb"><div class="rp-ml">52w Low</div><div class="rp-mv" id="s0-52l">—</div></div>
+                  <div class="rp-mb"><div class="rp-ml">Net Margin</div><div class="rp-mv pos" id="s0-nm">—</div></div>
+                  <div class="rp-mb"><div class="rp-ml">ROE</div><div class="rp-mv" id="s0-roe">—</div></div>
+                  <div class="rp-mb hl"><div class="rp-ml">Joriy narx</div><div class="rp-mv" id="s0-price">—</div></div>
+                </div>
+                <div class="rp-cc" style="margin-bottom:10px">
+                  <div class="rp-ch">Kompaniya Tavsifi</div>
+                  <div class="rp-cb">
+                    <div id="s0-overview" style="font-size:12px;color:var(--text2);line-height:1.8">Yuklanmoqda...</div>
+                  </div>
+                </div>
+                <div class="rp-cc">
+                  <div class="rp-ch">Investitsiya Thezisi</div>
+                  <div class="rp-cb"><div class="rp-thesis-grid" id="s0-thesis">
+                    <div class="rp-tc"><div class="rp-tn">① —</div><div class="rp-tt">Yuklanmoqda...</div></div>
+                    <div class="rp-tc"><div class="rp-tn">② —</div><div class="rp-tt">Yuklanmoqda...</div></div>
+                    <div class="rp-tc"><div class="rp-tn">③ —</div><div class="rp-tt">Yuklanmoqda...</div></div>
+                  </div></div>
+                </div>
+                <div class="rp-disclaimer">Ushbu tahlil o'quv va ma'lumot maqsadlarida tayyorlangan. Moliyaviy maslahat hisoblanmaydi. Investitsiya qaroridan oldin mustaqil tadqiqot o'tkazing.</div>
+              </div>
+            </div>
+            <!-- SLIDE 1: MOLIYAVIY I -->
+            <div class="rp-slide" id="rp-slide-1">
+              <div class="rp-slide-header"><h2 id="s1-title">— | Moliyaviy Tahlil I</h2><span class="rp-slide-sub">Daromad, Marja, Rentabellik</span></div>
+              <div class="rp-slide-body">
+                <div class="rp-g2">
+                  <div class="rp-cc"><div class="rp-ch">Daromad / EBITDA / Sof Foyda</div><div class="rp-cb"><div style="height:190px"><canvas id="rp-revenue-chart"></canvas></div></div></div>
+                  <div class="rp-g12" style="gap:9px;margin:0">
+                    <div class="rp-cc" style="display:flex;flex-direction:column;align-items:center;justify-content:center">
+                      <div class="rp-ch" style="width:100%">Sof Foyda Marjasi</div>
+                      <div class="rp-cb" style="display:flex;flex-direction:column;align-items:center">
+                        <div style="width:110px;height:110px"><canvas id="rp-margin-donut"></canvas></div>
+                        <div style="text-align:center;margin-top:5px"><div style="font-size:17px;font-weight:800;font-family:var(--mono);color:var(--text)" id="s1-net-margin">—%</div><div style="font-size:9px;color:var(--text3)">Net Margin</div></div>
+                      </div>
+                    </div>
+                    <div class="rp-altman">
+                      <div class="rp-altman-hdr">Moliyaviy Barqarorlik</div>
+                      <div class="rp-altman-status" id="s1-altman-status">Xavfsiz</div>
+                      <div class="rp-altman-body"><div class="rp-ml">Altman-Z</div><div class="rp-altman-val" id="s1-altman-z">—</div><div style="font-size:9px;color:var(--text3);margin-top:2px" id="s1-altman-desc">—</div></div>
+                    </div>
+                  </div>
+                </div>
+                <div class="rp-g2">
+                  <div class="rp-cc"><div class="rp-ch">ROA va ROE Dinamikasi</div><div class="rp-cb"><div style="height:150px"><canvas id="rp-roe-chart"></canvas></div></div></div>
+                  <div class="rp-cc"><div class="rp-ch gray">Asosiy Ko'rsatkichlar</div><div class="rp-cb" style="padding:0"><table class="rp-tbl"><thead><tr><th>Ko'rsatkich</th><th class="r">—</th><th class="r">—</th><th class="r">—</th><th class="r">—</th></tr></thead><tbody id="s1-ratios-tbl"><tr><td colspan="5" style="text-align:center;color:var(--text3);padding:10px">Yuklanmoqda...</td></tr></tbody></table></div></div>
+                </div>
+                <div class="rp-cc" style="margin-bottom:6px">
+                  <div class="rp-ch gray">📝 AI Moliyaviy Tahlil I Izohi</div>
+                  <div class="rp-cb" style="padding:8px 12px"><div id="s1-ai-comment" style="font-size:11px;color:var(--text2);line-height:1.7">—</div></div>
+                </div>
+                <div class="rp-disclaimer">Ushbu tahlil o'quv va ma'lumot maqsadlarida tayyorlangan. Moliyaviy maslahat hisoblanmaydi.</div>
+              </div>
+            </div>
+            <!-- SLIDE 2: MOLIYAVIY II -->
+            <div class="rp-slide" id="rp-slide-2">
+              <div class="rp-slide-header"><h2 id="s2-title">— | Moliyaviy Tahlil II</h2><span class="rp-slide-sub">Naqd pul, Qarz, Prognoz</span></div>
+              <div class="rp-slide-body">
+                <div class="rp-g2">
+                  <div class="rp-cc"><div class="rp-ch">Naqd Pul va Qarz ($M)</div><div class="rp-cb"><div style="height:160px"><canvas id="rp-cash-chart"></canvas></div></div></div>
+                  <div class="rp-cc"><div class="rp-ch">Daromad Prognozi (konsensus, $B)</div><div class="rp-cb"><div style="height:160px"><canvas id="rp-forecast-chart"></canvas></div></div></div>
+                </div>
+                <div class="rp-cc" style="margin-bottom:10px"><div class="rp-ch gray">5 Yillik Moliyaviy Tarix</div><div class="rp-cb" style="padding:0;overflow-x:auto"><table class="rp-tbl" id="s2-income-tbl"><thead><tr><th>Ko'rsatkich</th><th class="r">—</th><th class="r">—</th><th class="r">—</th><th class="r">—</th><th class="r">—</th></tr></thead><tbody><tr><td colspan="6" style="text-align:center;color:var(--text3);padding:10px">Yuklanmoqda...</td></tr></tbody></table></div></div>
+                <div class="rp-cc" style="margin-bottom:6px">
+                  <div class="rp-ch gray">📝 AI Moliyaviy Tahlil II Izohi</div>
+                  <div class="rp-cb" style="padding:8px 12px"><div id="s2-ai-comment" style="font-size:11px;color:var(--text2);line-height:1.7">—</div></div>
+                </div>
+                <div class="rp-disclaimer">Ushbu tahlil o'quv va ma'lumot maqsadlarida tayyorlangan. Moliyaviy maslahat hisoblanmaydi. E — taxminiy.</div>
+              </div>
+            </div>
+            <!-- SLIDE 3: RAQOBATCHILAR -->
+            <div class="rp-slide" id="rp-slide-3">
+              <div class="rp-slide-header"><h2 id="s3-title">— | Raqobatchilar Tahlili</h2><span class="rp-slide-sub" id="s3-peers-label">Peer taqqoslash</span></div>
+              <div class="rp-slide-body">
+                <!-- Manual peer input -->
+                <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;padding:8px 10px;background:var(--surface2);border:1px solid var(--border2);border-radius:6px;">
+                  <span style="font-size:10px;font-weight:700;font-family:var(--mono);color:var(--text3);white-space:nowrap">RAQOBATCHILAR:</span>
+                  <input id="rp-peer1" class="rp-field" style="min-width:0;width:80px;font-family:var(--mono);font-weight:700;text-transform:uppercase;font-size:12px" placeholder="Ticker 1" maxlength="8" oninput="this.value=this.value.toUpperCase()">
+                  <input id="rp-peer2" class="rp-field" style="min-width:0;width:80px;font-family:var(--mono);font-weight:700;text-transform:uppercase;font-size:12px" placeholder="Ticker 2" maxlength="8" oninput="this.value=this.value.toUpperCase()">
+                  <input id="rp-peer3" class="rp-field" style="min-width:0;width:80px;font-family:var(--mono);font-weight:700;text-transform:uppercase;font-size:12px" placeholder="Ticker 3" maxlength="8" oninput="this.value=this.value.toUpperCase()">
+                  <button onclick="rpLoadPeers()" style="padding:7px 14px;background:var(--brand-primary);color:#fff;border:none;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap">⟳ Yuklash</button>
+                  <span id="rp-peers-status" style="font-size:10px;font-family:var(--mono);color:var(--text3);flex:1"></span>
+                </div>
+                <div class="rp-g12">
+                  <div class="rp-cc"><div class="rp-ch">Daromadlar O'sishi (%)</div><div class="rp-cb"><div style="height:170px"><canvas id="rp-peer-growth-chart"></canvas></div></div></div>
+                  <div class="rp-cc"><div class="rp-ch">Bozor Kapitallashuvi ($B)</div><div class="rp-cb"><div style="height:170px"><canvas id="rp-mktcap-chart"></canvas></div></div></div>
+                </div>
+                <div class="rp-g2">
+                  <div class="rp-cc"><div class="rp-ch gray">Baholash Ko'rsatkichlari</div><div class="rp-cb" style="padding:0"><table class="rp-tbl" id="s3-valuation-tbl"><thead><tr><th>Ticker</th><th class="r">P/E</th><th class="r">P/S</th><th class="r">Gross Mg</th><th class="r">Mkt Cap</th></tr></thead><tbody><tr><td colspan="5" style="text-align:center;color:var(--text3);padding:10px">Yuklanmoqda...</td></tr></tbody></table></div></div>
+                  <div class="rp-cc"><div class="rp-ch gray">Net Margin Taqqoslash</div><div class="rp-cb"><div style="height:130px"><canvas id="rp-peer-profit-chart"></canvas></div></div></div>
+                </div>
+                <div class="rp-cc" style="margin-bottom:6px">
+                  <div class="rp-ch gray">📝 AI Raqobatchilar Tahlili Izohi</div>
+                  <div class="rp-cb" style="padding:8px 12px"><div id="s3-ai-comment" style="font-size:11px;color:var(--text2);line-height:1.7">—</div></div>
+                </div>
+                <div class="rp-disclaimer">Ushbu tahlil o'quv va ma'lumot maqsadlarida tayyorlangan. Moliyaviy maslahat hisoblanmaydi.</div>
+              </div>
+            </div>
+            <!-- SLIDE 4: TEXNIK TAHLIL -->
+            <div class="rp-slide" id="rp-slide-4">
+              <div class="rp-slide-header"><h2 id="s4-title">— | Texnik Tahlil</h2><span class="rp-slide-sub">Chart screenshoti + qo'lda tahlil</span></div>
+              <div class="rp-slide-body">
+                <!-- Chart image upload -->
+                <div class="rp-cc" style="margin-bottom:10px">
+                  <div class="rp-ch">📊 Chart Screenshoti (TradingView yoki boshqa)</div>
+                  <div class="rp-cb" style="padding:8px">
+                    <div id="rp-chart-img-wrap" style="width:100%;min-height:160px;background:var(--surface3);border:2px dashed var(--border2);border-radius:6px;display:flex;align-items:center;justify-content:center;cursor:pointer;position:relative;overflow:hidden"
+                      onclick="document.getElementById('rp-chart-file').click()"
+                      ondragover="event.preventDefault();this.style.borderColor='var(--brand-primary)'"
+                      ondragleave="this.style.borderColor='var(--border2)'"
+                      ondrop="event.preventDefault();rpHandleChartImg(event.dataTransfer.files[0])">
+                      <img id="rp-chart-img" src="" alt="" style="display:none;width:100%;height:auto;max-height:340px;object-fit:contain;border-radius:4px">
+                      <div id="rp-chart-img-placeholder" style="text-align:center;color:var(--text3)">
+                        <div style="font-size:28px;margin-bottom:6px">📈</div>
+                        <div style="font-size:12px;font-weight:600;color:var(--text2)">Chart rasmini shu yerga tashlang</div>
+                        <div style="font-size:10px;font-family:var(--mono);margin-top:4px">yoki bosing va tanlang · PNG, JPG, JPEG</div>
+                      </div>
+                      <button id="rp-chart-remove" onclick="event.stopPropagation();rpRemoveChartImg()" style="display:none;position:absolute;top:6px;right:6px;background:rgba(0,0,0,.6);color:#fff;border:none;border-radius:4px;padding:3px 8px;font-size:10px;cursor:pointer">✕ O'chirish</button>
+                    </div>
+                    <input type="file" id="rp-chart-file" accept="image/*" style="display:none" onchange="rpHandleChartImg(this.files[0])">
+                  </div>
+                </div>
+
+                <div class="rp-g2" style="margin-bottom:10px">
+                  <div>
+                    <label class="rp-tech-label">📝 Texnik tahlil izohi</label>
+                    <textarea id="rp-tech-text" class="rp-tech-input" placeholder="Misol: Narx $83.50 support darajasida turibdi (2022-dan sinmagan). RSI(14)=42 — oversold yaqin. MACD bullish crossover shakllanmoqda. $71 zona qattiq support..."></textarea>
+                    <label class="rp-tech-label" style="margin-top:9px">🎯 Katalizatorlar</label>
+                    <textarea id="rp-catalyst-text" class="rp-tech-input" style="min-height:70px" placeholder="Misol: Q2 2026 earnings — ARR o'sishi kutilmoqda; Gov contracts..."></textarea>
+                  </div>
+                  <div>
+                    <label class="rp-tech-label">⚠️ Asosiy Risklar</label>
+                    <textarea id="rp-risk-text" class="rp-tech-input" placeholder="Misol: Raqobat bosimi; Segment o'sishining sekinlashishi..."></textarea>
+                    <div class="rp-cc" style="margin-top:9px">
+                      <div class="rp-ch gray">FMP Narx Ma'lumotlari</div>
+                      <div class="rp-cb" style="padding:0">
+                        <table class="rp-tbl"><tbody>
+                          <tr><td>Joriy narx</td><td class="r bold" id="s4-cur-price">—</td></tr>
+                          <tr><td>52-hafta High</td><td class="r" id="s4-52h">—</td></tr>
+                          <tr><td>52-hafta Low</td><td class="r" id="s4-52l">—</td></tr>
+                          <tr><td>Beta (1yr)</td><td class="r" id="s4-beta">—</td></tr>
+                          <tr><td>Avg Volume</td><td class="r" id="s4-vol">—</td></tr>
+                        </tbody></table>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="rp-disclaimer">Ushbu tahlil o'quv va ma'lumot maqsadlarida tayyorlangan. Moliyaviy maslahat hisoblanmaydi.</div>
+              </div>
+            </div>
+            <!-- SLIDE 5: XULOSA -->
+            <div class="rp-slide" id="rp-slide-5">
+              <div class="rp-slide-header"><h2 id="s5-title">— | Xulosa va Scenariy Tahlili</h2><span class="rp-slide-sub">Bull / Base / Bear · Risklar · Tahlilchi xulosasi</span></div>
+              <div class="rp-slide-body">
+                <div class="rp-cc" style="margin-bottom:10px"><div class="rp-ch">Scenariy Tahlili (12 Oy)</div><div class="rp-cb" style="padding:0"><table class="rp-tbl"><thead><tr><th>Scenariy</th><th class="r">Ehtimol</th><th class="r">Target</th><th class="r">Potentsial</th><th>Asosiy taxmin</th></tr></thead><tbody id="s5-scenario-tbl"><tr><td colspan="5" style="text-align:center;color:var(--text3);padding:10px">Yuklanmoqda...</td></tr></tbody></table></div></div>
+                <div class="rp-g2" style="margin-bottom:10px">
+                  <div class="rp-cc"><div class="rp-ch" style="background:var(--green)">✅ Katalizatorlar</div><div class="rp-cb" id="s5-catalysts-display" style="font-size:11px;color:var(--text2);line-height:1.8;white-space:pre-wrap">—</div></div>
+                  <div class="rp-cc"><div class="rp-ch">⚠️ Risklar</div><div class="rp-cb" id="s5-risks-display" style="font-size:11px;color:var(--text2);line-height:1.8;white-space:pre-wrap">—</div></div>
+                </div>
+                <div class="rp-cc" style="margin-bottom:10px"><div class="rp-ch">Tahlilchi Xulosasi (AI)</div><div class="rp-cb"><div id="s5-verdict" style="font-size:12px;color:var(--text2);line-height:1.8">Yuklanmoqda...</div><div style="text-align:right;margin-top:8px"><span class="rp-conv rp-conv-h" id="s5-conviction-badge">● BUY · Yuqori ishonch</span></div></div></div>
+                <!-- Disclaimer box -->
+                <div style="background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:11px 13px">
+                  <div style="font-size:9px;font-weight:700;font-family:var(--mono);color:var(--text3);text-transform:uppercase;letter-spacing:1px;margin-bottom:5px">⚖️ MUHIM OGOHLANTIRISH (DISCLAIMER)</div>
+                  <div id="rp-disclaimer-text" style="font-size:10px;color:var(--text3);line-height:1.8;font-family:var(--mono)">Ushbu hujjat faqat o'quv va ma'lumot maqsadlarida tayyorlangan bo'lib, moliyaviy maslahat, investitsion tavsiya yoki qimmatli qog'ozlar taklifi hisoblanmaydi. Tahlilda keltirilgan ma'lumotlar ochiq manbalardan olingan bo'lib, ularning to'liqligi va aniqligi kafolatlanmaydi. O'tmishdagi natijalar kelajakdagi daromadlarni kafolatlamaydi. Investitsiya qarorlari qabul qilishdan oldin o'z mustaqil tadqiqotingizni o'tkazing va malakali moliyaviy maslahatchi bilan maslahatlashing. NurInvest Research bu tahlil asosida amalga oshirilgan investitsiya natijalari uchun javobgar emas.</div>
+                  <div style="margin-top:7px;display:flex;gap:7px;align-items:center">
+                    <span style="font-size:9px;color:var(--text3);font-family:var(--mono)">Qo'shimcha:</span>
+                    <input id="rp-custom-disclaimer" style="flex:1;background:var(--surface3);border:1px solid var(--border);border-radius:4px;padding:3px 8px;color:var(--text2);font-size:10px;font-family:var(--mono);outline:none" placeholder="Ixtiyoriy qo'shimcha matn...">
+                    <button onclick="rpUpdateDisclaimer()" style="padding:3px 9px;background:var(--surface3);border:1px solid var(--border2);border-radius:4px;color:var(--text2);font-size:10px;cursor:pointer">Qo'shish</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- /RESEARCH REPORTS -->
 
     <!-- ━━━━━━━━━━━━━━━ ADMIN PAGE ━━━━━━━━━━━━━━━ -->
     <div class="page" id="page-admin">
@@ -1267,6 +1635,7 @@ function go(page, navEl) {
   if (page === 'factory') loadStrategies();
   if (page === 'debug') updateDebugPanel();
   if (page === 'admin') loadAdminPanel();
+  if (page === 'research') loadResearch();
 }
 
 // saveTdKey removed in v15 — FMP key is hardcoded
@@ -4162,6 +4531,1194 @@ function gsearch(e) {
     }
   });
 })();
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// EQUITY RESEARCH MODULE
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+// ── SOZLAMALAR — shu 2 qatorni o'zgartiring ──────
+const GEMINI_KEY = 'AIzaSyAhTPLRGgYl8-o4XKlYRfaiOf874AAowTA'; // aistudio.google.com dan oling (BEPUL)
+const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${GEMINI_KEY}`;
+const FMP_V3 = 'https://financialmodelingprep.com/stable';
+
+// ── 40+ kompaniya brend rangi ─────────────────────
+const RP_BRAND_COLORS = {
+  'NVDA':'#76b900','AMD':'#ED1C24','INTC':'#0071C5','AAPL':'#555555','MSFT':'#00A4EF',
+  'GOOGL':'#4285F4','GOOG':'#4285F4','META':'#0866FF','AMZN':'#FF9900','TSLA':'#CC0000',
+  'NFLX':'#E50914','FTNT':'#EE3124','CRWD':'#FC2A1C','PANW':'#00C176','NET':'#F48120',
+  'ZS':'#005BAC','OKTA':'#007DC1','S':'#7B2FBE','CYBR':'#0066CC','ASML':'#0071B9',
+  'AMAT':'#00A0DF','KLAC':'#004B87','LRCX':'#E31837','MU':'#0047BA','QCOM':'#3253DC',
+  'TXN':'#C41230','MRVL':'#005EB8','AVGO':'#CC0000','JPM':'#003087','GS':'#1B4E8C',
+  'MS':'#003087','BAC':'#E31837','C':'#003F77','V':'#1A1F71','MA':'#EB001B',
+  'PYPL':'#003087','CRM':'#00A1E0','ORCL':'#F80000','SAP':'#0FAAFF','NOW':'#81B5A1',
+  'ADBE':'#FF0000','INTU':'#236CFF','SNOW':'#29B5E8','DDOG':'#632CA6','SHOP':'#96BF48',
+};
+
+// ── STATE ─────────────────────────────────────────
+let rpCurrentReport = null;
+let rpCharts = {};
+let rpCurrentColor = '#B91C1C';
+
+// ── INIT ──────────────────────────────────────────
+function loadResearch() { rpLoadArchive(); }
+
+// ── AUTO RANG ─────────────────────────────────────
+function rpAutoColor(ticker) {
+  if (RP_BRAND_COLORS[ticker]) {
+    rpCurrentColor = RP_BRAND_COLORS[ticker];
+    document.getElementById('rp-color').value = rpCurrentColor;
+    rpApplyBrandColor(rpCurrentColor);
+  }
+}
+
+function rpApplyBrandColor(hex) {
+  rpCurrentColor = hex;
+  document.documentElement.style.setProperty('--brand-primary', hex);
+  document.documentElement.style.setProperty('--brand-light', hex + '22');
+  rpUpdateChartColors(hex);
+}
+
+function rpUpdateChartColors(hex) {
+  if (rpCharts.revenue) { rpCharts.revenue.data.datasets[0].backgroundColor = hex; rpCharts.revenue.update('none'); }
+  if (rpCharts.marginDonut) { rpCharts.marginDonut.data.datasets[0].backgroundColor[0] = hex; rpCharts.marginDonut.update('none'); }
+}
+
+// ── SLIDE NAV ─────────────────────────────────────
+function rpShowSlide(idx, btn) {
+  document.querySelectorAll('.rp-slide').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.rp-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('rp-slide-' + idx).classList.add('active');
+  btn.classList.add('active');
+  if (idx === 5) rpSyncManualFields();
+  // Chart.js display:none ichida 0px render bo'ladi — ko'ringan slide uchun resize
+  const chartMap = {
+    1: ['revenue','marginDonut','roeChart'],
+    2: ['cashChart','forecastChart'],
+    3: ['peerGrowth','mktcap','peerProfit']
+  };
+  if (chartMap[idx]) {
+    requestAnimationFrame(() => {
+      chartMap[idx].forEach(k => {
+        try { if (rpCharts[k]) { rpCharts[k].resize(); rpCharts[k].update('none'); } } catch(e) {}
+      });
+    });
+  }
+}
+
+function rpSyncManualFields() {
+  const cats = document.getElementById('rp-catalyst-text').value;
+  const risks = document.getElementById('rp-risk-text').value;
+  if (cats) document.getElementById('s5-catalysts-display').textContent = cats;
+  if (risks) document.getElementById('s5-risks-display').textContent = risks;
+}
+
+// ── LOADING ───────────────────────────────────────
+function rpSetLoading(show, title = '', step = '') {
+  document.getElementById('rp-loading').style.display = show ? 'block' : 'none';
+  document.getElementById('rp-empty').style.display = 'none';
+  document.getElementById('rp-tabs').style.display = show ? 'none' : 'flex';
+  if (show) {
+    document.getElementById('rp-loading-title').textContent = title;
+    document.getElementById('rp-loading-step').textContent = step;
+    document.querySelectorAll('.rp-slide').forEach(s => s.classList.remove('active'));
+  }
+  document.getElementById('rp-gen-btn').disabled = show;
+}
+
+function rpSetStatus(msg) { document.getElementById('rp-status').textContent = msg; }
+
+// ── ASOSIY GENERATE ───────────────────────────────
+// ── PEERS FALLBACK MAP ────────────────────────────
+const RP_PEERS = {
+  'NVDA':['AMD','INTC','QCOM'],'AMD':['NVDA','INTC','QCOM'],'INTC':['NVDA','AMD','TXN'],
+  'AAPL':['MSFT','GOOGL','META'],'MSFT':['AAPL','GOOGL','CRM'],'GOOGL':['MSFT','META','AMZN'],
+  'META':['GOOGL','SNAP','PINS'],'AMZN':['MSFT','GOOGL','SHOP'],'TSLA':['GM','F','RIVN'],
+  'NFLX':['DIS','WBD','PARA'],'FTNT':['CRWD','PANW','NET'],'CRWD':['FTNT','PANW','S'],
+  'PANW':['FTNT','CRWD','CYBR'],'NET':['FTNT','ZS','OKTA'],'ZS':['NET','PANW','OKTA'],
+  'OKTA':['CYBR','ZS','NET'],'ASML':['AMAT','KLAC','LRCX'],'AMAT':['ASML','KLAC','LRCX'],
+  'MU':['NVDA','AMD','WDC'],'QCOM':['NVDA','AMD','AVGO'],'AVGO':['QCOM','MRVL','TXN'],
+  'CRM':['NOW','MSFT','ORCL'],'NOW':['CRM','MSFT','SAP'],'ADBE':['CRM','ORCL','NOW'],
+  'PYPL':['V','MA','SQ'],'V':['MA','PYPL','AXP'],'MA':['V','PYPL','AXP'],
+  'JPM':['BAC','GS','MS'],'GS':['JPM','MS','BAC'],'BAC':['JPM','C','WFC'],
+  'S':['CRWD','PANW','CYBR'],'CYBR':['PANW','FTNT','OKTA'],
+  'TXN':['AVGO','QCOM','ADI'],'MRVL':['AVGO','QCOM','NVDA'],
+};
+
+async function rpGenerate() {
+  const ticker = document.getElementById('rp-ticker').value.trim().toUpperCase();
+  const rating = document.getElementById('rp-rating').value;
+  const conviction = document.getElementById('rp-conviction').value;
+  if (!ticker) { alert('Ticker kiriting!'); return; }
+
+  rpSetLoading(true, `${ticker} ma'lumotlari yuklanmoqda...`, 'FMP Stable API...');
+  rpSetStatus(`⏳ ${ticker} tahlil qilinmoqda...`);
+
+  try {
+    rpSetLoading(true, 'Kompaniya profili...', '/profile');
+    const profRaw = await rpFetchFMP(`/profile?symbol=${ticker}`);
+    const profObj = Array.isArray(profRaw) ? profRaw[0] : profRaw;
+
+    // /quote dan mktCap, yearHigh, yearLow, volAvg, beta olish (profile da ba'zi fieldlar yo'q)
+    rpSetLoading(true, 'Narx va bozor ma\'lumotlari...', '/quote');
+    let quoteData = {};
+    try {
+      const qRaw = await rpFetchFMP(`/quote?symbol=${ticker}`);
+      quoteData = Array.isArray(qRaw) ? qRaw[0] : qRaw;
+    } catch(e) {}
+
+    // Profile + Quote ni birlashtirish
+    const co = {
+      ...profObj,
+      price:     parseFloat(quoteData.price     || profObj?.price     || 0) || null,
+      mktCap:    parseFloat(quoteData.marketCap || profObj?.mktCap    || profObj?.marketCap || 0) || null,
+      yearHigh:  parseFloat(quoteData.yearHigh  || profObj?.range?.split('-')?.[1] || 0) || null,
+      yearLow:   parseFloat(quoteData.yearLow   || profObj?.range?.split('-')?.[0] || 0) || null,
+      volAvg:    parseInt(quoteData.avgVolume   || profObj?.volAvg    || 0) || null,
+      beta:      parseFloat(quoteData.beta      || profObj?.beta      || 0) || null,
+      pe:        parseFloat(quoteData.pe        || profObj?.pe        || 0) || null,
+    };
+
+    rpSetLoading(true, 'Daromad tarixi (5 yil)...', '/income-statement');
+    const income = await rpFetchFMP(`/income-statement?symbol=${ticker}&limit=5`);
+    if (!Array.isArray(income) || income.length === 0) throw new Error(`${ticker} uchun income data topilmadi`);
+
+    rpSetLoading(true, 'Balans...', '/balance-sheet-statement');
+    const balance = await rpFetchFMP(`/balance-sheet-statement?symbol=${ticker}&limit=5`);
+
+    rpSetLoading(true, 'Ratios TTM (P/E, Margin, ROE)...', '/ratios-ttm');
+    const ratRaw = await rpFetchFMP(`/ratios-ttm?symbol=${ticker}`);
+    const rat = Array.isArray(ratRaw) ? ratRaw[0] : ratRaw;
+
+    rpSetLoading(true, 'Key Metrics TTM (EV/EBITDA)...', '/key-metrics-ttm');
+    const kmRaw = await rpFetchFMP(`/key-metrics-ttm?symbol=${ticker}`);
+    const km = Array.isArray(kmRaw) ? kmRaw[0] : kmRaw;
+
+    rpSetLoading(true, 'Raqobatchilar...', '/stock-peers');
+    let peers = RP_PEERS[ticker] || [];
+    try {
+      const pRaw = await rpFetchFMP(`/stock-peers?symbol=${ticker}`);
+      const fp = (Array.isArray(pRaw) ? pRaw[0]?.peersList : pRaw?.peersList) || [];
+      if (fp.length > 0) peers = fp.slice(0, 3);
+    } catch(e) { /* fallback */ }
+    peers = peers.slice(0, 3);
+
+    let peerIncomes = {};
+    for (const p of peers) {
+      rpSetLoading(true, `Raqobatchi: ${p}`, '/income-statement + /profile + /ratios-ttm');
+      try {
+        const pi  = await rpFetchFMP(`/income-statement?symbol=${p}&limit=3`);
+        const pp  = await rpFetchFMP(`/profile?symbol=${p}`);
+        const prt = await rpFetchFMP(`/ratios-ttm?symbol=${p}`);
+        // Peer quote dan mktCap olish
+        let pQuote = {};
+        try { const pq = await rpFetchFMP(`/quote?symbol=${p}`); pQuote = Array.isArray(pq) ? pq[0] : pq; } catch(e) {}
+        const ppObj = Array.isArray(pp) ? pp[0] : pp;
+        peerIncomes[p] = {
+          income:  Array.isArray(pi) ? pi : [],
+          profile: { ...ppObj, mktCap: parseFloat(pQuote.marketCap || ppObj?.mktCap || 0) || null,
+                     pe: parseFloat(pQuote.pe || ppObj?.pe || 0) || null,
+                     priceToSalesRatio: parseFloat(ppObj?.priceToSalesRatio || 0) || null },
+          rat:     Array.isArray(prt) ? prt[0] : prt
+        };
+      } catch(e) { peerIncomes[p] = { income:[], profile:{symbol:p}, rat:{} }; }
+    }
+
+    rpSetLoading(true, 'Gemini AI tahlil...', 'Thesis, scenariylar...');
+    const aiData = await rpCallGemini(ticker, co, income, rat, km, rating, conviction);
+
+    rpSetLoading(true, 'Grafiklar...', 'Chart.js render...');
+    const allData = { ticker, co, income, balance, rat, km, peers, peerIncomes, aiData, rating, conviction };
+    rpCurrentReport = allData;
+
+    await new Promise(r => setTimeout(r, 80));
+    rpRenderAll(allData);
+
+    rpSetLoading(false);
+    document.getElementById('rp-tabs').style.display = 'flex';
+    document.getElementById('rp-save-btn').style.display = 'inline-block';
+    document.getElementById('rp-slide-0').classList.add('active');
+    document.querySelectorAll('.rp-tab')[0].classList.add('active');
+    // Peer inputlarni to'ldirish
+    peers.forEach((p, i) => {
+      const el = document.getElementById(`rp-peer${i+1}`);
+      if (el) el.value = p;
+    });
+    rpSetStatus(`✅ ${ticker} report tayyor · ${new Date().toLocaleDateString('uz-UZ')}`);
+
+  } catch (err) {
+    rpSetLoading(false);
+    document.getElementById('rp-empty').style.display = 'flex';
+    rpSetStatus(`❌ Xato: ${err.message}`);
+    console.error('rpGenerate error:', err);
+  }
+}
+
+async function rpFetchFMP(path) {
+  const sep = path.includes('?') ? '&' : '?';
+  const res = await fetch(`${FMP_V3}${path}${sep}apikey=${FMP_API_KEY}`);
+  if (!res.ok) throw new Error(`FMP ${path}: HTTP ${res.status}`);
+  const json = await res.json();
+  return Array.isArray(json) ? json : (json?.data ?? json);
+}
+
+// margin helpers — income statement dan hisoblanadi
+function rpGM(d) { return (d?.revenue > 0) ? (d.grossProfit||0) / d.revenue : 0; }
+function rpNM(d) { return (d?.revenue > 0) ? (d.netIncome||0)  / d.revenue : 0; }
+function rpEM(d) { return (d?.revenue > 0) ? (d.ebitda||0)     / d.revenue : 0; }
+function rpN(v)  { const f = parseFloat(v||0); return (f && !isNaN(f)) ? f : null; }
+
+async function rpCallGemini(ticker, co, income, rat, km, rating, conviction) {
+  const latest = income[0] || {};
+  const curPrice = parseFloat(co?.price) || 100;
+  const gm   = (rpGM(latest)*100).toFixed(1);
+  const pe   = rpN(rat?.priceToEarningsRatioTTM)?.toFixed(1) || rpN(co?.pe)?.toFixed(1) || '—';
+  const evE  = rpN(km?.evToEBITDATTM)?.toFixed(1) || '—';
+  const roe  = rpN(rat?.returnOnEquityTTM) ? (rpN(rat.returnOnEquityTTM)*100).toFixed(1) : '—';
+  const rev  = ((latest.revenue||0)/1e9).toFixed(2);
+
+  const prompt = `Sen O'zbek tilida yozuvchi moliyaviy tahlilchisan. ${ticker} kompaniyasi haqida qisqa va tushunarli tahlil yoz. Faqat oddiy so'zlar ishlatgin, murakkab terminlardan qochin.
+
+MA'LUMOTLAR: ${co?.companyName||ticker}, Sektor: ${co?.sector||'—'}
+Narx: $${curPrice}, Revenue: $${rev}B, Gross Margin: ${gm}%, P/E: ${pe}x, ROE: ${roe}%
+Reyting: ${rating}, Ishonch: ${conviction}
+
+FAQAT quyidagi JSON formatda qaytargin (boshqa hech narsa yozma):
+{
+  "company_overview": "Kompaniya nima qiladi, qaysi bozorda ishlaydi va nimasi bilan ajralib turadi — 2-3 gap O'zbek tilida, oddiy va tushunarli",
+  "thesis1_title": "5-7 so'z, O'zbek tilida",
+  "thesis1_body": "2 gap, oddiy O'zbek tilida",
+  "thesis2_title": "5-7 so'z",
+  "thesis2_body": "2 gap",
+  "thesis3_title": "5-7 so'z",
+  "thesis3_body": "2 gap",
+  "financial1_comment": "Daromad o'sishi va foydalilik haqida 1-2 oddiy gap — raqamlar bilan",
+  "financial2_comment": "Naqd pul, qarz va kelajak prognoz haqida 1-2 oddiy gap",
+  "peers_comment": "Raqobatchilar bilan taqqoslaganda asosiy farq — 1-2 oddiy gap",
+  "verdict": "${rating} reytingi uchun asosiy sabab — 2-3 oddiy gap O'zbek tilida",
+  "bull_target": ${(curPrice*1.40).toFixed(0)},
+  "base_target": ${(curPrice*1.20).toFixed(0)},
+  "bear_target": ${(curPrice*0.85).toFixed(0)},
+  "bull_thesis": "1 gap — eng yaxshi holat",
+  "base_thesis": "1 gap — asosiy holat",
+  "bear_thesis": "1 gap — eng yomon holat"
+}`;
+
+  try {
+    const res = await fetch(GEMINI_URL, {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ contents:[{ parts:[{ text: prompt }] }] })
+    });
+    if (!res.ok) throw new Error('Gemini HTTP ' + res.status);
+    const data = await res.json();
+    const text = data?.candidates?.[0]?.content?.parts?.[0]?.text || '';
+    return JSON.parse(text.replace(/```json|```/g,'').trim());
+  } catch(e) {
+    console.warn('Gemini fallback:', e.message);
+    return rpFallbackAI(ticker, rating, conviction, income, rat, km, co);
+  }
+}
+
+function rpFallbackAI(ticker, rating, conviction, income, rat, km, co) {
+  const latest = income[0]||{}, curPrice = parseFloat(co?.price)||100;
+  const rg = income.length>1 ? (((latest.revenue-income[1].revenue)/Math.abs(income[1].revenue))*100).toFixed(1) : '—';
+  return {
+    company_overview: `${co?.companyName||ticker} — ${co?.sector||'texnologiya'} sektorida faoliyat yurituvchi kompaniya. Asosiy mahsulot va xizmatlar orqali global bozorda kuchli pozitsiyani egallagan. So'nggi yillarda barqaror o'sish ko'rsatkichlarini namoyon etmoqda.`,
+    thesis1_title:'Kuchli bozor pozitsiyasi',
+    thesis1_body:`${ticker} o'z sektorida yetakchi o'rinni egallaydi. Gross margin ${(rpGM(latest)*100).toFixed(1)}% — sanoat o'rtachasidan yuqori.`,
+    thesis2_title:'Moliyaviy barqarorlik',
+    thesis2_body:`Daromad o'sishi ${rg}%. Baholash ko'rsatkichlari barqaror. Net margin ijobiy dinamikada.`,
+    thesis3_title:"O'sish katalizatorlari",
+    thesis3_body:"Kengayuvchi bozor ulushi va yangi mahsulot yo'nalishlari o'rta muddatli o'sish imkoniyatlarini yaratmoqda.",
+    financial1_comment:`Revenue so'nggi yilda ${rg}% o'sdi. Gross margin ${(rpGM(latest)*100).toFixed(1)}% — barqaror saqlanmoqda. Net margin ${(rpNM(latest)*100).toFixed(1)}%.`,
+    financial2_comment:`Naqd pul zaxiralari qarz yuklamasiga nisbatan balanslangan. Prognoz o'sish trendiga asoslangan.`,
+    peers_comment:`${ticker} raqobatchilar orasida margin ko'rsatkichlari bo'yicha raqobatbardosh. Baholash multipllari sektorga mos keladi.`,
+    verdict:`${ticker} ${rating} reytingiga ega — ${conviction.toLowerCase()} ishonch darajasida. Ko'rsatkichlar barqaror.`,
+    bull_target:(curPrice*1.40).toFixed(0), base_target:(curPrice*1.20).toFixed(0), bear_target:(curPrice*0.85).toFixed(0),
+    bull_thesis:"O'sish akseleratsiyasi va margin kengayishi.", base_thesis:"Konsensus — barqaror o'sish.", bear_thesis:"Makroiqtisodiy bosim ssenariysi."
+  };
+}
+
+function rpRenderAll({ ticker, co, income, balance, rat, km, peers, peerIncomes, aiData, rating, conviction }) {
+  const today = new Date().toLocaleDateString('uz-UZ',{year:'numeric',month:'long',day:'numeric'});
+  const latest = income[0]||{}, analystName = currentAnalyst?.name||'—';
+  const C = rpCurrentColor;
+
+  Object.values(rpCharts).forEach(c=>{try{c.destroy();}catch{}});
+  rpCharts = {};
+
+  // computed metrics
+  const pe      = rpN(rat?.priceToEarningsRatioTTM) || rpN(co?.pe);
+  const evEbitda= rpN(km?.evToEBITDATTM);
+  const mktCap  = rpN(co?.mktCap);  // /quote dan keladi
+  const roe     = rpN(rat?.returnOnEquityTTM);
+  const grossM  = rpN(rat?.grossProfitMarginTTM) || rpGM(latest);
+  const netM    = rpN(rat?.netProfitMarginTTM)   || rpNM(latest);
+
+  // ── Slide 0 ──
+  document.getElementById('s0-title').textContent    = `${ticker} | Investitsiya Xulosasi`;
+  document.getElementById('s0-date').textContent     = `NurInvest Research · ${analystName} · ${today}`;
+  document.getElementById('s0-company').textContent  = ticker;
+  document.getElementById('s0-sector').textContent   = `${co?.companyName||''} · ${co?.sector||''} · ${co?.industry||''}`;
+  document.getElementById('s0-rating').textContent   = rating;
+  document.getElementById('s0-analyst').textContent  = analystName;
+  const convEl = document.getElementById('s0-conviction');
+  convEl.textContent = `● ${conviction} ishonch`;
+  convEl.className   = `rp-conv ${conviction==='YUQORI'?'rp-conv-h':conviction==="O'RTA"?'rp-conv-m':'rp-conv-l'}`;
+  document.getElementById('s0-pe').textContent     = pe      ? pe.toFixed(1)+'x'            : '—';
+  document.getElementById('s0-ev').textContent     = evEbitda ? evEbitda.toFixed(1)+'x'     : '—';
+  document.getElementById('s0-gm').textContent     = grossM  ? (grossM*100).toFixed(1)+'%'  : '—';
+  document.getElementById('s0-mktcap').textContent = mktCap  ? '$'+(mktCap/1e9).toFixed(1)+'B' : '—';
+  document.getElementById('s0-52h').textContent    = co?.yearHigh ? '$'+parseFloat(co.yearHigh).toFixed(2) : '—';
+  document.getElementById('s0-52l').textContent    = co?.yearLow  ? '$'+parseFloat(co.yearLow).toFixed(2)  : '—';
+  document.getElementById('s0-nm').textContent     = netM    ? (netM*100).toFixed(1)+'%'    : '—';
+  document.getElementById('s0-roe').textContent    = roe     ? (roe*100).toFixed(1)+'%'     : '—';
+  document.getElementById('s0-price').textContent  = co?.price ? '$'+parseFloat(co.price).toFixed(2) : '—';
+
+  if (aiData) {
+    const ovEl = document.getElementById('s0-overview');
+    if (ovEl) ovEl.textContent = aiData.company_overview || '—';
+
+    document.getElementById('s0-thesis').innerHTML = `
+      <div class="rp-tc"><div class="rp-tn">① ${aiData.thesis1_title||''}</div><div class="rp-tt">${aiData.thesis1_body||''}</div></div>
+      <div class="rp-tc"><div class="rp-tn">② ${aiData.thesis2_title||''}</div><div class="rp-tt">${aiData.thesis2_body||''}</div></div>
+      <div class="rp-tc"><div class="rp-tn">③ ${aiData.thesis3_title||''}</div><div class="rp-tt">${aiData.thesis3_body||''}</div></div>`;
+  }
+  ['s1','s2','s3','s4','s5'].forEach((id,i)=>{
+    const el=document.getElementById(`${id}-title`);
+    if(el) el.textContent=`${ticker} | ${['Moliyaviy Tahlil I','Moliyaviy Tahlil II','Raqobatchilar Tahlili','Texnik Tahlil','Xulosa'][i]}`;
+  });
+
+  // ── Slide 1: charts ──
+  const incRev = income.slice().reverse();
+  const incYrs = incRev.map(d=>d.calendarYear||d.date?.slice(0,4));
+  rpCharts.revenue = new Chart(document.getElementById('rp-revenue-chart'),{
+    type:'bar', data:{labels:incYrs,datasets:[
+      {label:'Revenue',   data:incRev.map(d=>(d.revenue||0)/1e6), backgroundColor:C, yAxisID:'y'},
+      {label:'EBITDA',    data:incRev.map(d=>(d.ebitda||0)/1e6),  backgroundColor:'#374151', yAxisID:'y'},
+      {label:'Net Income',data:incRev.map(d=>(d.netIncome||0)/1e6),type:'line',borderColor:'#9CA3AF',
+        backgroundColor:'transparent',tension:.3,pointRadius:3,borderWidth:2,yAxisID:'y2'}
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{position:'top',labels:{color:'#8fa3bb',boxWidth:9,font:{size:10}}}},
+      scales:{y:{grid:{color:'#1a2d45'},ticks:{color:'#4e6a85',callback:v=>'$'+(v/1000).toFixed(1)+'B'}},
+              y2:{position:'right',grid:{display:false},ticks:{color:'#4e6a85',callback:v=>'$'+(v/1000).toFixed(1)+'B'}},
+              x:{grid:{display:false},ticks:{color:'#4e6a85'}}}}
+  });
+  const nmPct = (netM||0)*100;
+  document.getElementById('s1-net-margin').textContent = nmPct.toFixed(1)+'%';
+  rpCharts.marginDonut = new Chart(document.getElementById('rp-margin-donut'),{
+    type:'doughnut',data:{datasets:[{data:[Math.max(nmPct,0),Math.max(100-nmPct,0)],
+      backgroundColor:[C,'#1a2d45'],borderWidth:0}]},
+    options:{responsive:true,maintainAspectRatio:false,cutout:'68%',plugins:{legend:{display:false},tooltip:{enabled:false}}}
+  });
+
+  // ROA/ROE — income + balance dan hisoblaymiz
+  const roeArr = incRev.map((d,i)=>{
+    const b = (balance.slice().reverse())[i]||{};
+    return b.totalStockholdersEquity > 0 ? (d.netIncome/b.totalStockholdersEquity)*100 : 0;
+  });
+  const roaArr = incRev.map((d,i)=>{
+    const b = (balance.slice().reverse())[i]||{};
+    return b.totalAssets > 0 ? (d.netIncome/b.totalAssets)*100 : 0;
+  });
+  rpCharts.roeChart = new Chart(document.getElementById('rp-roe-chart'),{
+    type:'line',data:{labels:incYrs,datasets:[
+      {label:'ROA (%)',data:roaArr,borderColor:'#3b82f6',backgroundColor:'transparent',tension:.3,pointRadius:3,borderWidth:2},
+      {label:'ROE (%)',data:roeArr,borderColor:C,backgroundColor:'transparent',tension:.3,pointRadius:3,borderWidth:2}
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{position:'top',labels:{color:'#8fa3bb',boxWidth:9,font:{size:10}}}},
+      scales:{x:{grid:{display:false},ticks:{color:'#4e6a85'}},
+              y:{grid:{color:'#1a2d45'},ticks:{color:'#4e6a85',callback:v=>v.toFixed(0)+'%'}}}}
+  });
+
+  const az = rpCalcAltmanZ(income,balance,co);
+  document.getElementById('s1-altman-z').textContent = az.toFixed(1);
+  const azI = az>3?['Xavfsiz',"Bankrotlik xavfi yo'q"]:az>1.8?['Ehtiyot','Kuzatish tavsiya']:['Xavfli','Moliyaviy qiyinchilik'];
+  document.getElementById('s1-altman-status').textContent = azI[0];
+  document.getElementById('s1-altman-desc').textContent   = azI[1];
+
+  const inc4=income.slice(0,4), inc4Yrs=inc4.map(d=>d.calendarYear||d.date?.slice(0,4));
+  const s1hdr=document.querySelector('#rp-slide-1 .rp-tbl thead tr');
+  if(s1hdr) s1hdr.innerHTML=`<th>Ko'rsatkich</th>${inc4Yrs.map(y=>`<th class="r">${y}</th>`).join('')}`;
+  let s1b='';
+  [['Gross Margin',d=>rpGM(d)],['Net Margin',d=>rpNM(d)],['EBITDA Margin',d=>rpEM(d)]].forEach(([nm,fn])=>{
+    s1b+=`<tr><td class="bold">${nm}</td>`;
+    inc4.forEach(d=>{const v=fn(d)*100; s1b+=`<td class="r ${v>0?'pos':'neg'}">${v.toFixed(1)}%</td>`;});
+    s1b+=`</tr>`;
+  });
+  s1b+=`<tr><td class="bold">Rev Growth</td>`;
+  inc4.forEach((d,i)=>{
+    const prev=income[i+1];
+    const g=prev?.revenue?(((d.revenue-prev.revenue)/Math.abs(prev.revenue))*100).toFixed(1):'—';
+    s1b+=`<td class="r ${parseFloat(g)>0?'pos':'neg'}">${g==='—'?'—':g+'%'}</td>`;
+  });
+  s1b+=`</tr>`;
+  document.getElementById('s1-ratios-tbl').innerHTML=s1b;
+  // AI comment slide 1
+  const s1Comment = document.getElementById('s1-ai-comment');
+  if (s1Comment && aiData?.financial1_comment) s1Comment.textContent = aiData.financial1_comment;
+
+  // ── Slide 2 ──
+  const balRev=balance.slice().reverse(), balYrs=balRev.map(d=>d.calendarYear||d.date?.slice(0,4));
+  rpCharts.cashChart=new Chart(document.getElementById('rp-cash-chart'),{
+    type:'bar',data:{labels:balYrs,datasets:[
+      {label:'Cash',data:balRev.map(d=>(d.cashAndCashEquivalents||d.cashAndShortTermInvestments||0)/1e6),backgroundColor:C},
+      {label:'Debt',data:balRev.map(d=>(d.totalDebt||0)/1e6),backgroundColor:'#374151'}
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{position:'top',labels:{color:'#8fa3bb',boxWidth:9,font:{size:10}}}},
+      scales:{x:{grid:{display:false},ticks:{color:'#4e6a85'}},
+              y:{grid:{color:'#1a2d45'},ticks:{color:'#4e6a85',callback:v=>'$'+(v/1000).toFixed(1)+'B'}}}}
+  });
+  const lastRevB=(income[0]?.revenue||0)/1e9;
+  const baseRev=income[Math.min(income.length-1,4)]?.revenue||income[0]?.revenue||1;
+  const gr=Math.max(0.05,Math.min(Math.pow(income[0].revenue/baseRev,0.25)-1,0.35));
+  rpCharts.forecastChart=new Chart(document.getElementById('rp-forecast-chart'),{
+    type:'bar',data:{labels:[income[0]?.calendarYear||'CY','+1E','+2E','+3E'],
+      datasets:[{label:'Revenue ($B)',data:[lastRevB,lastRevB*(1+gr),lastRevB*(1+gr)**2,lastRevB*(1+gr)**3].map(v=>+v.toFixed(2)),
+        backgroundColor:[C,C+'CC',C+'99',C+'66']}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
+      scales:{x:{grid:{display:false},ticks:{color:'#4e6a85'}},
+              y:{grid:{color:'#1a2d45'},ticks:{color:'#4e6a85',callback:v=>'$'+v+'B'}}}}
+  });
+  const inc5=income.slice(0,5), inc5Yrs=inc5.map(d=>d.calendarYear||d.date?.slice(0,4));
+  const s2tbl=document.getElementById('s2-income-tbl');
+  s2tbl.querySelector('thead tr').innerHTML=`<th>Ko'rsatkich</th>${inc5Yrs.map(y=>`<th class="r">${y}</th>`).join('')}`;
+  let s2b='';
+  [['Revenue',d=>'$'+(d.revenue/1e9).toFixed(2)+'B',true],
+   ['Gross Margin',d=>(rpGM(d)*100).toFixed(1)+'%',false],
+   ['EBITDA',d=>'$'+((d.ebitda||0)/1e9).toFixed(2)+'B',true],
+   ['Net Income',d=>'$'+((d.netIncome||0)/1e9).toFixed(2)+'B',true],
+   ['EPS',d=>'$'+(d.eps||0).toFixed(2),false]].forEach(([nm,fn,hl])=>{
+    s2b+=`<tr${hl?' class="hl"':''}><td class="bold">${nm}</td>`;
+    inc5.forEach(d=>{s2b+=`<td class="r">${fn(d)}</td>`;});
+    s2b+=`</tr>`;
+  });
+  s2tbl.querySelector('tbody').innerHTML=s2b;
+  // AI comment slide 2
+  const s2Comment = document.getElementById('s2-ai-comment');
+  if (s2Comment && aiData?.financial2_comment) s2Comment.textContent = aiData.financial2_comment;
+
+  // ── Slide 3: Peers ──
+  const peerTickers=[ticker,...peers];
+  const peerProfiles={[ticker]:co};
+  const peerRats={[ticker]:rat};
+  peers.forEach(p=>{
+    if(peerIncomes[p]?.profile) peerProfiles[p]=peerIncomes[p].profile;
+    if(peerIncomes[p]?.rat)     peerRats[p]=peerIncomes[p].rat;
+  });
+  const gC=[C,'#6B7280','#9CA3AF','#D1D5DB'];
+  const growDs=peerTickers.map((p,i)=>{
+    const src=p===ticker?income:(peerIncomes[p]?.income||[]);
+    const rv4=src.slice(0,4).reverse();
+    const gs=rv4.map((d,j)=>{if(!j)return null;const pr=rv4[j-1];return pr?.revenue?((d.revenue-pr.revenue)/Math.abs(pr.revenue)*100):null;}).filter(v=>v!==null);
+    return{label:p,data:gs,borderColor:gC[i]||'#6B7280',backgroundColor:'transparent',tension:.3,pointRadius:3,borderWidth:i===0?2.5:1.5,borderDash:i===0?[]:[4,3]};
+  });
+  rpCharts.peerGrowth=new Chart(document.getElementById('rp-peer-growth-chart'),{
+    type:'line',data:{labels:income.slice(0,4).reverse().slice(1).map(d=>d.calendarYear||d.date?.slice(0,4)),datasets:growDs},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{position:'top',labels:{color:'#8fa3bb',boxWidth:8,font:{size:10}}}},
+      scales:{x:{grid:{display:false},ticks:{color:'#4e6a85'}},y:{grid:{color:'#1a2d45'},ticks:{color:'#4e6a85',callback:v=>v.toFixed(0)+'%'}}}}
+  });
+  rpCharts.mktcap=new Chart(document.getElementById('rp-mktcap-chart'),{
+    type:'bar',data:{labels:peerTickers,datasets:[{label:'Mkt Cap ($B)',
+      data:peerTickers.map(p=>(rpN(peerProfiles[p]?.mktCap)||0)/1e9),
+      backgroundColor:peerTickers.map((_,i)=>i===0?C:'#374151')}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
+      scales:{x:{grid:{display:false},ticks:{color:'#4e6a85'}},y:{grid:{color:'#1a2d45'},ticks:{color:'#4e6a85',callback:v=>'$'+v.toFixed(0)+'B'}}}}
+  });
+  let valH='';
+  peerTickers.forEach((p,i)=>{
+    const src=p===ticker?income:(peerIncomes[p]?.income||[]);
+    const pco=peerProfiles[p]||{}, prt=peerRats[p]||{}, lat=src[0]||{};
+    const pPE=rpN(prt.priceToEarningsRatioTTM)||rpN(pco.pe);
+    const pPS=rpN(prt.priceToSalesRatioTTM)||rpN(pco.priceToSalesRatio);
+    const pGM=rpN(prt.grossProfitMarginTTM)?(rpN(prt.grossProfitMarginTTM)*100).toFixed(1)+'%':lat.revenue>0?(rpGM(lat)*100).toFixed(1)+'%':'—';
+    const pMC=rpN(pco.mktCap);
+    valH+=`<tr${i===0?' class="hl"':''}><td class="bold">${p}</td>
+      <td class="r">${pPE?pPE.toFixed(1)+'x':'—'}</td>
+      <td class="r">${pPS?pPS.toFixed(1)+'x':'—'}</td>
+      <td class="r">${pGM}</td>
+      <td class="r">${pMC?'$'+(pMC/1e9).toFixed(1)+'B':'—'}</td></tr>`;
+  });
+  document.getElementById('s3-valuation-tbl').querySelector('tbody').innerHTML=valH;
+  document.getElementById('s3-peers-label').textContent=`${ticker} vs ${peers.join(' vs ')||'—'}`;
+  rpCharts.peerProfit=new Chart(document.getElementById('rp-peer-profit-chart'),{
+    type:'bar',data:{labels:peerTickers,datasets:[{label:'Net Margin (%)',
+      data:peerTickers.map(p=>{const prt=peerRats[p]||{};const src=p===ticker?income:(peerIncomes[p]?.income||[]);
+        return rpN(prt.netProfitMarginTTM)?(rpN(prt.netProfitMarginTTM)*100):rpNM(src[0]||{})*100;}),
+      backgroundColor:peerTickers.map((_,i)=>i===0?C:'#374151')}]},
+    options:{responsive:true,maintainAspectRatio:false,indexAxis:'y',plugins:{legend:{display:false}},
+      scales:{x:{grid:{color:'#1a2d45'},ticks:{color:'#4e6a85',callback:v=>v+'%'}},y:{grid:{display:false},ticks:{color:'#4e6a85'}}}}
+  });
+  // AI comment slide 3
+  const s3Comment = document.getElementById('s3-ai-comment');
+  if (s3Comment && aiData?.peers_comment) s3Comment.textContent = aiData.peers_comment;
+
+  // ── Slide 4 price data ──
+  document.getElementById('s4-cur-price').textContent=co?.price?'$'+parseFloat(co.price).toFixed(2):'—';
+  document.getElementById('s4-52h').textContent=co?.yearHigh?'$'+parseFloat(co.yearHigh).toFixed(2):'—';
+  document.getElementById('s4-52l').textContent=co?.yearLow?'$'+parseFloat(co.yearLow).toFixed(2):'—';
+  document.getElementById('s4-beta').textContent=co?.beta?parseFloat(co.beta).toFixed(2):'—';
+  document.getElementById('s4-vol').textContent=co?.volAvg?(parseInt(co.volAvg)/1e6).toFixed(1)+'M':'—';
+
+  // ── Slide 5 ──
+  const curP=parseFloat(co?.price)||100;
+  const bull=+(aiData?.bull_target||(curP*1.40).toFixed(0));
+  const base=+(aiData?.base_target||(curP*1.20).toFixed(0));
+  const bear=+(aiData?.bear_target||(curP*0.85).toFixed(0));
+  document.getElementById('s5-scenario-tbl').innerHTML=`
+    <tr class="rp-scen-bull"><td><strong style="color:var(--green3)">🐂 Bull</strong></td><td class="r">25%</td>
+      <td class="r bold" style="color:var(--green3)">$${bull}</td><td class="r pos">+${((bull/curP-1)*100).toFixed(0)}%</td>
+      <td style="font-size:10px">${aiData?.bull_thesis||'—'}</td></tr>
+    <tr class="rp-scen-base"><td><strong style="color:var(--brand-primary)">⚖️ Base</strong></td><td class="r">50%</td>
+      <td class="r bold" style="color:var(--brand-primary)">$${base}</td><td class="r pos">+${((base/curP-1)*100).toFixed(0)}%</td>
+      <td style="font-size:10px">${aiData?.base_thesis||'—'}</td></tr>
+    <tr class="rp-scen-bear"><td><strong style="color:var(--yellow3)">🐻 Bear</strong></td><td class="r">25%</td>
+      <td class="r bold" style="color:var(--yellow3)">$${bear}</td><td class="r neg">${((bear/curP-1)*100).toFixed(0)}%</td>
+      <td style="font-size:10px">${aiData?.bear_thesis||'—'}</td></tr>
+    <tr class="med"><td><strong>Weighted Avg</strong></td><td class="r">100%</td>
+      <td class="r bold">$${(bull*0.25+base*0.5+bear*0.25).toFixed(0)}</td>
+      <td class="r pos">+${(((bull*0.25+base*0.5+bear*0.25)/curP-1)*100).toFixed(0)}%</td>
+      <td style="font-size:10px">Ehtimollik og'irligi</td></tr>`;
+  document.getElementById('s5-verdict').textContent=aiData?.verdict||'—';
+  const s5c=document.getElementById('s5-conviction-badge');
+  s5c.textContent=`● ${rating} · ${conviction} ishonch`;
+  s5c.className=`rp-conv ${conviction==='YUQORI'?'rp-conv-h':conviction==="O'RTA"?'rp-conv-m':'rp-conv-l'}`;
+  // Katalizator/risk sync
+  const cats=document.getElementById('rp-catalyst-text').value;
+  const risks=document.getElementById('rp-risk-text').value;
+  document.getElementById('s5-catalysts-display').textContent=cats||"(Hali kiritilmagan — 'Texnik tahlil' bo'limida yozing)";
+  document.getElementById('s5-risks-display').textContent=risks||"(Hali kiritilmagan — 'Texnik tahlil' bo'limida yozing)";
+}
+
+function rpCalcAltmanZ(income,balance,co) {
+  try {
+    const i=income[0]||{},b=balance[0]||{},A=b.totalAssets||1;
+    const z=1.2*((b.totalCurrentAssets-b.totalCurrentLiabilities)/A)
+            +1.4*((b.retainedEarnings||0)/A)
+            +3.3*((i.ebit||i.operatingIncome||0)/A)
+            +0.6*((co?.mktCap||0)/(b.totalDebt||1))
+            +((i.revenue||0)/A);
+    return isNaN(z)||!isFinite(z)?2.5:Math.min(Math.max(z,0),20);
+  } catch{return 2.5;}
+}
+// ── CHART IMAGE UPLOAD ────────────────────────────
+function rpHandleChartImg(file) {
+  if (!file || !file.type.startsWith('image/')) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    const img = document.getElementById('rp-chart-img');
+    const placeholder = document.getElementById('rp-chart-img-placeholder');
+    const removeBtn = document.getElementById('rp-chart-remove');
+    img.src = e.target.result;
+    img.style.display = 'block';
+    placeholder.style.display = 'none';
+    removeBtn.style.display = 'block';
+    document.getElementById('rp-chart-img-wrap').style.background = 'transparent';
+    document.getElementById('rp-chart-img-wrap').style.border = '1px solid var(--border)';
+    if (rpCurrentReport) rpCurrentReport.chartImgData = e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+function rpRemoveChartImg() {
+  document.getElementById('rp-chart-img').style.display = 'none';
+  document.getElementById('rp-chart-img').src = '';
+  document.getElementById('rp-chart-img-placeholder').style.display = 'block';
+  document.getElementById('rp-chart-remove').style.display = 'none';
+  document.getElementById('rp-chart-img-wrap').style.background = 'var(--surface3)';
+  document.getElementById('rp-chart-img-wrap').style.border = '2px dashed var(--border2)';
+  document.getElementById('rp-chart-file').value = '';
+  if (rpCurrentReport) rpCurrentReport.chartImgData = null;
+}
+
+// ── SAQLASH ───────────────────────────────────────
+async function rpSaveReport() {
+  if(!rpCurrentReport)return;
+  const btn=document.getElementById('rp-save-btn');
+  btn.disabled=true;btn.textContent='⏳ Saqlanmoqda...';
+  try {
+    const{ticker,co,income,rating,conviction,aiData}=rpCurrentReport;
+    const{error}=await sb.from('equity_reports').insert({
+      analyst_id:currentUser?.id, ticker, company:co?.companyName||ticker,
+      sector:co?.sector||'', rating, conviction,
+      analyst_thesis:document.getElementById('rp-tech-text').value,
+      analyst_catalyst:document.getElementById('rp-catalyst-text').value,
+      analyst_risks:document.getElementById('rp-risk-text').value,
+      report_data:aiData,
+      fmp_snapshot:{price:co?.price,mktCap:co?.mktCap,income:income?.[0]},
+      template_color:rpCurrentColor,
+    });
+    if(error)throw error;
+    btn.textContent='✅ Saqlandi';
+    rpLoadArchive();
+    setTimeout(()=>{btn.disabled=false;btn.textContent='💾 Saqlash';},2000);
+  } catch(err){
+    btn.disabled=false;btn.textContent='❌ Xato';
+    console.error(err);
+    setTimeout(()=>{btn.textContent='💾 Saqlash';},2000);
+  }
+}
+
+// ── ARXIV ─────────────────────────────────────────
+async function rpLoadArchive() {
+  const listEl=document.getElementById('rp-archive-list');
+  if(!currentUser)return;
+  try {
+    let q=sb.from('equity_reports').select('id,ticker,company,rating,created_at,template_color').order('created_at',{ascending:false}).limit(50);
+    if(currentAnalyst?.role!=='admin')q=q.eq('analyst_id',currentUser?.id);
+    const{data,error}=await q;
+    if(error)throw error;
+    if(!data?.length){listEl.innerHTML='<div style="padding:18px 14px;font-size:11px;color:var(--text3);font-family:var(--mono)">Hozircha report yo\'q</div>';return;}
+    listEl.innerHTML=data.map(r=>`
+      <div class="rp-archive-item" onclick="rpOpenArchive('${r.id}','${r.template_color||'#B91C1C'}')">
+        <span class="ai-ticker" style="color:${r.template_color||'var(--text)'}">${r.ticker}</span>
+        <span class="ai-rating ${(r.rating||'').toLowerCase()}">${r.rating}</span>
+        <div class="ai-date">${new Date(r.created_at).toLocaleDateString('uz-UZ')}</div>
+      </div>`).join('');
+  } catch(err){
+    listEl.innerHTML=`<div style="padding:14px;font-size:10px;color:var(--red3);font-family:var(--mono)">${err.message}</div>`;
+  }
+}
+
+async function rpOpenArchive(id, color) {
+  document.querySelectorAll('.rp-archive-item').forEach(el=>el.classList.remove('rpa-active'));
+  event.currentTarget.classList.add('rpa-active');
+  rpApplyBrandColor(color||'#B91C1C');
+  document.getElementById('rp-color').value=color||'#B91C1C';
+  rpSetStatus('Arxivdan yuklanmoqda...');
+  try {
+    const{data,error}=await sb.from('equity_reports').select('*').eq('id',id).single();
+    if(error)throw error;
+    // Show saved tech fields
+    if(data.analyst_thesis) document.getElementById('rp-tech-text').value=data.analyst_thesis;
+    if(data.analyst_catalyst) document.getElementById('rp-catalyst-text').value=data.analyst_catalyst;
+    if(data.analyst_risks) document.getElementById('rp-risk-text').value=data.analyst_risks;
+    rpSetStatus(`✅ ${data.ticker} arxivdan yuklandi · ${new Date(data.created_at).toLocaleDateString('uz-UZ')}`);
+    document.getElementById('rp-ticker').value=data.ticker;
+    document.getElementById('rp-rating').value=data.rating;
+    document.getElementById('rp-conviction').value=data.conviction||'YUQORI';
+  } catch(err){rpSetStatus('❌ '+err.message);}
+}
+
+// ── RAQOBATCHILAR MANUAL LOAD ────────────────────
+async function rpLoadPeers() {
+  if (!rpCurrentReport) { alert('Avval asosiy ticker generate qiling!'); return; }
+
+  const p1 = document.getElementById('rp-peer1').value.trim().toUpperCase();
+  const p2 = document.getElementById('rp-peer2').value.trim().toUpperCase();
+  const p3 = document.getElementById('rp-peer3').value.trim().toUpperCase();
+  const newPeers = [p1, p2, p3].filter(p => p.length > 0);
+
+  if (newPeers.length === 0) { alert('Kamida 1 ta ticker kiriting!'); return; }
+
+  const statusEl = document.getElementById('rp-peers-status');
+  statusEl.textContent = '⏳ Yuklanmoqda...';
+  statusEl.style.color = 'var(--yellow3)';
+
+  try {
+    const { ticker, co, income, rat, km, aiData, rating, conviction, balance } = rpCurrentReport;
+    let newPeerIncomes = {};
+
+    for (const p of newPeers) {
+      statusEl.textContent = `⏳ ${p} yuklanmoqda...`;
+      try {
+        const pi  = await rpFetchFMP(`/income-statement?symbol=${p}&limit=3`);
+        const pp  = await rpFetchFMP(`/profile?symbol=${p}`);
+        const prt = await rpFetchFMP(`/ratios-ttm?symbol=${p}`);
+        newPeerIncomes[p] = {
+          income:  Array.isArray(pi)  ? pi  : [],
+          profile: Array.isArray(pp)  ? pp[0] : pp,
+          rat:     Array.isArray(prt) ? prt[0] : prt
+        };
+      } catch(e) {
+        newPeerIncomes[p] = { income: [], profile: { symbol: p }, rat: {} };
+      }
+    }
+
+    // Update current report state
+    rpCurrentReport.peers = newPeers;
+    rpCurrentReport.peerIncomes = newPeerIncomes;
+
+    // Re-render peers slide only
+    rpRenderPeersSlide({ ticker, co, income, rat, km, peers: newPeers, peerIncomes: newPeerIncomes });
+
+    // Resize charts (slide might be visible)
+    requestAnimationFrame(() => {
+      ['peerGrowth','mktcap','peerProfit'].forEach(k => {
+        try { if (rpCharts[k]) { rpCharts[k].resize(); rpCharts[k].update('none'); } } catch(e) {}
+      });
+    });
+
+    statusEl.textContent = `✅ ${newPeers.join(', ')} yuklandi`;
+    statusEl.style.color = 'var(--green3)';
+    document.getElementById('s3-peers-label').textContent = `${ticker} vs ${newPeers.join(' vs ')}`;
+
+  } catch(err) {
+    statusEl.textContent = `❌ ${err.message}`;
+    statusEl.style.color = 'var(--red3)';
+  }
+}
+
+function rpRenderPeersSlide({ ticker, co, income, rat, km, peers, peerIncomes }) {
+  const C = rpCurrentColor;
+  const peerTickers = [ticker, ...peers];
+  const peerProfiles = { [ticker]: co };
+  const peerRats = { [ticker]: rat };
+  peers.forEach(p => {
+    if (peerIncomes[p]?.profile) peerProfiles[p] = peerIncomes[p].profile;
+    if (peerIncomes[p]?.rat)     peerRats[p]     = peerIncomes[p].rat;
+  });
+
+  // Destroy old peer charts
+  ['peerGrowth','mktcap','peerProfit'].forEach(k => {
+    try { if (rpCharts[k]) { rpCharts[k].destroy(); delete rpCharts[k]; } } catch(e) {}
+  });
+
+  const gC = [C, '#6B7280', '#9CA3AF', '#D1D5DB'];
+  const growDs = peerTickers.map((p, i) => {
+    const src = p === ticker ? income : (peerIncomes[p]?.income || []);
+    const rv4 = src.slice(0, 4).reverse();
+    const gs = rv4.map((d, j) => {
+      if (!j) return null;
+      const pr = rv4[j-1];
+      return pr?.revenue ? ((d.revenue - pr.revenue) / Math.abs(pr.revenue) * 100) : null;
+    }).filter(v => v !== null);
+    return { label: p, data: gs, borderColor: gC[i] || '#6B7280', backgroundColor: 'transparent',
+      tension: .3, pointRadius: 3, borderWidth: i === 0 ? 2.5 : 1.5, borderDash: i === 0 ? [] : [4, 3] };
+  });
+
+  rpCharts.peerGrowth = new Chart(document.getElementById('rp-peer-growth-chart'), {
+    type: 'line',
+    data: { labels: income.slice(0,4).reverse().slice(1).map(d => d.calendarYear || d.date?.slice(0,4)), datasets: growDs },
+    options: { responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { position: 'top', labels: { color: '#8fa3bb', boxWidth: 8, font: { size: 10 } } } },
+      scales: { x: { grid: { display: false }, ticks: { color: '#4e6a85' } },
+                y: { grid: { color: '#1a2d45' }, ticks: { color: '#4e6a85', callback: v => v.toFixed(0) + '%' } } } }
+  });
+
+  rpCharts.mktcap = new Chart(document.getElementById('rp-mktcap-chart'), {
+    type: 'bar',
+    data: { labels: peerTickers,
+      datasets: [{ label: 'Mkt Cap ($B)', data: peerTickers.map(p => (rpN(peerProfiles[p]?.mktCap) || 0) / 1e9),
+        backgroundColor: peerTickers.map((_, i) => i === 0 ? C : '#374151') }] },
+    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } },
+      scales: { x: { grid: { display: false }, ticks: { color: '#4e6a85' } },
+                y: { grid: { color: '#1a2d45' }, ticks: { color: '#4e6a85', callback: v => '$' + v.toFixed(0) + 'B' } } } }
+  });
+
+  let valH = '';
+  peerTickers.forEach((p, i) => {
+    const src = p === ticker ? income : (peerIncomes[p]?.income || []);
+    const pco = peerProfiles[p] || {}, prt = peerRats[p] || {}, lat = src[0] || {};
+    const pPE = rpN(prt.priceToEarningsRatioTTM) || rpN(pco.pe);
+    const pPS = rpN(prt.priceToSalesRatioTTM) || rpN(pco.priceToSalesRatio);
+    const pGM = rpN(prt.grossProfitMarginTTM) ? (rpN(prt.grossProfitMarginTTM)*100).toFixed(1)+'%'
+               : lat.revenue > 0 ? (rpGM(lat)*100).toFixed(1)+'%' : '—';
+    const pMC = rpN(pco.mktCap);
+    valH += `<tr${i === 0 ? ' class="hl"' : ''}><td class="bold">${p}</td>
+      <td class="r">${pPE ? pPE.toFixed(1)+'x' : '—'}</td>
+      <td class="r">${pPS ? pPS.toFixed(1)+'x' : '—'}</td>
+      <td class="r">${pGM}</td>
+      <td class="r">${pMC ? '$'+(pMC/1e9).toFixed(1)+'B' : '—'}</td></tr>`;
+  });
+  document.getElementById('s3-valuation-tbl').querySelector('tbody').innerHTML = valH;
+
+  rpCharts.peerProfit = new Chart(document.getElementById('rp-peer-profit-chart'), {
+    type: 'bar',
+    data: { labels: peerTickers,
+      datasets: [{ label: 'Net Margin (%)',
+        data: peerTickers.map(p => {
+          const prt = peerRats[p] || {};
+          const src = p === ticker ? income : (peerIncomes[p]?.income || []);
+          return rpN(prt.netProfitMarginTTM) ? (rpN(prt.netProfitMarginTTM)*100) : rpNM(src[0]||{})*100;
+        }),
+        backgroundColor: peerTickers.map((_, i) => i === 0 ? C : '#374151') }] },
+    options: { responsive: true, maintainAspectRatio: false, indexAxis: 'y', plugins: { legend: { display: false } },
+      scales: { x: { grid: { color: '#1a2d45' }, ticks: { color: '#4e6a85', callback: v => v + '%' } },
+                y: { grid: { display: false }, ticks: { color: '#4e6a85' } } } }
+  });
+}
+
+// ── PDF PRINT ─────────────────────────────────────
+async function rpPrint() {
+  if (!rpCurrentReport) { alert('Avval report generate qiling!'); return; }
+
+  const btn = document.querySelector('[onclick="rpPrint()"]');
+  if (btn) { btn.textContent = '⏳ Tayyorlanmoqda...'; btn.disabled = true; }
+
+  // ── 1. Faol slidni saqlash ──
+  const activeSlideIdx = [...document.querySelectorAll('.rp-slide')]
+    .findIndex(s => s.classList.contains('active'));
+
+  // ── 2. Barcha slidlarni vaqtincha ko'rsatib, chartlarni resize qilish ──
+  const slides = document.querySelectorAll('.rp-slide');
+  slides.forEach(s => { s.style.display = 'block'; });
+  await new Promise(r => setTimeout(r, 50));
+
+  Object.values(rpCharts).forEach(chart => {
+    try { chart.resize(); chart.update('none'); } catch(e) {}
+  });
+  await new Promise(r => setTimeout(r, 300));
+
+  // ── 3. Har bir canvas ni rasm ga aylantirish ──
+  const chartImages = {};
+  const canvasIds = [
+    'rp-revenue-chart','rp-margin-donut','rp-roe-chart',
+    'rp-cash-chart','rp-forecast-chart',
+    'rp-peer-growth-chart','rp-mktcap-chart','rp-peer-profit-chart'
+  ];
+  canvasIds.forEach(id => {
+    const canvas = document.getElementById(id);
+    if (canvas) {
+      try { chartImages[id] = canvas.toDataURL('image/png'); } catch(e) {}
+    }
+  });
+
+  // Chart image upload rasmini ham olamiz
+  const techImg = document.getElementById('rp-chart-img');
+  const techImgSrc = techImg?.style.display !== 'none' ? techImg?.src : '';
+
+  // ── 4. Slidlarni restore qilish ──
+  slides.forEach((s, i) => {
+    s.style.display = '';
+    s.classList.toggle('active', i === (activeSlideIdx >= 0 ? activeSlideIdx : 0));
+  });
+
+  // ── 5. Print oynasi HTML ni yig'ish ──
+  const { ticker, co, income, balance, rat, km, peers, peerIncomes, aiData, rating, conviction } = rpCurrentReport;
+  const today = new Date().toLocaleDateString('uz-UZ', {year:'numeric',month:'long',day:'numeric'});
+  const analystName = currentAnalyst?.name || '—';
+  const C = rpCurrentColor;
+
+  // Slide 0 values
+  const pe       = rpN(rat?.priceToEarningsRatioTTM) || rpN(co?.pe);
+  const evEbitda = rpN(km?.evToEBITDATTM);
+  const mktCap   = rpN(co?.mktCap);  // /quote dan keladi
+  const roe      = rpN(rat?.returnOnEquityTTM);
+  const grossM   = rpN(rat?.grossProfitMarginTTM) || rpGM(income[0]||{});
+  const netM     = rpN(rat?.netProfitMarginTTM)   || rpNM(income[0]||{});
+  const latest   = income[0] || {};
+
+  const convLabel = conviction === 'YUQORI' ? 'YUQORI ISHONCH' : conviction === "O'RTA" ? "O'RTA ISHONCH" : 'PAST ISHONCH';
+  const convColor = conviction === 'YUQORI' ? C : conviction === "O'RTA" ? '#D97706' : '#6B7280';
+
+  // Thesis HTML
+  const thesisHTML = aiData ? `
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px">
+      ${[1,2,3].map(n=>`<div style="background:#152238;border:1px solid #1e3655;border-left:3px solid ${C};border-radius:6px;padding:10px">
+        <div style="font-size:10px;font-weight:700;color:${C};font-family:monospace;margin-bottom:5px">① ${aiData['thesis'+n+'_title']||''}</div>
+        <div style="font-size:11px;color:#8fa3bb;line-height:1.6">${aiData['thesis'+n+'_body']||''}</div>
+      </div>`).join('')}
+    </div>` : '';
+
+  // Scenario values
+  const curP = parseFloat(co?.price) || 100;
+  const bull = +(aiData?.bull_target||(curP*1.40).toFixed(0));
+  const base = +(aiData?.base_target||(curP*1.20).toFixed(0));
+  const bear = +(aiData?.bear_target||(curP*0.85).toFixed(0));
+
+  // Income table
+  const inc5 = income.slice(0,5);
+  const inc5Yrs = inc5.map(d=>d.calendarYear||d.date?.slice(0,4));
+  const incTableHTML = `
+    <table style="width:100%;border-collapse:collapse;font-size:11px">
+      <thead><tr style="background:${C}">
+        <th style="color:#fff;padding:5px 8px;text-align:left">Ko'rsatkich</th>
+        ${inc5Yrs.map(y=>`<th style="color:#fff;padding:5px 8px;text-align:right">${y}</th>`).join('')}
+      </tr></thead>
+      <tbody>
+        ${[['Revenue',d=>'$'+(d.revenue/1e9).toFixed(2)+'B'],
+           ['Gross Margin',d=>(rpGM(d)*100).toFixed(1)+'%'],
+           ['EBITDA',d=>'$'+((d.ebitda||0)/1e9).toFixed(2)+'B'],
+           ['Net Income',d=>'$'+((d.netIncome||0)/1e9).toFixed(2)+'B'],
+           ['EPS',d=>'$'+(d.eps||0).toFixed(2)]].map(([nm,fn],ri)=>`
+          <tr style="${ri===0||ri===3?'background:'+C+'22':ri%2?'background:#0c1422':''}">
+            <td style="padding:4px 8px;color:#dde6f0;font-weight:700">${nm}</td>
+            ${inc5.map(d=>`<td style="padding:4px 8px;text-align:right;color:#8fa3bb;font-family:monospace;font-size:10px">${fn(d)}</td>`).join('')}
+          </tr>`).join('')}
+      </tbody>
+    </table>`;
+
+  // Valuation table for peers
+  const peerTickers = [ticker, ...(peers||[])];
+  const peerProfiles = {[ticker]:co};
+  const peerRats = {[ticker]:rat};
+  (peers||[]).forEach(p=>{
+    if(peerIncomes[p]?.profile) peerProfiles[p]=peerIncomes[p].profile;
+    if(peerIncomes[p]?.rat)     peerRats[p]=peerIncomes[p].rat;
+  });
+  const valTableHTML = `
+    <table style="width:100%;border-collapse:collapse;font-size:11px">
+      <thead><tr style="background:${C}">
+        <th style="color:#fff;padding:5px 8px;text-align:left">Ticker</th>
+        <th style="color:#fff;padding:5px 8px;text-align:right">P/E</th>
+        <th style="color:#fff;padding:5px 8px;text-align:right">P/S</th>
+        <th style="color:#fff;padding:5px 8px;text-align:right">Gross Margin</th>
+        <th style="color:#fff;padding:5px 8px;text-align:right">Mkt Cap</th>
+      </tr></thead>
+      <tbody>
+        ${peerTickers.map((p,i)=>{
+          const src=p===ticker?income:(peerIncomes[p]?.income||[]);
+          const pco=peerProfiles[p]||{},prt=peerRats[p]||{},lat=src[0]||{};
+          const pPE=rpN(prt.priceToEarningsRatioTTM)||rpN(pco.pe);
+          const pPS=rpN(prt.priceToSalesRatioTTM)||rpN(pco.priceToSalesRatio);
+          const pGM=rpN(prt.grossProfitMarginTTM)?(rpN(prt.grossProfitMarginTTM)*100).toFixed(1)+'%':lat.revenue>0?(rpGM(lat)*100).toFixed(1)+'%':'—';
+          const pMC=rpN(pco.mktCap);
+          return `<tr style="${i===0?'background:'+C+'22;font-weight:700':''}">
+            <td style="padding:4px 8px;color:#dde6f0;font-weight:700">${p}</td>
+            <td style="padding:4px 8px;text-align:right;color:#8fa3bb;font-family:monospace;font-size:10px">${pPE?pPE.toFixed(1)+'x':'—'}</td>
+            <td style="padding:4px 8px;text-align:right;color:#8fa3bb;font-family:monospace;font-size:10px">${pPS?pPS.toFixed(1)+'x':'—'}</td>
+            <td style="padding:4px 8px;text-align:right;color:#8fa3bb;font-family:monospace;font-size:10px">${pGM}</td>
+            <td style="padding:4px 8px;text-align:right;color:#8fa3bb;font-family:monospace;font-size:10px">${pMC?'$'+(pMC/1e9).toFixed(1)+'B':'—'}</td>
+          </tr>`;
+        }).join('')}
+      </tbody>
+    </table>`;
+
+  // Katalizator / Risk text
+  const catsText = document.getElementById('rp-catalyst-text')?.value || '—';
+  const risksText = document.getElementById('rp-risk-text')?.value || '—';
+  const techText  = document.getElementById('rp-tech-text')?.value || '';
+
+  // ── 6. Print oynasini ochish ──
+  const pw = window.open('','_blank','width=1100,height=800');
+  pw.document.write(`<!DOCTYPE html>
+<html><head>
+<meta charset="UTF-8">
+<title>${ticker} | NurInvest Research Report</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Syne:wght@400;700;800&display=swap" rel="stylesheet">
+<style>
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{background:#070f1a;color:#dde6f0;font-family:'Syne',sans-serif;font-size:12px;}
+  .slide{width:100%;padding:14px 18px;page-break-after:always;break-after:page;}
+  .slide:last-child{page-break-after:avoid;break-after:avoid;}
+  .sh{display:flex;align-items:center;justify-content:space-between;background:${C};border-radius:8px 8px 0 0;padding:10px 16px;}
+  .sh h2{font-size:14px;font-weight:700;color:#fff;}
+  .sh .sub{font-size:10px;color:rgba(255,255,255,.6);font-family:'JetBrains Mono',monospace;}
+  .sb{background:#0c1422;border:1px solid #1a2d45;border-top:none;border-radius:0 0 8px 8px;padding:12px;}
+  .g2{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;}
+  .g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:10px;}
+  .g12{display:grid;grid-template-columns:1fr 2fr;gap:10px;margin-bottom:10px;}
+  .cc{background:#101c2e;border:1px solid #1a2d45;border-radius:6px;overflow:hidden;margin-bottom:10px;}
+  .ch{padding:5px 11px;font-size:10px;font-weight:700;font-family:'JetBrains Mono',monospace;text-transform:uppercase;letter-spacing:.5px;background:${C};color:#fff;}
+  .ch.g{background:#152238;color:#8fa3bb;}
+  .cb{padding:9px;}
+  img.chart{width:100%;height:auto;display:block;}
+  .mrow{display:grid;gap:0;border:1px solid #1a2d45;border-radius:6px;overflow:hidden;margin-bottom:9px;}
+  .mb{padding:7px 11px;border-right:1px solid #1a2d45;background:#101c2e;}
+  .mb:last-child{border-right:none;}
+  .mb.hl{background:${C};}
+  .mb.hl .ml{color:rgba(255,255,255,.6);}
+  .mb.hl .mv{color:#fff;}
+  .ml{font-size:9px;color:#4e6a85;font-family:'JetBrains Mono',monospace;text-transform:uppercase;letter-spacing:.5px;margin-bottom:2px;}
+  .mv{font-size:16px;font-weight:700;font-family:'JetBrains Mono',monospace;color:#dde6f0;}
+  .cover-top{display:grid;grid-template-columns:1fr 150px;border:1px solid #1a2d45;border-radius:6px;overflow:hidden;margin-bottom:10px;}
+  .ci{padding:12px 16px;background:#0c1422;}
+  .cr{background:${C};display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:12px;}
+  .scen-bull td{background:rgba(16,185,129,.07);}
+  .scen-base td{background:${C}22;}
+  .scen-bear td{background:rgba(251,191,36,.07);}
+  .scen-med td{background:#152238;font-style:italic;color:#8fa3bb;}
+  .disc{margin-top:10px;padding:6px 11px;border-top:1px solid #1a2d45;font-size:9px;color:#4e6a85;font-family:'JetBrains Mono',monospace;text-align:right;line-height:1.6;}
+  @media print{
+    *{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;}
+    body{background:#070f1a!important;}
+    .slide{page-break-after:always!important;break-after:page!important;}
+    .slide:last-child{page-break-after:avoid!important;}
+  }
+</style>
+</head><body>
+
+<!-- ═══ SLIDE 1: QOPLAMA ═══ -->
+<div class="slide">
+  <div class="sh"><h2>${ticker} | Investitsiya Xulosasi</h2><span class="sub">NurInvest Research · ${analystName} · ${today}</span></div>
+  <div class="sb">
+    <div class="cover-top">
+      <div class="ci">
+        <div style="font-size:22px;font-weight:800;color:#dde6f0;margin-bottom:2px">${ticker}</div>
+        <div style="font-size:11px;color:#8fa3bb;margin-bottom:8px">${co?.companyName||''} · ${co?.sector||''} · ${co?.industry||''}</div>
+        <div style="display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:20px;font-size:10px;font-weight:700;font-family:'JetBrains Mono',monospace;background:${C}22;color:${convColor};border:1px solid ${convColor};margin-bottom:10px">● ${convLabel}</div>
+        <div class="mrow" style="grid-template-columns:repeat(4,1fr)">
+          <div class="mb"><div class="ml">P/E</div><div class="mv">${pe?pe.toFixed(1)+'x':'—'}</div></div>
+          <div class="mb"><div class="ml">EV/EBITDA</div><div class="mv">${evEbitda?evEbitda.toFixed(1)+'x':'—'}</div></div>
+          <div class="mb"><div class="ml">Gross Margin</div><div class="mv">${grossM?(grossM*100).toFixed(1)+'%':'—'}</div></div>
+          <div class="mb"><div class="ml">Mkt Cap</div><div class="mv">${mktCap?'$'+(mktCap/1e9).toFixed(1)+'B':'—'}</div></div>
+        </div>
+      </div>
+      <div class="cr">
+        <div style="font-size:9px;color:rgba(255,255,255,.6);margin-bottom:4px;font-family:'JetBrains Mono',monospace">REYTING</div>
+        <div style="font-size:28px;font-weight:800;color:#fff;font-family:'JetBrains Mono',monospace">${rating}</div>
+        <div style="width:36px;height:1px;background:rgba(255,255,255,.3);margin:7px auto"></div>
+        <div style="font-size:9px;color:rgba(255,255,255,.6);margin-bottom:2px;font-family:'JetBrains Mono',monospace">TAHLILCHI</div>
+        <div style="font-size:11px;font-weight:700;color:#fff;font-family:'JetBrains Mono',monospace">${analystName}</div>
+      </div>
+    </div>
+    <div class="mrow" style="grid-template-columns:repeat(5,1fr);margin-bottom:10px">
+      <div class="mb"><div class="ml">52w High</div><div class="mv">${co?.yearHigh?'$'+parseFloat(co.yearHigh).toFixed(2):'—'}</div></div>
+      <div class="mb"><div class="ml">52w Low</div><div class="mv">${co?.yearLow?'$'+parseFloat(co.yearLow).toFixed(2):'—'}</div></div>
+      <div class="mb"><div class="ml">Net Margin</div><div class="mv">${netM?(netM*100).toFixed(1)+'%':'—'}</div></div>
+      <div class="mb"><div class="ml">ROE</div><div class="mv">${roe?(roe*100).toFixed(1)+'%':'—'}</div></div>
+      <div class="mb hl"><div class="ml">Joriy Narx</div><div class="mv">${co?.price?'$'+parseFloat(co.price).toFixed(2):'—'}</div></div>
+    </div>
+    <div class="cc">
+      <div class="ch">Investitsiya Thezisi</div>
+      <div class="cb">${thesisHTML}</div>
+    </div>
+    <div class="disc">Ushbu tahlil o'quv va ma'lumot maqsadlarida tayyorlangan. Moliyaviy maslahat hisoblanmaydi. Investitsiya qaroridan oldin mustaqil tadqiqot o'tkazing.</div>
+  </div>
+</div>
+
+<!-- ═══ SLIDE 2: MOLIYAVIY I ═══ -->
+<div class="slide">
+  <div class="sh"><h2>${ticker} | Moliyaviy Tahlil I</h2><span class="sub">Daromad, Marja, Rentabellik</span></div>
+  <div class="sb">
+    <div class="g2">
+      <div class="cc"><div class="ch">Daromad / EBITDA / Sof Foyda</div><div class="cb">${chartImages['rp-revenue-chart']?`<img class="chart" src="${chartImages['rp-revenue-chart']}">`:''}</div></div>
+      <div class="g12" style="gap:9px;margin:0">
+        <div class="cc" style="text-align:center">
+          <div class="ch" style="width:100%">Sof Foyda Marjasi</div>
+          <div class="cb">
+            ${chartImages['rp-margin-donut']?`<img src="${chartImages['rp-margin-donut']}" style="width:110px;height:110px">`:'' }
+            <div style="font-size:17px;font-weight:800;font-family:'JetBrains Mono',monospace;color:#dde6f0">${netM?(netM*100).toFixed(1)+'%':'—'}</div>
+            <div style="font-size:9px;color:#4e6a85">Net Margin</div>
+          </div>
+        </div>
+        <div style="border:1px solid #1a2d45;border-radius:6px;overflow:hidden;text-align:center">
+          <div style="background:#152238;color:#8fa3bb;padding:4px;font-size:10px;font-weight:700;font-family:'JetBrains Mono',monospace">Moliyaviy Barqarorlik</div>
+          <div style="background:${C};color:#fff;padding:3px;font-size:9px;font-weight:700" id="az-status-print">—</div>
+          <div style="padding:9px"><div style="font-size:9px;color:#4e6a85;font-family:'JetBrains Mono',monospace;text-transform:uppercase">Altman-Z</div>
+          <div style="font-size:24px;font-weight:800;font-family:'JetBrains Mono',monospace;color:#dde6f0;text-decoration:underline">${document.getElementById('s1-altman-z')?.textContent||'—'}</div>
+          <div style="font-size:9px;color:#4e6a85;margin-top:2px">${document.getElementById('s1-altman-desc')?.textContent||'—'}</div></div>
+        </div>
+      </div>
+    </div>
+    <div class="g2">
+      <div class="cc"><div class="ch">ROA va ROE Dinamikasi</div><div class="cb">${chartImages['rp-roe-chart']?`<img class="chart" src="${chartImages['rp-roe-chart']}">`:''}</div></div>
+      <div class="cc"><div class="ch g">Asosiy Ko'rsatkichlar</div><div class="cb" style="padding:0">${document.getElementById('rp-slide-1')?.querySelector('.rp-tbl')?.outerHTML?.replace(/class="/g,'style="" class="')||''}</div></div>
+    </div>
+    <div class="disc">Ushbu tahlil o'quv va ma'lumot maqsadlarida tayyorlangan. Moliyaviy maslahat hisoblanmaydi.</div>
+  </div>
+</div>
+
+<!-- ═══ SLIDE 3: MOLIYAVIY II ═══ -->
+<div class="slide">
+  <div class="sh"><h2>${ticker} | Moliyaviy Tahlil II</h2><span class="sub">Naqd pul, Qarz, Prognoz</span></div>
+  <div class="sb">
+    <div class="g2">
+      <div class="cc"><div class="ch">Naqd Pul va Qarz ($M)</div><div class="cb">${chartImages['rp-cash-chart']?`<img class="chart" src="${chartImages['rp-cash-chart']}">`:''}</div></div>
+      <div class="cc"><div class="ch">Daromad Prognozi ($B)</div><div class="cb">${chartImages['rp-forecast-chart']?`<img class="chart" src="${chartImages['rp-forecast-chart']}">`:''}</div></div>
+    </div>
+    <div class="cc"><div class="ch g">5 Yillik Moliyaviy Tarix</div><div class="cb" style="padding:0">${incTableHTML}</div></div>
+    <div class="disc">Ushbu tahlil o'quv va ma'lumot maqsadlarida tayyorlangan. Moliyaviy maslahat hisoblanmaydi.</div>
+  </div>
+</div>
+
+<!-- ═══ SLIDE 4: RAQOBATCHILAR ═══ -->
+<div class="slide">
+  <div class="sh"><h2>${ticker} | Raqobatchilar Tahlili</h2><span class="sub">${ticker} vs ${(peers||[]).join(' vs ')||'—'}</span></div>
+  <div class="sb">
+    <div class="g12">
+      <div class="cc"><div class="ch">Daromadlar O'sishi (%)</div><div class="cb">${chartImages['rp-peer-growth-chart']?`<img class="chart" src="${chartImages['rp-peer-growth-chart']}">`:''}</div></div>
+      <div class="cc"><div class="ch">Bozor Kapitallashuvi ($B)</div><div class="cb">${chartImages['rp-mktcap-chart']?`<img class="chart" src="${chartImages['rp-mktcap-chart']}">`:''}</div></div>
+    </div>
+    <div class="g2">
+      <div class="cc"><div class="ch g">Baholash Ko'rsatkichlari</div><div class="cb" style="padding:0">${valTableHTML}</div></div>
+      <div class="cc"><div class="ch g">Net Margin Taqqoslash</div><div class="cb">${chartImages['rp-peer-profit-chart']?`<img class="chart" src="${chartImages['rp-peer-profit-chart']}">`:''}</div></div>
+    </div>
+    <div class="disc">Ushbu tahlil o'quv va ma'lumot maqsadlarida tayyorlangan. Moliyaviy maslahat hisoblanmaydi.</div>
+  </div>
+</div>
+
+<!-- ═══ SLIDE 5: TEXNIK TAHLIL ═══ -->
+<div class="slide">
+  <div class="sh"><h2>${ticker} | Texnik Tahlil</h2><span class="sub">Tahlilchi tomonidan to'ldirilgan</span></div>
+  <div class="sb">
+    ${techImgSrc ? `<div class="cc" style="margin-bottom:10px"><div class="ch">Chart Screenshoti</div><div class="cb"><img src="${techImgSrc}" style="width:100%;height:auto;max-height:320px;object-fit:contain;border-radius:4px"></div></div>` : ''}
+    <div class="g2">
+      <div>
+        <div class="cc"><div class="ch g">Texnik Tahlil Izohi</div><div class="cb" style="white-space:pre-wrap;font-size:11px;color:#8fa3bb;line-height:1.7">${techText||'(Kiritilmagan)'}</div></div>
+        <div class="cc"><div class="ch g">Katalizatorlar</div><div class="cb" style="white-space:pre-wrap;font-size:11px;color:#8fa3bb;line-height:1.7">${catsText}</div></div>
+      </div>
+      <div>
+        <div class="cc"><div class="ch">Asosiy Risklar</div><div class="cb" style="white-space:pre-wrap;font-size:11px;color:#8fa3bb;line-height:1.7">${risksText}</div></div>
+        <div class="cc"><div class="ch g">FMP Narx Ma'lumotlari</div><div class="cb" style="padding:0">
+          <table style="width:100%;border-collapse:collapse;font-size:11px">
+            ${[['Joriy narx','$'+parseFloat(co?.price||0).toFixed(2)],
+               ['52-hafta High',co?.yearHigh?'$'+parseFloat(co.yearHigh).toFixed(2):'—'],
+               ['52-hafta Low',co?.yearLow?'$'+parseFloat(co.yearLow).toFixed(2):'—'],
+               ['Beta',co?.beta?parseFloat(co.beta).toFixed(2):'—'],
+               ['Avg Volume',co?.volAvg?(parseInt(co.volAvg)/1e6).toFixed(1)+'M':'—']
+             ].map(([k,v],i)=>`<tr style="${i%2?'background:#0c1422':''}"><td style="padding:4px 8px;color:#8fa3bb">${k}</td><td style="padding:4px 8px;text-align:right;font-family:'JetBrains Mono',monospace;color:#dde6f0;font-weight:700">${v}</td></tr>`).join('')}
+          </table>
+        </div></div>
+      </div>
+    </div>
+    <div class="disc">Ushbu tahlil o'quv va ma'lumot maqsadlarida tayyorlangan. Moliyaviy maslahat hisoblanmaydi.</div>
+  </div>
+</div>
+
+<!-- ═══ SLIDE 6: XULOSA ═══ -->
+<div class="slide">
+  <div class="sh"><h2>${ticker} | Xulosa va Scenariy Tahlili</h2><span class="sub">Bull / Base / Bear</span></div>
+  <div class="sb">
+    <div class="cc" style="margin-bottom:10px">
+      <div class="ch">Scenariy Tahlili (12 Oy)</div>
+      <div class="cb" style="padding:0">
+        <table style="width:100%;border-collapse:collapse;font-size:11px">
+          <thead><tr style="background:${C}"><th style="color:#fff;padding:5px 8px;text-align:left">Scenariy</th><th style="color:#fff;padding:5px 8px;text-align:right">Ehtimol</th><th style="color:#fff;padding:5px 8px;text-align:right">Target</th><th style="color:#fff;padding:5px 8px;text-align:right">Potentsial</th><th style="color:#fff;padding:5px 8px">Asosiy taxmin</th></tr></thead>
+          <tbody>
+            <tr class="scen-bull"><td style="padding:4px 8px"><strong style="color:#34d399">🐂 Bull</strong></td><td style="text-align:right;padding:4px 8px;color:#8fa3bb">25%</td><td style="text-align:right;padding:4px 8px;color:#34d399;font-weight:700;font-family:'JetBrains Mono',monospace">$${bull}</td><td style="text-align:right;padding:4px 8px;color:#34d399">+${((bull/curP-1)*100).toFixed(0)}%</td><td style="padding:4px 8px;font-size:10px;color:#8fa3bb">${aiData?.bull_thesis||'—'}</td></tr>
+            <tr class="scen-base"><td style="padding:4px 8px"><strong style="color:${C}">⚖️ Base</strong></td><td style="text-align:right;padding:4px 8px;color:#8fa3bb">50%</td><td style="text-align:right;padding:4px 8px;color:${C};font-weight:700;font-family:'JetBrains Mono',monospace">$${base}</td><td style="text-align:right;padding:4px 8px;color:${C}">+${((base/curP-1)*100).toFixed(0)}%</td><td style="padding:4px 8px;font-size:10px;color:#8fa3bb">${aiData?.base_thesis||'—'}</td></tr>
+            <tr class="scen-bear"><td style="padding:4px 8px"><strong style="color:#fbbf24">🐻 Bear</strong></td><td style="text-align:right;padding:4px 8px;color:#8fa3bb">25%</td><td style="text-align:right;padding:4px 8px;color:#fbbf24;font-weight:700;font-family:'JetBrains Mono',monospace">$${bear}</td><td style="text-align:right;padding:4px 8px;color:#f87171">${((bear/curP-1)*100).toFixed(0)}%</td><td style="padding:4px 8px;font-size:10px;color:#8fa3bb">${aiData?.bear_thesis||'—'}</td></tr>
+            <tr class="scen-med"><td style="padding:4px 8px"><strong>Weighted Avg</strong></td><td style="text-align:right;padding:4px 8px">100%</td><td style="text-align:right;padding:4px 8px;font-family:'JetBrains Mono',monospace;font-weight:700">$${(bull*0.25+base*0.5+bear*0.25).toFixed(0)}</td><td style="text-align:right;padding:4px 8px">+${(((bull*0.25+base*0.5+bear*0.25)/curP-1)*100).toFixed(0)}%</td><td style="padding:4px 8px;font-size:10px">Ehtimollik og'irligi</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="g2">
+      <div class="cc"><div class="ch" style="background:#059669">✅ Katalizatorlar</div><div class="cb" style="white-space:pre-wrap;font-size:11px;color:#8fa3bb;line-height:1.8">${catsText}</div></div>
+      <div class="cc"><div class="ch">⚠️ Risklar</div><div class="cb" style="white-space:pre-wrap;font-size:11px;color:#8fa3bb;line-height:1.8">${risksText}</div></div>
+    </div>
+    <div class="cc" style="margin-bottom:10px">
+      <div class="ch">Tahlilchi Xulosasi (AI)</div>
+      <div class="cb">
+        <div style="font-size:12px;color:#8fa3bb;line-height:1.8">${aiData?.verdict||'—'}</div>
+        <div style="text-align:right;margin-top:8px">
+          <span style="display:inline-flex;align-items:center;gap:5px;padding:4px 12px;border-radius:20px;font-size:10px;font-weight:700;font-family:'JetBrains Mono',monospace;background:${C}22;color:${C};border:1px solid ${C}">● ${rating} · ${conviction} ishonch</span>
+        </div>
+      </div>
+    </div>
+    <div style="background:#101c2e;border:1px solid #1a2d45;border-radius:6px;padding:11px 13px">
+      <div style="font-size:9px;font-weight:700;font-family:'JetBrains Mono',monospace;color:#4e6a85;text-transform:uppercase;letter-spacing:1px;margin-bottom:5px">⚖️ MUHIM OGOHLANTIRISH (DISCLAIMER)</div>
+      <div style="font-size:10px;color:#4e6a85;line-height:1.8;font-family:'JetBrains Mono',monospace">${document.getElementById('rp-disclaimer-text')?.textContent||'Ushbu hujjat faqat o\'quv va ma\'lumot maqsadlarida tayyorlangan bo\'lib, moliyaviy maslahat, investitsion tavsiya yoki qimmatli qog\'ozlar taklifi hisoblanmaydi.'}</div>
+    </div>
+  </div>
+</div>
+
+<script>
+  document.getElementById('az-status-print').textContent = '${document.getElementById('s1-altman-status')?.textContent||'—'}';
+  window.onload = function() {
+    setTimeout(function() { window.print(); }, 500);
+  };
+<\/script>
+</body></html>`);
+  pw.document.close();
+
+  if (btn) { btn.textContent = '🖨 PDF'; btn.disabled = false; }
+}
+
+// ── DISCLAIMER ────────────────────────────────────
+function rpUpdateDisclaimer() {
+  const extra=document.getElementById('rp-custom-disclaimer').value.trim();
+  if(!extra)return;
+  const el=document.getElementById('rp-disclaimer-text');
+  el.textContent=el.textContent+' '+extra;
+  document.getElementById('rp-custom-disclaimer').value='';
+}
 </script>
+
 </body>
 </html>
